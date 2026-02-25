@@ -101,6 +101,34 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, theme, language, onSetLang
                   <Globe size={14} />
                   <span className="uppercase hidden xs:inline">{language}</span>
                 </button>
+
+                <AnimatePresence>
+                  {isLangMenuOpen && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute right-0 top-full mt-2 w-32 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50"
+                    >
+                      {[
+                        { code: 'zh', label: '简体中文' },
+                        { code: 'ja', label: '日本語' },
+                        { code: 'en', label: 'English' }
+                      ].map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => {
+                            onSetLanguage(lang.code as Language);
+                            setIsLangMenuOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2 text-[10px] font-black hover:bg-red-600 hover:text-white transition-colors border-b border-black last:border-0 ${language === lang.code ? 'bg-slate-100' : ''}`}
+                        >
+                          {lang.label}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
              </div>
 
              <div className="md:hidden flex items-center">

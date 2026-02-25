@@ -3,8 +3,10 @@ import React from 'react';
 import { ExternalLink, FileText } from 'lucide-react';
 import { PublicEventDetail, Theme } from '../../types';
 
+import { AdaptedEventDetail } from '../../services/adapters';
+
 interface EventOverviewSectionProps {
-  event: PublicEventDetail;
+  event: AdaptedEventDetail;
   onOpenGuidelines: () => void;
   onSelectSubEvent: (sub: any) => void;
   renderNewsArchiveItem: (news: any, isPreview?: boolean) => React.ReactNode;
@@ -19,9 +21,15 @@ const EventOverviewSection: React.FC<EventOverviewSectionProps> = ({ event, onOp
             <h3 className="font-black text-xl sm:text-2xl font-header uppercase tracking-widest">最新公告</h3>
           </div>
           <div className="space-y-1">
-            {event.news?.slice(0, 3).map((news, i) => (
-              <React.Fragment key={i}>{renderNewsArchiveItem(news, true)}</React.Fragment>
-            ))}
+            {event.news && event.news.length > 0 ? (
+              event.news.slice(0, 3).map((news: any, i: number) => (
+                <React.Fragment key={i}>{renderNewsArchiveItem(news, true)}</React.Fragment>
+              ))
+            ) : (
+              <div className="py-10 text-center border-2 border-dashed border-slate-200 text-slate-400 font-bold">
+                暂无公告
+              </div>
+            )}
           </div>
         </section>
       </div>
@@ -38,10 +46,12 @@ const EventOverviewSection: React.FC<EventOverviewSectionProps> = ({ event, onOp
               <span className="text-slate-500 font-black uppercase">主办团体</span>
               <span className="font-black truncate max-w-[150px] text-right">{event.organizer}</span>
             </div>
-            <div className="flex justify-between border-b border-slate-300 pb-2">
-              <span className="text-slate-500 font-black uppercase">官方地址</span>
-              <a href={event.website} target="_blank" rel="noreferrer" className="font-black text-red-600 hover:underline">访问 <ExternalLink size={12} className="inline ml-1"/></a>
-            </div>
+            {event.website && (
+              <div className="flex justify-between border-b border-slate-300 pb-2">
+                <span className="text-slate-500 font-black uppercase">官方地址</span>
+                <a href={event.website} target="_blank" rel="noreferrer" className="font-black text-red-600 hover:underline">访问 <ExternalLink size={12} className="inline ml-1"/></a>
+              </div>
+            )}
           </div>
         </div>
         {event.docs?.length > 0 && (

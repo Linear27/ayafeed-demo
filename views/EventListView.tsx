@@ -61,6 +61,8 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
 
   const MOCK_TODAY = useMemo(() => new Date().toISOString().split('T')[0], []);
 
+  const [hasAutoSwitched, setHasAutoSwitched] = useState(false);
+
   useEffect(() => {
     const loadEvents = async () => {
       setIsLoading(true);
@@ -75,6 +77,32 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
     };
     loadEvents();
   }, []);
+
+  // Auto-switch to PAST if UPCOMING is empty on initial load
+  useEffect(() => {
+    if (!isLoading && events.length > 0 && !hasAutoSwitched && timeFilter === 'UPCOMING') {
+      const upcomingCount = events.filter(event => {
+        const evRegion = event.marketRegion || 'JAPAN';
+        if (activeRegion !== 'GLOBAL' && evRegion !== activeRegion) return false;
+        const isPast = (event.startAt || '').split('T')[0] < MOCK_TODAY;
+        return !isPast;
+      }).length;
+
+      if (upcomingCount === 0) {
+        const pastCount = events.filter(event => {
+          const evRegion = event.marketRegion || 'JAPAN';
+          if (activeRegion !== 'GLOBAL' && evRegion !== activeRegion) return false;
+          const isPast = (event.startAt || '').split('T')[0] < MOCK_TODAY;
+          return isPast;
+        }).length;
+
+        if (pastCount > 0) {
+          setTimeFilter('PAST');
+          setHasAutoSwitched(true);
+        }
+      }
+    }
+  }, [isLoading, events, activeRegion, timeFilter, MOCK_TODAY, hasAutoSwitched]);
 
   const filteredRawEvents = useMemo(() => {
      return events.filter(event => {
@@ -172,6 +200,12 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
              {labels.title}
            </h1>
         </div>
+        {hasAutoSwitched && (
+          <div className="mt-4 md:mt-0 bg-amber-50 border border-amber-200 px-3 py-1.5 text-[10px] font-bold text-amber-700 flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+            当前时段暂无新展会，已自动切换至过往存档
+          </div>
+        )}
       </div>
 
       <div className="mb-12 sticky top-[68px] z-30 py-2 transition-all bg-[#FDFBF7]/95">
@@ -225,10 +259,16 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
               <h3 className="text-xl font-black text-slate-900 mb-2">未找到相关展会</h3>
               <p className="text-slate-500 mb-6">尝试更换搜索词或切换区域</p>
               <button 
-                onClick={() => { setSearchTerm(''); onSetRegion('GLOBAL'); }}
+                onClick={() => { 
+                  setSearchTerm(''); 
+                  setSelectedLocalRegions([]);
+                  setSelectedGenres([]);
+                  setTimeFilter('PAST');
+                  onSetRegion('GLOBAL'); 
+                }}
                 className="px-6 py-2 bg-black text-white text-xs font-black uppercase tracking-widest hover:bg-red-600 transition-colors"
               >
-                重置筛选
+                重置筛选并查看存档
               </button>
             </div>
           )}

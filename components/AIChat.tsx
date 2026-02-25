@@ -158,9 +158,9 @@ const AIChat: React.FC = () => {
         aria-label={isOpen ? "关闭 AI 助手" : "打开 AI 助手"}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className={`pointer-events-auto flex items-center justify-center w-14 h-14 rounded-full shadow-xl z-50 bg-gradient-to-r from-red-600 to-red-500 text-white`}
+        className={`pointer-events-auto flex items-center justify-center w-12 h-12 rounded-full shadow-xl z-50 bg-gradient-to-r from-red-600 to-red-500 text-white mb-[env(safe-area-inset-bottom,0px)] mr-[env(safe-area-inset-right,0px)]`}
       >
-        <MessageCircle size={28} />
+        {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
       </motion.button>
     </div>
   );

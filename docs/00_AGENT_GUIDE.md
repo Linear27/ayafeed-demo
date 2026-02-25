@@ -23,9 +23,17 @@ AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任
 
 ## 4. 交接记录 (Handover & Logs)
 
-### [2025-06-09] - 数据架构原子化重构 (Phase 2 - Completed)
+### [2026-02-25] - UX 优化与关键 Bug 修复 (UX Refinement & Critical Fixes)
 - **执行内容**:
-  - 彻底拆分 `EVENTS` 和 `LIVES` 数组，将核心条目（如神居祭、宝藏展、歌祭）独立为 `.ts` 文件。
-  - 创建了 `data/events/archive.ts` 用于存放过往活动。
-  - 将社团数据分为 `handcrafted.ts` 和 `generator.ts`。
-- **状态**: 完成。系统现在具有极高的可维护性。
+  - **P0 崩溃修复**: 解决了 `LiveListView` 和 `CircleListView` 在数据缺失时的崩溃问题，增加了严谨的空值检查。
+  - **区域 ID 统一**: 统一了 `AppContext` 与各视图间的区域定义，解决了搜索结果为空的问题。
+  - **空状态 (Empty States)**: 为搜索、详情页标签（Access/Ticket/Goods）增加了友好的空状态提示。
+  - **Logo 动效**: 为所有 Logo 候选方案增加了基于 `framer-motion` 的 hover 动效。
+  - **性能优化**: 修复了全站 `<img>` 标签中 `src=""` 导致的无效网络请求问题。
+  - **错误处理**: 实现了全局错误边界 (`routes/__root.tsx`)。
+- **状态**: 已完成并验证。
+
+## 5. 后续建议 (Recommendations)
+- **图片资源**: 建议引入 CDN 或统一的占位图服务，以解决部分跨域图片加载不稳定的问题。
+- **国际化**: 进一步完善多语言支持，确保所有硬编码文本均可通过翻译配置。
+- **性能**: 随着数据量增加，建议对 `CircleListView` 引入虚拟列表 (Virtual List) 优化。

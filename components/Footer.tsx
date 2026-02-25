@@ -58,13 +58,13 @@ const Footer: React.FC<FooterProps> = () => {
            <div>
             <h4 className={`font-bold mb-4 uppercase tracking-wider text-xs ${headerColor}`}>关注我们</h4>
             <div className="flex gap-4">
-               <a href="#" className="p-2 transition-colors border-2 border-black text-black hover:bg-black hover:text-white">
+               <a href="https://twitter.com/ayafeed" target="_blank" rel="noreferrer" className="p-2 transition-colors border-2 border-black text-black hover:bg-black hover:text-white" aria-label="Twitter">
                   <Twitter size={18} />
                </a>
-               <a href="#" className="p-2 transition-colors border-2 border-black text-black hover:bg-black hover:text-white">
+               <a href="https://github.com/ayafeed" target="_blank" rel="noreferrer" className="p-2 transition-colors border-2 border-black text-black hover:bg-black hover:text-white" aria-label="GitHub">
                   <Github size={18} />
                </a>
-               <a href="#" className="p-2 transition-colors border-2 border-black text-black hover:bg-black hover:text-white">
+               <a href="mailto:contact@ayafeed.com" className="p-2 transition-colors border-2 border-black text-black hover:bg-black hover:text-white" aria-label="Email">
                   <Mail size={18} />
                </a>
             </div>

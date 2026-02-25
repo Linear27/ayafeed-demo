@@ -3,15 +3,25 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Search, SlidersHorizontal, MapPin } from 'lucide-react';
 import { fetchLives } from '../services/api';
-import { Live } from '../types';
+import { PublicLiveListItem } from '../types';
 import { LiveCardSkeleton } from '../components/Skeleton';
+import { adaptLiveListItem } from '../services/adapters';
 
 const WORLD_REGIONS = [
   { id: 'JAPAN', label: '日本国内' },
-  { id: 'GLOBAL', label: '全球特报' },
   { id: 'CN_MAINLAND', label: '中国大陆' },
   { id: 'OVERSEAS', label: '海外/其他' },
+  { id: 'GLOBAL', label: '全球特报' },
 ];
+
+const REGION_MAP: Record<string, string> = {
+  'JP': 'JAPAN',
+  'CN': 'CN_MAINLAND',
+  'OVERSEA': 'OVERSEAS',
+  'JAPAN': 'JAPAN',
+  'CN_MAINLAND': 'CN_MAINLAND',
+  'OVERSEAS': 'OVERSEAS'
+};
 
 interface LiveListViewProps {
   onSelect: (id: string) => void; 
@@ -20,7 +30,7 @@ interface LiveListViewProps {
 }
 
 const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion, onSetRegion }) => {
-  const [lives, setLives] = useState<Live[]>([]);
+  const [lives, setLives] = useState<PublicLiveListItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -37,18 +47,27 @@ const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion, onS
       }
     };
     loadLives();
-  }, []); // Only fetch once on mount
+  }, []);
+
+  const adaptedLives = useMemo(() => lives.map(adaptLiveListItem), [lives]);
 
   const filteredLives = useMemo(() => {
-    return lives.filter(live => {
-        const evRegion = live.worldRegion || 'JAPAN';
-        if (activeRegion !== 'GLOBAL' && evRegion !== activeRegion) return false;
+    return adaptedLives.filter(live => {
+        const rawRegion = live.marketRegion || 'JAPAN';
+        const mappedRegion = REGION_MAP[rawRegion] || 'OVERSEAS';
+        
+        if (activeRegion !== 'GLOBAL' && mappedRegion !== activeRegion) return false;
         const q = searchTerm.toLowerCase().trim();
         return !q || 
                (live.title?.toLowerCase().includes(q) ?? false) || 
                (live.venue?.toLowerCase().includes(q) ?? false);
     }).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-  }, [lives, searchTerm, activeRegion]);
+  }, [adaptedLives, searchTerm, activeRegion]);
+
+  const getDisplayTitle = () => {
+    const region = WORLD_REGIONS.find(r => r.id === activeRegion);
+    return region ? `${region.label}演出名录` : '演出名录';
+  };
 
   return (
     <motion.div className="w-full min-h-[100dvh] pb-20" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -70,7 +89,7 @@ const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion, onS
            <div>
              <div className="bg-red-600 text-white px-2 py-0.5 text-[10px] font-black uppercase tracking-widest mb-2 inline-block">LIVE REVIEWS</div>
              <h2 className="text-3xl font-black font-header text-black">
-                {activeRegion === 'GLOBAL' ? '全球演出特报' : `${activeRegion}演出名录`}
+                {getDisplayTitle()}
              </h2>
            </div>
         </div>
@@ -100,8 +119,8 @@ const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion, onS
                     className="group flex flex-col md:flex-row cursor-pointer transition-all duration-300 overflow-hidden bg-white border-2 border-black newspaper-shadow hover:newspaper-shadow-hover"
                   >
                       <div className="md:w-24 flex md:flex-col items-center justify-center p-5 text-center shrink-0 bg-black text-white border-r-2 border-black border-dashed">
-                          <div className="text-[10px] font-black uppercase mb-1">{(live.date || '0000-00-00').split('-')[1]}月</div>
-                          <div className="text-3xl font-black leading-none">{(live.date || '0000-00-00').split('-')[2]}</div>
+                          <div className="text-[10px] font-black uppercase mb-1">{live.date.split('-')[1]}月</div>
+                          <div className="text-3xl font-black leading-none">{live.date.split('-')[2]}</div>
                       </div>
                       <div className="flex-1 p-6 min-w-0">
                           <h3 className="text-xl font-black mb-2 truncate font-header text-slate-900 group-hover:text-red-700">{live.title}</h3>

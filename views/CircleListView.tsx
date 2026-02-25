@@ -3,13 +3,14 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, PenTool } from 'lucide-react';
 import { fetchCircles } from '../services/api';
-import { Circle } from '../types';
+import { PublicCircleListItem } from '../types';
 import { CircleCardSkeleton } from '../components/Skeleton';
+import { adaptCircleListItem } from '../services/adapters';
 
 const ITEMS_PER_BATCH = 24;
 
 const CircleListView: React.FC<{ onSelect: (id: string) => void }> = ({ onSelect }) => {
-  const [circles, setCircles] = useState<Circle[]>([]);
+  const [circles, setCircles] = useState<PublicCircleListItem[]>([]);
   const [filter, setFilter] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   
@@ -26,15 +27,17 @@ const CircleListView: React.FC<{ onSelect: (id: string) => void }> = ({ onSelect
       }
     };
     loadCircles();
-  }, []); // Only fetch once on mount
+  }, []);
+
+  const adaptedCircles = useMemo(() => circles.map(adaptCircleListItem), [circles]);
 
   const filteredCircles = useMemo(() => {
     const q = filter.toLowerCase().trim();
-    return circles.filter(c => 
+    return adaptedCircles.filter(c => 
       (c.name?.toLowerCase().includes(q) ?? false) || 
       (c.penName?.toLowerCase().includes(q) ?? false)
     );
-  }, [circles, filter]);
+  }, [adaptedCircles, filter]);
 
   return (
     <motion.div 

@@ -16,10 +16,12 @@ import EventInfoSection from '../components/event-detail/EventInfoSection';
 import EventAccessSection from '../components/event-detail/EventAccessSection';
 import { PublicCircleListItem, Theme, PublicEventDetailResponse } from '../types';
 
+import { adaptEventDetail } from '../services/adapters';
+
 type TabType = 'OVERVIEW' | 'CIRCLES' | 'INFO' | 'ACCESS';
 
 const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle: (id: string) => void }> = ({ id, onBack, onSelectCircle }) => {
-  const [data, setData] = useState<PublicEventDetailResponse | null>(null);
+  const [rawEventData, setRawEventData] = useState<PublicEventDetailResponse | null>(null);
   const [eventCircles, setEventCircles] = useState<PublicCircleListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('OVERVIEW');
@@ -47,7 +49,7 @@ const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle
           fetchEventBySlug(id),
           fetchCircles({ eventId: id })
         ]);
-        setData(eventData);
+        setRawEventData(eventData);
         setEventCircles(circlesData);
       } catch (error) {
         console.error("Failed to load event detail:", error);
@@ -58,11 +60,7 @@ const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle
     loadData();
   }, [id]);
 
-  const event = data?.event;
-  const location = data?.location;
-  const meta = data?.meta;
-
-  const city = location?.city || '';
+  const event = useMemo(() => rawEventData ? adaptEventDetail(rawEventData) : null, [rawEventData]);
   
   const circleMetadata = useMemo(() => {
     return eventCircles.map(c => {
@@ -71,7 +69,7 @@ const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle
   }, [eventCircles]);
 
   if (isLoading) return <div className="p-20 text-center font-bold">加载中...</div>;
-  if (!data || !event) return <div className="p-20 text-center font-bold">未找到展会信息</div>;
+  if (!event) return <div className="p-20 text-center font-bold">未找到展会信息</div>;
 
   const NewsArchiveItem: React.FC<{ news: any; isPreview?: boolean }> = ({ news, isPreview = false }) => (
     <div onClick={() => setSelectedNews(news)} className="group flex gap-4 cursor-pointer items-center p-4 border border-slate-200 hover:border-black bg-white hover:bg-slate-50 mb-2">
@@ -98,7 +96,7 @@ const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle
     <motion.div className="min-h-screen" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <div className="bg-white border-b-2 border-black pb-4">
         <div className="max-w-[1200px] mx-auto">
-          <EventDetailHeader event={event} city={city} circleCount={eventCircles.length} onBack={onBack} onSelectCirclesTab={() => setActiveTab('CIRCLES')} />
+          <EventDetailHeader event={event} circleCount={eventCircles.length} onBack={onBack} onSelectCirclesTab={() => setActiveTab('CIRCLES')} />
         </div>
       </div>
 
@@ -148,7 +146,7 @@ const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle
         {showGuidelines && <GuidelinesModal docs={event.docs} onClose={() => setShowGuidelines(false)} />}
         {selectedSubEvent && <SubEventModal subEvent={selectedSubEvent} parentEvent={event} onClose={() => setSelectedSubEvent(null)} />}
         
-        {showFloorMapModal && event.floorMapImages && (
+        {showFloorMapModal && event.floorMapImages && event.floorMapImages.length > 0 && (
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
@@ -167,12 +165,12 @@ const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle
               onClick={e => e.stopPropagation()}
             >
               <img 
-                src={event.floorMapImages[activeFloorMapIndex].url || null} 
+                src={event.floorMapImages[activeFloorMapIndex] || null} 
                 className="w-full h-auto" 
-                alt={event.floorMapImages[activeFloorMapIndex].name} 
+                alt={`Floor Map ${activeFloorMapIndex + 1}`} 
               />
               <div className="absolute bottom-4 left-4 bg-black text-white px-4 py-2 font-black uppercase tracking-widest text-sm">
-                {event.floorMapImages[activeFloorMapIndex].name}
+                平面图 {activeFloorMapIndex + 1}
               </div>
             </motion.div>
           </motion.div>

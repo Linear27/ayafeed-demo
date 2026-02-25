@@ -38,7 +38,7 @@ export const HeroCarousel: React.FC<{
 
   const InfoCell = ({ icon: Icon, label, value, className = "" }: { icon: any, label: string, value: string | number, className?: string }) => (
     <div className={`flex flex-col justify-center p-3 sm:p-4 min-h-[80px] ${className}`}>
-        <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider mb-1 text-slate-500">
+        <div className="flex items-center gap-1.5 text-[11px] sm:text-[12px] font-black uppercase tracking-wider mb-1 text-slate-500">
             <Icon size={12} strokeWidth={2.5} /> {label}
         </div>
         <div className="font-bold leading-tight line-clamp-2 text-base font-header text-slate-900">
@@ -173,10 +173,10 @@ const ScoopItem: React.FC<{ event: PublicEventListItem; isToday: boolean }> = ({
       </div>
       <div className="flex-1 min-w-0 flex flex-col py-0.5">
         <div className="flex justify-between items-center mb-1">
-          <span className={`text-[10px] font-black uppercase tracking-widest ${isToday ? 'text-red-600' : 'text-slate-500'}`}>
+          <span className={`text-[11px] sm:text-[12px] font-black uppercase tracking-widest ${isToday ? 'text-red-600' : 'text-slate-500'}`}>
             {event.marketRegion === 'JAPAN' ? '日本特报' : (event.marketRegion === 'CN_MAINLAND' ? '大陆频道' : '亚洲分社')}
           </span>
-          <div className="flex items-center gap-1 font-mono font-black text-[10px] text-slate-500">
+          <div className="flex items-center gap-1 font-mono font-black text-[11px] sm:text-[12px] text-slate-500">
             <Clock size={10} /> {displayDate}
           </div>
         </div>
@@ -241,7 +241,7 @@ export const LiveSidebar: React.FC<{
                 {live.location?.countryCode || 'JP'}
             </div>
             <div className="absolute bottom-4 left-4 right-4">
-              <div className="text-yellow-500 text-[10px] font-black mb-1 flex items-center uppercase tracking-widest"><Music size={12} className="mr-2"/> {live.startAt.split('T')[0]}</div>
+              <div className="text-yellow-500 text-[11px] sm:text-[12px] font-black mb-1 flex items-center uppercase tracking-widest"><Music size={12} className="mr-2"/> {live.startAt.split('T')[0]}</div>
               <div className="text-white font-black font-header leading-tight truncate">{live.title}</div>
             </div>
           </div>
