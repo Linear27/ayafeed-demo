@@ -1,0 +1,141 @@
+
+import React, { useState } from 'react';
+import { Menu, X, Globe, Zap, Newspaper } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { ViewState, Theme, Language } from '../types';
+import BrandLogo from './BrandLogo';
+
+interface NavbarProps {
+  currentView: ViewState;
+  theme: Theme;
+  language: Language;
+  onSetLanguage: (lang: Language) => void;
+  region: string;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ currentView, theme, language, onSetLanguage, region }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  
+  const isNewspaper = theme === 'newspaper';
+
+  const getBrandName = () => {
+    if (language === 'zh') return '文文。快讯';
+    if (language === 'ja') return '文々。速報';
+    return 'AyaFeed';
+  };
+
+  const navBg = isNewspaper ? 'bg-[#FDFBF7] border-slate-900' : 'bg-white/90 backdrop-blur-md border-slate-200';
+  const activeText = isNewspaper ? 'text-red-700' : 'text-indigo-600';
+  const inactiveText = isNewspaper ? 'text-slate-800 hover:text-red-700' : 'text-slate-600 hover:text-indigo-600';
+  const underlineColor = isNewspaper ? 'bg-red-600' : 'bg-indigo-600';
+
+  const NavItem = ({ to, label, className = "" }: { to: string, label: string, className?: string }) => (
+    <Link
+      to={to}
+      onClick={() => setIsMobileMenuOpen(false)}
+      className={`relative px-4 py-2 text-sm font-bold transition-colors font-header tracking-wide group ${className}`}
+      activeProps={{ className: activeText }}
+      inactiveProps={{ className: inactiveText }}
+    >
+      {({ isActive }) => (
+        <>
+          {label}
+          {!className.includes('w-full') && (
+            <span className={`absolute bottom-1 left-4 right-4 h-0.5 ${underlineColor} transform origin-left transition-transform duration-300 ${
+               isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+            }`}></span>
+          )}
+        </>
+      )}
+    </Link>
+  );
+
+  return (
+    <nav className={`sticky top-0 z-50 w-full border-b-2 transition-colors duration-300 ${navBg}`}>
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center gap-6">
+            <div className="flex-shrink-0 flex items-center gap-3 select-none">
+              {/* Logo with hover scale effect */}
+              <motion.div 
+                className="cursor-pointer"
+                onClick={() => navigate({ to: '/' })}
+                whileHover={{ scale: 1.1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              >
+                <BrandLogo size="sm" />
+              </motion.div>
+
+              {/* Static Brand Text area */}
+              <div 
+                className="flex flex-col leading-none cursor-pointer"
+                onClick={() => navigate({ to: '/' })}
+              >
+                <span className={`font-black text-lg font-header tracking-tighter ${isNewspaper ? 'text-slate-900' : 'text-slate-800'}`}>
+                  {getBrandName()}
+                </span>
+                <span className={`text-[8px] font-bold uppercase tracking-widest scale-90 origin-left ${isNewspaper ? 'text-red-700' : 'text-slate-400'}`}>
+                   EST. 1000 G.S.T
+                </span>
+              </div>
+            </div>
+
+            <div className="hidden md:flex items-center space-x-1">
+              <NavItem to="/events" label="展会" />
+              <NavItem to="/lives" label="演出" />
+              <NavItem to="/circles" label="社团" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 md:gap-4">
+             <div className="relative">
+                <button 
+                  onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                    isNewspaper ? 'bg-white border-black text-slate-900' : 'bg-white border-slate-200 text-slate-600'
+                  }`}
+                >
+                  <Globe size={14} />
+                  <span className="uppercase hidden xs:inline">{language}</span>
+                </button>
+             </div>
+
+             <div className="md:hidden flex items-center">
+              <button 
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
+                aria-label={isMobileMenuOpen ? "关闭菜单" : "打开菜单"}
+                className="p-2 transition-colors"
+              >
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className={`md:hidden border-t-2 ${isNewspaper ? 'bg-[#FDFBF7] border-slate-900' : 'bg-white border-slate-100'}`}
+          >
+            <div className="px-4 py-6 space-y-4 flex flex-col">
+              <NavItem to="/events" label="展会名录" className="w-full text-left py-4 border-b border-slate-100" />
+              <NavItem to="/events/exp" label="探索布局 (Beta)" className="w-full text-left py-4 border-b border-slate-100" />
+              <NavItem to="/lives" label="演出快讯" className="w-full text-left py-4 border-b border-slate-100" />
+              <NavItem to="/circles" label="社团检索" className="w-full text-left py-4 border-b border-slate-100" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
+  );
+};
+
+export default Navbar;

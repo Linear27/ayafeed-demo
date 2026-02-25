@@ -1,0 +1,152 @@
+
+import { 
+  PublicEventListItem, 
+  PublicEventDetailResponse,
+  PublicLiveListItem,
+  PublicLiveDetailResponse,
+  PublicCircleListItem,
+  PublicCircleDetailResponse,
+  PublicEventsListResponse,
+  PublicLivesListResponse,
+  PublicCirclesListResponse,
+  Circle
+} from '../types';
+
+const BASE_URL = '/v1/public';
+
+const fetchWithRetry = async (url: string, retries = 3, delay = 1000): Promise<Response> => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url);
+      if (response.ok) return response;
+      if (response.status >= 500) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      return response;
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error(`Failed to fetch ${url} after ${retries} retries`);
+};
+
+export const fetchEvents = async (params: { marketRegion?: string; page?: number } = {}): Promise<PublicEventListItem[]> => {
+  try {
+    const query = new URLSearchParams();
+    if (params.marketRegion) query.append('marketRegion', params.marketRegion);
+    if (params.page) query.append('page', params.page.toString());
+    
+    const response = await fetchWithRetry(`${BASE_URL}/events?${query.toString()}`);
+    if (!response.ok) throw new Error(`Failed to fetch events: ${response.statusText}`);
+    const data: PublicEventsListResponse = await response.json();
+    return data.items;
+  } catch (error) {
+    console.error("fetchEvents error:", error);
+    throw error;
+  }
+};
+
+export const fetchEventBySlug = async (slug: string): Promise<PublicEventDetailResponse> => {
+  try {
+    const response = await fetchWithRetry(`${BASE_URL}/events/${slug}`);
+    if (!response.ok) throw new Error(`Failed to fetch event ${slug}: ${response.statusText}`);
+    return response.json();
+  } catch (error) {
+    console.error(`fetchEventBySlug(${slug}) error:`, error);
+    throw error;
+  }
+};
+
+export const fetchLives = async (params: { page?: number } = {}): Promise<PublicLiveListItem[]> => {
+  try {
+    const query = new URLSearchParams();
+    if (params.page) query.append('page', params.page.toString());
+    
+    const response = await fetchWithRetry(`${BASE_URL}/lives?${query.toString()}`);
+    if (!response.ok) throw new Error(`Failed to fetch lives: ${response.statusText}`);
+    const data: PublicLivesListResponse = await response.json();
+    return data.items;
+  } catch (error) {
+    console.error("fetchLives error:", error);
+    throw error;
+  }
+};
+
+export const fetchLiveBySlug = async (slug: string): Promise<PublicLiveDetailResponse> => {
+  try {
+    const response = await fetchWithRetry(`${BASE_URL}/lives/${slug}`);
+    if (!response.ok) throw new Error(`Failed to fetch live ${slug}: ${response.statusText}`);
+    return response.json();
+  } catch (error) {
+    console.error(`fetchLiveBySlug(${slug}) error:`, error);
+    throw error;
+  }
+};
+
+export const fetchCircles = async (params: { page?: number; eventId?: string } = {}): Promise<PublicCircleListItem[]> => {
+  try {
+    const query = new URLSearchParams();
+    if (params.page) query.append('page', params.page.toString());
+    if (params.eventId) query.append('eventId', params.eventId);
+    
+    const response = await fetchWithRetry(`${BASE_URL}/circles?${query.toString()}`);
+    if (!response.ok) throw new Error(`Failed to fetch circles: ${response.statusText}`);
+    const data: PublicCirclesListResponse = await response.json();
+    return data.items;
+  } catch (error) {
+    console.error("fetchCircles error:", error);
+    throw error;
+  }
+};
+
+export const fetchCircleBySlug = async (slug: string): Promise<PublicCircleDetailResponse> => {
+  try {
+    const response = await fetchWithRetry(`${BASE_URL}/circles/${slug}`);
+    if (!response.ok) throw new Error(`Failed to fetch circle ${slug}: ${response.statusText}`);
+    return response.json();
+  } catch (error) {
+    console.error(`fetchCircleBySlug(${slug}) error:`, error);
+    throw error;
+  }
+};
+
+export const fetchCircleById = async (id: string): Promise<Circle> => {
+  try {
+    const response = await fetchWithRetry(`${BASE_URL}/circles/${id}`);
+    if (!response.ok) throw new Error(`Failed to fetch circle ${id}: ${response.statusText}`);
+    const data: PublicCircleDetailResponse = await response.json();
+    
+    // Map PublicCircleDetailResponse back to Circle for the view
+    const c = data.circle;
+    return {
+      id: c.id,
+      name: c.title,
+      penName: c.penName,
+      description: c.description,
+      image: c.avatar?.urls.original || '',
+      banner: c.bannerImage?.urls.original,
+      socials: {
+        twitter: c.platformUrls.twitter,
+        pixiv: c.platformUrls.pixiv,
+        website: c.platformUrls.website,
+        youtube: c.platformUrls.youtube,
+      },
+      tags: c.tags,
+      genre: c.tags || [],
+      events: c.participationHistory.map(h => ({
+        eventId: h.event.id,
+        eventName: h.event.title,
+        date: h.event.startAt,
+        spaceCode: h.boothCode || '',
+        status: new Date(h.event.endAt) > new Date() ? 'Upcoming' : 'Ended',
+        products: [] 
+      })),
+      gallery: c.gallery.map(g => g.imageUrl)
+    };
+  } catch (error) {
+    console.error(`fetchCircleById(${id}) error:`, error);
+    throw error;
+  }
+};
