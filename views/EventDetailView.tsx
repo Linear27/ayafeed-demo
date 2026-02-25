@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Map as MapIcon, Users, Newspaper, Layout, ArrowRight, X
@@ -14,9 +14,8 @@ import EventOverviewSection from '../components/event-detail/EventOverviewSectio
 import EventCirclesSection from '../components/event-detail/EventCirclesSection';
 import EventInfoSection from '../components/event-detail/EventInfoSection';
 import EventAccessSection from '../components/event-detail/EventAccessSection';
-import { PublicCircleListItem, Theme, PublicEventDetailResponse } from '../types';
-
-import { adaptEventDetail } from '../services/adapters';
+import { PublicCircleListItem, PublicEventDetailResponse } from '../types';
+import { adaptEventDetail, AdaptedEventNewsItem } from '../services/adapters';
 
 type TabType = 'OVERVIEW' | 'CIRCLES' | 'INFO' | 'ACCESS';
 
@@ -36,8 +35,8 @@ const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle
   const [previewCircle, setPreviewCircle] = useState<PublicCircleListItem | null>(null);
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [showFloorMapModal, setShowFloorMapModal] = useState(false);
-  const [selectedNews, setSelectedNews] = useState<any | null>(null);
-  const [selectedSubEvent, setSelectedSubEvent] = useState<any | null>(null);
+  const [selectedNews, setSelectedNews] = useState<AdaptedEventNewsItem | null>(null);
+  const [selectedSubEvent, setSelectedSubEvent] = useState<unknown | null>(null);
 
   const ITEMS_PER_PAGE = 24;
 
@@ -71,19 +70,25 @@ const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle
   if (isLoading) return <div className="p-20 text-center font-bold">加载中...</div>;
   if (!event) return <div className="p-20 text-center font-bold">未找到展会信息</div>;
 
-  const NewsArchiveItem: React.FC<{ news: any; isPreview?: boolean }> = ({ news, isPreview = false }) => (
+  const NewsArchiveItem: React.FC<{ news: AdaptedEventNewsItem; isPreview?: boolean }> = ({ news }) => {
+    const dateLabel = news.date
+      ? `${news.date.split('-')[1]}/${news.date.split('-')[2]}`
+      : '--/--';
+
+    return (
     <div onClick={() => setSelectedNews(news)} className="group flex gap-4 cursor-pointer items-center p-4 border border-slate-200 hover:border-black bg-white hover:bg-slate-50 mb-2">
       <div className="flex flex-col items-center justify-center w-14 shrink-0 py-1 border-r border-black">
-        <span className="text-xs font-mono font-black leading-none text-red-600">{news.date?.split('-')[1]}/{news.date?.split('-')[2]}</span>
+        <span className="text-xs font-mono font-black leading-none text-red-600">{dateLabel}</span>
       </div>
       <div className="flex-1 min-w-0">
         <h4 className="font-bold text-sm truncate leading-tight transition-colors text-slate-900 group-hover:text-red-700 font-header">{news.title}</h4>
       </div>
       <ArrowRight size={14} className="shrink-0 opacity-0 group-hover:opacity-100 transition-all text-red-600" />
     </div>
-  );
+    );
+  };
 
-  const TabButton = ({ tab, label, icon: Icon }: { tab: TabType, label: string, icon: any }) => (
+  const TabButton = ({ tab, label, icon: Icon }: { tab: TabType, label: string, icon: React.ComponentType<{ size?: number; className?: string }> }) => (
     <button onClick={() => setActiveTab(tab)} className={`relative px-5 py-4 text-sm font-black border-r-2 border-t-2 border-l-2 border-black mr-[-2px] bg-[#FDFBF7] transition-all z-10 rounded-t-lg shrink-0 ${activeTab === tab ? 'z-20 bg-white translate-y-[2px] pb-5' : 'text-slate-500 bg-slate-100 hover:bg-slate-50 top-[4px]'}`}>
       <div className="flex items-center">
          <Icon size={16} className={`mr-2 shrink-0 ${activeTab === tab ? 'text-red-600' : 'text-slate-400'}`} />

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Menu, X, Globe, Zap, Newspaper } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from '@tanstack/react-router';
@@ -17,6 +17,7 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ currentView, theme, language, onSetLanguage, region }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const langMenuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   
   const isNewspaper = theme === 'newspaper';
@@ -31,6 +32,30 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, theme, language, onSetLang
   const activeText = isNewspaper ? 'text-red-700' : 'text-indigo-600';
   const inactiveText = isNewspaper ? 'text-slate-800 hover:text-red-700' : 'text-slate-600 hover:text-indigo-600';
   const underlineColor = isNewspaper ? 'bg-red-600' : 'bg-indigo-600';
+
+  useEffect(() => {
+    if (!isLangMenuOpen) return;
+
+    const handleDocumentMouseDown = (event: MouseEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
+        setIsLangMenuOpen(false);
+      }
+    };
+
+    const handleDocumentKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsLangMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleDocumentMouseDown);
+    document.addEventListener('keydown', handleDocumentKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleDocumentMouseDown);
+      document.removeEventListener('keydown', handleDocumentKeyDown);
+    };
+  }, [isLangMenuOpen]);
 
   const NavItem = ({ to, label, className = "" }: { to: string, label: string, className?: string }) => (
     <Link
@@ -77,7 +102,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, theme, language, onSetLang
                 <span className={`font-black text-lg font-header tracking-tighter ${isNewspaper ? 'text-slate-900' : 'text-slate-800'}`}>
                   {getBrandName()}
                 </span>
-                <span className={`text-[8px] font-bold uppercase tracking-widest scale-90 origin-left ${isNewspaper ? 'text-red-700' : 'text-slate-400'}`}>
+                <span className={`text-xs font-bold uppercase tracking-widest origin-left ${isNewspaper ? 'text-red-700' : 'text-slate-400'}`}>
                    EST. 1000 G.S.T
                 </span>
               </div>
@@ -91,9 +116,13 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, theme, language, onSetLang
           </div>
 
           <div className="flex items-center gap-2 md:gap-4">
-             <div className="relative">
+             <div className="relative" ref={langMenuRef}>
                 <button 
                   onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                  aria-label="语言切换"
+                  aria-haspopup="menu"
+                  aria-expanded={isLangMenuOpen}
+                  aria-controls="language-menu"
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
                     isNewspaper ? 'bg-white border-black text-slate-900' : 'bg-white border-slate-200 text-slate-600'
                   }`}
@@ -108,6 +137,8 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, theme, language, onSetLang
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
+                      id="language-menu"
+                      role="menu"
                       className="absolute right-0 top-full mt-2 w-32 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50"
                     >
                       {[
@@ -117,11 +148,12 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, theme, language, onSetLang
                       ].map((lang) => (
                         <button
                           key={lang.code}
+                          role="menuitem"
                           onClick={() => {
                             onSetLanguage(lang.code as Language);
                             setIsLangMenuOpen(false);
                           }}
-                          className={`w-full text-left px-4 py-2 text-[10px] font-black hover:bg-red-600 hover:text-white transition-colors border-b border-black last:border-0 ${language === lang.code ? 'bg-slate-100' : ''}`}
+                          className={`w-full text-left px-4 py-2 text-xs font-black hover:bg-red-600 hover:text-white transition-colors border-b border-black last:border-0 ${language === lang.code ? 'bg-slate-100' : ''}`}
                         >
                           {lang.label}
                         </button>

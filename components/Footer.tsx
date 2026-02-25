@@ -49,8 +49,8 @@ const Footer: React.FC<FooterProps> = () => {
             <ul className="space-y-2 text-sm">
               <li><Link to="/" className={`${textColor} ${hoverColor}`}>关于我们</Link></li>
               <li><Link to="/showcase" className={`${textColor} ${hoverColor}`}>UI 组件库</Link></li>
-              <li><Link to="/" className={`${textColor} ${hoverColor}`}>隐私政策</Link></li>
-              <li><Link to="/" className={`${textColor} ${hoverColor}`}>问题反馈</Link></li>
+              <li><Link to="/privacy" className={`${textColor} ${hoverColor}`}>隐私政策</Link></li>
+              <li><Link to="/feedback" className={`${textColor} ${hoverColor}`}>问题反馈</Link></li>
             </ul>
           </div>
 

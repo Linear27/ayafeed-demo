@@ -13,6 +13,8 @@ const CircleListView: React.FC<{ onSelect: (id: string) => void }> = ({ onSelect
   const [circles, setCircles] = useState<PublicCircleListItem[]>([]);
   const [filter, setFilter] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [brokenBannerIds, setBrokenBannerIds] = useState<Set<string>>(new Set());
+  const [brokenAvatarIds, setBrokenAvatarIds] = useState<Set<string>>(new Set());
   
   useEffect(() => {
     const loadCircles = async () => {
@@ -30,6 +32,11 @@ const CircleListView: React.FC<{ onSelect: (id: string) => void }> = ({ onSelect
   }, []);
 
   const adaptedCircles = useMemo(() => circles.map(adaptCircleListItem), [circles]);
+
+  useEffect(() => {
+    setBrokenBannerIds(new Set());
+    setBrokenAvatarIds(new Set());
+  }, [circles]);
 
   const filteredCircles = useMemo(() => {
     const q = filter.toLowerCase().trim();
@@ -67,22 +74,63 @@ const CircleListView: React.FC<{ onSelect: (id: string) => void }> = ({ onSelect
          <>
            {filteredCircles.length > 0 ? (
              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredCircles.slice(0, ITEMS_PER_BATCH).map((circle) => (
-                   <motion.div 
+                {filteredCircles.slice(0, ITEMS_PER_BATCH).map((circle) => {
+                  const showBanner = Boolean(circle.banner) && !brokenBannerIds.has(circle.id);
+                  const showAvatar = Boolean(circle.image) && !brokenAvatarIds.has(circle.id);
+
+                  return (
+                    <motion.div 
                       key={circle.id}
                       onClick={() => onSelect(circle.id)}
                       className="cursor-pointer overflow-hidden transition-all group bg-white border-2 border-black newspaper-shadow hover:newspaper-shadow-hover relative"
-                   >
+                    >
                       <div className="h-24 bg-slate-200 overflow-hidden">
-                         <img src={circle.banner || 'https://picsum.photos/seed/banner/400/200'} className="w-full h-full object-cover transition-transform group-hover:scale-105" referrerPolicy="no-referrer" />
+                        {showBanner ? (
+                          <img
+                            src={circle.banner}
+                            alt={`${circle.name} banner`}
+                            loading="lazy"
+                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            referrerPolicy="no-referrer"
+                            onError={() =>
+                              setBrokenBannerIds((prev) => {
+                                if (prev.has(circle.id)) return prev;
+                                const next = new Set(prev);
+                                next.add(circle.id);
+                                return next;
+                              })
+                            }
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-[linear-gradient(135deg,#0f172a_0%,#334155_45%,#64748b_100%)]" />
+                        )}
                       </div>
                       <div className="px-4 pb-4 -mt-10 relative">
-                         <img src={circle.image || 'https://picsum.photos/seed/circle/200/200'} className="w-20 h-20 bg-white border-4 border-white shadow-sm" referrerPolicy="no-referrer" />
-                         <h3 className="font-bold truncate mt-2 font-header">{circle.name}</h3>
-                         <div className="text-[10px] text-slate-500 mb-3"><PenTool size={10} className="inline mr-1"/> {circle.penName}</div>
+                        {showAvatar ? (
+                          <img
+                            src={circle.image}
+                            alt={circle.name}
+                            loading="lazy"
+                            className="w-20 h-20 bg-white border-4 border-white shadow-sm"
+                            referrerPolicy="no-referrer"
+                            onError={() =>
+                              setBrokenAvatarIds((prev) => {
+                                if (prev.has(circle.id)) return prev;
+                                const next = new Set(prev);
+                                next.add(circle.id);
+                                return next;
+                              })
+                            }
+                          />
+                        ) : (
+                          <div className="w-20 h-20 bg-slate-200 border-4 border-white shadow-sm" />
+                        )}
+                        <h3 className="font-bold truncate mt-2 font-header">{circle.name}</h3>
+                        <div className="text-xs text-slate-500 mb-3"><PenTool size={12} className="inline mr-1"/> {circle.penName}</div>
                       </div>
-                   </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
              </div>
            ) : (
              <div className="py-20 text-center border-2 border-dashed border-slate-300 rounded-xl">

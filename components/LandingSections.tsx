@@ -38,7 +38,7 @@ export const HeroCarousel: React.FC<{
 
   const InfoCell = ({ icon: Icon, label, value, className = "" }: { icon: any, label: string, value: string | number, className?: string }) => (
     <div className={`flex flex-col justify-center p-3 sm:p-4 min-h-[80px] ${className}`}>
-        <div className="flex items-center gap-1.5 text-[11px] sm:text-[12px] font-black uppercase tracking-wider mb-1 text-slate-500">
+        <div className="flex items-center gap-1.5 text-xs sm:text-[12px] font-black uppercase tracking-wider mb-1 text-slate-500">
             <Icon size={12} strokeWidth={2.5} /> {label}
         </div>
         <div className="font-bold leading-tight line-clamp-2 text-base font-header text-slate-900">
@@ -100,7 +100,7 @@ export const HeroCarousel: React.FC<{
                     </div>
                   </div>
               </div>
-              <div className="mt-3 flex items-center justify-between gap-4 text-[10px] font-bold font-mono uppercase tracking-widest text-slate-500">
+              <div className="mt-3 flex items-center justify-between gap-4 text-xs font-bold font-mono uppercase tracking-widest text-slate-500">
                   <div className="flex items-center gap-1"><User size={12}/> ORG: {featuredEvent.id}</div>
                   <div className="text-right flex items-center gap-1"><Globe size={12}/> {displayRegion} 分社</div>
               </div>
@@ -108,7 +108,7 @@ export const HeroCarousel: React.FC<{
 
             <div className="lg:col-span-5 flex flex-col">
               <div className="mb-4 flex flex-wrap gap-2">
-                <span className="px-2 py-1 text-[10px] font-black uppercase tracking-wider bg-red-600 text-white">
+                <span className="px-2 py-1 text-xs font-black uppercase tracking-wider bg-red-600 text-white">
                     {featuredEvent.marketRegion === 'OVERSEAS' ? '全球热点' : `${displayRegion} 频道`}
                 </span>
               </div>
@@ -160,11 +160,11 @@ const ScoopItem: React.FC<{ event: PublicEventListItem; isToday: boolean }> = ({
         <div className={`border-2 p-1 bg-white shadow-sm transition-all group-hover:shadow-md h-[140px] ${isToday ? 'border-red-600' : 'border-black'}`}>
           <div className="overflow-hidden relative h-full flex items-center justify-center bg-slate-100">
              <img src={event.poster?.urls.original || null} className="w-full h-full object-cover group-hover:scale-105 transition-transform" alt={event.title} />
-             <div className="absolute top-0 right-0 bg-black text-white text-[8px] font-black px-1.5 py-0.5 uppercase tracking-tighter">
+             <div className="absolute top-0 right-0 bg-black text-white text-xs font-black px-1.5 py-0.5 uppercase tracking-tighter">
                 {displayRegion}
              </div>
              {isToday && (
-              <div className="absolute bottom-0 left-0 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 flex items-center gap-1">
+              <div className="absolute bottom-0 left-0 bg-red-600 text-white text-xs font-black px-1.5 py-0.5 flex items-center gap-1">
                 <Radio size={10} className="animate-pulse"/> 正在举办
               </div>
             )}
@@ -173,10 +173,10 @@ const ScoopItem: React.FC<{ event: PublicEventListItem; isToday: boolean }> = ({
       </div>
       <div className="flex-1 min-w-0 flex flex-col py-0.5">
         <div className="flex justify-between items-center mb-1">
-          <span className={`text-[11px] sm:text-[12px] font-black uppercase tracking-widest ${isToday ? 'text-red-600' : 'text-slate-500'}`}>
+          <span className={`text-xs sm:text-[12px] font-black uppercase tracking-widest ${isToday ? 'text-red-600' : 'text-slate-500'}`}>
             {event.marketRegion === 'JAPAN' ? '日本特报' : (event.marketRegion === 'CN_MAINLAND' ? '大陆频道' : '亚洲分社')}
           </span>
-          <div className="flex items-center gap-1 font-mono font-black text-[11px] sm:text-[12px] text-slate-500">
+          <div className="flex items-center gap-1 font-mono font-black text-xs sm:text-[12px] text-slate-500">
             <Clock size={10} /> {displayDate}
           </div>
         </div>
@@ -186,7 +186,7 @@ const ScoopItem: React.FC<{ event: PublicEventListItem; isToday: boolean }> = ({
         <p className="text-sm mb-3 line-clamp-2 leading-relaxed text-slate-700 font-serif">
           {event.summary}
         </p>
-        <div className="mt-auto flex items-center gap-1.5 text-[10px] font-bold text-slate-400 font-mono uppercase">
+        <div className="mt-auto flex items-center gap-1.5 text-xs font-bold text-slate-400 font-mono uppercase">
           <MapPin size={10} className="shrink-0" />
           <span className="truncate">{event.location?.name}</span>
         </div>
@@ -237,11 +237,11 @@ export const LiveSidebar: React.FC<{
           <div className="aspect-[16/9] overflow-hidden border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <img src={live.poster?.urls.original || null} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={live.title} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
-            <div className="absolute top-2 right-2 bg-red-600 text-white text-[8px] font-black px-1.5 py-0.5 uppercase tracking-tighter shadow-sm">
+            <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-black px-1.5 py-0.5 uppercase tracking-tighter shadow-sm">
                 {live.location?.countryCode || 'JP'}
             </div>
             <div className="absolute bottom-4 left-4 right-4">
-              <div className="text-yellow-500 text-[11px] sm:text-[12px] font-black mb-1 flex items-center uppercase tracking-widest"><Music size={12} className="mr-2"/> {live.startAt.split('T')[0]}</div>
+              <div className="text-yellow-500 text-xs sm:text-[12px] font-black mb-1 flex items-center uppercase tracking-widest"><Music size={12} className="mr-2"/> {live.startAt.split('T')[0]}</div>
               <div className="text-white font-black font-header leading-tight truncate">{live.title}</div>
             </div>
           </div>

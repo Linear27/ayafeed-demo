@@ -13,6 +13,14 @@ const AIChat: React.FC = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const pathname = window.location.pathname;
+  const isLiveDetailRoute = /^\/lives\/[^/]+$/.test(pathname);
+  const isEventOrCircleDetailRoute = /^\/(events|circles)\/[^/]+$/.test(pathname);
+  const mobileBottomClass = isLiveDetailRoute
+    ? 'bottom-[calc(env(safe-area-inset-bottom,0px)+152px)]'
+    : isEventOrCircleDetailRoute
+      ? 'bottom-[calc(env(safe-area-inset-bottom,0px)+96px)]'
+      : 'bottom-[calc(env(safe-area-inset-bottom,0px)+72px)]';
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -56,7 +64,7 @@ const AIChat: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
+    <div className={`fixed ${mobileBottomClass} right-[calc(env(safe-area-inset-right,0px)+16px)] sm:bottom-6 sm:right-6 z-50 flex flex-col items-end pointer-events-none`}>
       {/* Chat Window */}
       <AnimatePresence>
       {isOpen && (
@@ -158,7 +166,7 @@ const AIChat: React.FC = () => {
         aria-label={isOpen ? "关闭 AI 助手" : "打开 AI 助手"}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className={`pointer-events-auto flex items-center justify-center w-12 h-12 rounded-full shadow-xl z-50 bg-gradient-to-r from-red-600 to-red-500 text-white mb-[env(safe-area-inset-bottom,0px)] mr-[env(safe-area-inset-right,0px)]`}
+        className="pointer-events-auto flex items-center justify-center w-12 h-12 rounded-full shadow-xl z-50 bg-gradient-to-r from-red-600 to-red-500 text-white"
       >
         {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
       </motion.button>

@@ -193,7 +193,7 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
 
       <div className="flex flex-col md:flex-row justify-between items-end mb-8 border-b-4 border-black pb-4">
         <div>
-            <div className="bg-red-600 text-white px-2 py-0.5 text-[10px] font-black uppercase tracking-widest mb-2 inline-block">
+            <div className="bg-red-600 text-white px-2 py-0.5 text-xs font-black uppercase tracking-widest mb-2 inline-block">
               {labels.badge}
             </div>
            <h1 className="text-3xl font-black font-header text-slate-900">
@@ -201,7 +201,7 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
            </h1>
         </div>
         {hasAutoSwitched && (
-          <div className="mt-4 md:mt-0 bg-amber-50 border border-amber-200 px-3 py-1.5 text-[10px] font-bold text-amber-700 flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
+          <div className="mt-4 md:mt-0 bg-amber-50 border border-amber-200 px-3 py-1.5 text-xs font-bold text-amber-700 flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
             当前时段暂无新展会，已自动切换至过往存档
           </div>

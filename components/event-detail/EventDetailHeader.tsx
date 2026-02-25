@@ -19,10 +19,10 @@ const EventDetailHeader: React.FC<EventDetailHeaderProps> = ({ event, circleCoun
     <div className="bg-white border-b-2 border-black relative z-10 pb-2">
       <div className="max-w-7xl mx-auto">
         <div className="px-4 py-3 flex items-center justify-between">
-          <button onClick={onBack} className="flex items-center text-slate-900 hover:text-red-600 text-[11px] sm:text-sm font-black font-mono uppercase tracking-tighter">
+          <button onClick={onBack} className="flex items-center text-slate-900 hover:text-red-600 text-xs sm:text-sm font-black font-mono uppercase tracking-tighter">
             <ChevronLeft size={18} className="mr-1" /> 返回索引
           </button>
-          <div className="text-[10px] sm:text-[11px] font-mono text-slate-400">报告编号: {event.slug.toUpperCase()}</div>
+          <div className="text-xs sm:text-xs font-mono text-slate-400">报告编号: {event.slug.toUpperCase()}</div>
         </div>
 
         <div className="px-4 pb-6 sm:pb-8 pt-2">
@@ -42,9 +42,9 @@ const EventDetailHeader: React.FC<EventDetailHeaderProps> = ({ event, circleCoun
             {/* Meta Section */}
             <div className="flex-1 min-w-0 flex flex-col">
               <div className="flex items-center gap-3 mb-4 flex-wrap">
-                <span className="bg-red-600 text-white px-2 py-0.5 text-[11px] font-black uppercase tracking-wider">专题报导</span>
+                <span className="bg-red-600 text-white px-2 py-0.5 text-xs font-black uppercase tracking-wider">专题报导</span>
                 {event.genres?.slice(0, 2).map((g: string) => (
-                  <span key={g} className="px-2 py-0.5 text-[11px] font-black border border-black uppercase tracking-tighter bg-white">{g}</span>
+                  <span key={g} className="px-2 py-0.5 text-xs font-black border border-black uppercase tracking-tighter bg-white">{g}</span>
                 ))}
               </div>
 
@@ -58,7 +58,7 @@ const EventDetailHeader: React.FC<EventDetailHeaderProps> = ({ event, circleCoun
                     <Calendar size={24} />
                   </div>
                   <div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">举办日期</div>
+                    <div className="text-xs font-black uppercase tracking-widest text-slate-500 mb-1">举办日期</div>
                     <div className="text-xl sm:text-2xl font-black leading-none">{event.date}</div>
                   </div>
                 </div>
@@ -67,7 +67,7 @@ const EventDetailHeader: React.FC<EventDetailHeaderProps> = ({ event, circleCoun
                     <MapPin size={24} />
                   </div>
                   <div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">举办城市</div>
+                    <div className="text-xs font-black uppercase tracking-widest text-slate-500 mb-1">举办城市</div>
                     <div className="text-lg sm:text-xl font-black leading-tight flex flex-wrap items-center">
                       {event.location && (
                         <div className="mr-3 px-2 py-1 flex items-center bg-white border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">

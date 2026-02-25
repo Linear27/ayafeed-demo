@@ -11,6 +11,8 @@ import { Route as circleDetailRoute } from './routes/circles/$circleId';
 import { Route as showcaseRoute } from './routes/showcase';
 import { Route as eventExpRoute } from './routes/events/exp';
 import { Route as landingExpRoute } from './routes/landing-exp';
+import { Route as privacyRoute } from './routes/privacy';
+import { Route as feedbackRoute } from './routes/feedback';
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -23,6 +25,8 @@ const routeTree = rootRoute.addChildren([
   showcaseRoute,
   eventExpRoute,
   landingExpRoute,
+  privacyRoute,
+  feedbackRoute,
 ]);
 
 export const router = createRouter({ routeTree });

@@ -87,7 +87,7 @@ const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion, onS
 
         <div className="flex flex-col md:flex-row justify-between items-end mb-8 pb-4 border-b-4 border-black">
            <div>
-             <div className="bg-red-600 text-white px-2 py-0.5 text-[10px] font-black uppercase tracking-widest mb-2 inline-block">LIVE REVIEWS</div>
+             <div className="bg-red-600 text-white px-2 py-0.5 text-xs font-black uppercase tracking-widest mb-2 inline-block">LIVE REVIEWS</div>
              <h2 className="text-3xl font-black font-header text-black">
                 {getDisplayTitle()}
              </h2>
@@ -119,7 +119,7 @@ const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion, onS
                     className="group flex flex-col md:flex-row cursor-pointer transition-all duration-300 overflow-hidden bg-white border-2 border-black newspaper-shadow hover:newspaper-shadow-hover"
                   >
                       <div className="md:w-24 flex md:flex-col items-center justify-center p-5 text-center shrink-0 bg-black text-white border-r-2 border-black border-dashed">
-                          <div className="text-[10px] font-black uppercase mb-1">{live.date.split('-')[1]}月</div>
+                          <div className="text-xs font-black uppercase mb-1">{live.date.split('-')[1]}月</div>
                           <div className="text-3xl font-black leading-none">{live.date.split('-')[2]}</div>
                       </div>
                       <div className="flex-1 p-6 min-w-0">

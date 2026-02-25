@@ -185,6 +185,7 @@ async function startServer() {
         illustrator: event.illustrator || null,
         boothCount: event.boothCount,
         entryFee: event.entryFee,
+        website: event.website || null,
         genre: event.genre,
         schedule: event.schedule || [],
         news: event.news || [],

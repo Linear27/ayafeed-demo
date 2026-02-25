@@ -1,6 +1,27 @@
 
 import { PublicEventDetailResponse, PublicLiveListItem, PublicCircleListItem } from '../types';
 
+export interface AdaptedEventNewsItem {
+  date: string | null;
+  title: string;
+  type: string | null;
+  content: string | null;
+  url: string | null;
+}
+
+export interface AdaptedEventSubeventItem {
+  id: string;
+  eventSeriesKey: string;
+  title: string | null;
+  orderIndex: number;
+}
+
+export interface AdaptedEventDocumentItem {
+  entityType: string;
+  label: string;
+  order: number;
+}
+
 export interface AdaptedEventDetail {
   id: string;
   slug: string;
@@ -18,12 +39,12 @@ export interface AdaptedEventDetail {
   organizer: string;
   boothCount: number;
   website: string;
-  news: any[];
+  news: AdaptedEventNewsItem[];
   notices: string[];
   genres: string[];
   floorMapImages: string[];
-  subevents: any[];
-  docs: any[];
+  subevents: AdaptedEventSubeventItem[];
+  docs: AdaptedEventDocumentItem[];
 }
 
 export interface AdaptedLiveListItem {
@@ -44,10 +65,17 @@ export interface AdaptedCircleListItem {
   name: string;
   penName: string;
   image: string;
+  banner: string;
   tags: string[];
   mainType: string;
   isCertified: boolean;
 }
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const asStringOrNull = (value: unknown): string | null =>
+  typeof value === 'string' ? value : null;
 
 export const adaptEventDetail = (data: PublicEventDetailResponse): AdaptedEventDetail => {
   const { event, translations, meta, location, poster } = data;
@@ -57,6 +85,19 @@ export const adaptEventDetail = (data: PublicEventDetailResponse): AdaptedEventD
     content: '',
     transportation: ''
   };
+  const rawNews = Array.isArray(meta?.news) ? meta.news : [];
+  const news: AdaptedEventNewsItem[] = rawNews
+    .map((item) => {
+      const safe = isRecord(item) ? item : {};
+      return {
+        date: asStringOrNull(safe.date),
+        title: asStringOrNull(safe.title) || '',
+        type: asStringOrNull(safe.type),
+        content: asStringOrNull(safe.content),
+        url: asStringOrNull(safe.url),
+      };
+    })
+    .filter((item) => item.title.length > 0);
 
   return {
     id: event.id,
@@ -74,13 +115,22 @@ export const adaptEventDetail = (data: PublicEventDetailResponse): AdaptedEventD
     posterOrientation: event.posterOrientation,
     organizer: meta?.organizer || '未知主办',
     boothCount: meta?.boothCount || 0,
-    website: '', 
-    news: meta?.news || [],
+    website: meta?.website || '',
+    news,
     notices: meta?.notices || [],
     genres: meta?.genre || [],
     floorMapImages: data.floorMapImages?.map(img => img.urls.original) || [],
-    subevents: data.subevents || [],
-    docs: data.availableDocuments || []
+    subevents: data.subevents.map((item) => ({
+      id: item.id,
+      eventSeriesKey: item.eventSeriesKey,
+      title: item.title,
+      orderIndex: item.orderIndex,
+    })),
+    docs: data.availableDocuments.map((doc) => ({
+      entityType: doc.entityType,
+      label: doc.label,
+      order: doc.order,
+    })),
   };
 };
 
@@ -105,6 +155,7 @@ export const adaptCircleListItem = (item: PublicCircleListItem): AdaptedCircleLi
     name: item.title,
     penName: item.penName || '',
     image: item.avatar?.urls.sm || item.avatar?.urls.original || '',
+    banner: item.avatar?.urls.original || '',
     tags: item.tags || [],
     mainType: item.classification?.mainType || 'Other',
     isCertified: item.isCertified

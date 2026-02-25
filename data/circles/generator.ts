@@ -1,8 +1,22 @@
 
 import { Circle } from '../../types';
 
+const STABLE_IMAGE_POOL = [
+  'https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=400&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1605496036006-fa36378ca4ab?q=80&w=400&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1516280440614-37939bbacd81?q=80&w=400&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=400&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=400&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=400&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=400&auto=format&fit=crop',
+];
+
+const AVATAR_POOL = STABLE_IMAGE_POOL;
+const BANNER_POOL = STABLE_IMAGE_POOL;
+const PRODUCT_POOL = STABLE_IMAGE_POOL;
+
 export const generateCircles = (count: number): Circle[] => {
-  const mainTypes: any[] = ['Music', 'Manga/Illust', 'Novel', 'Game', 'Goods', 'Other'];
+  const mainTypes = ['Music', 'Manga/Illust', 'Novel', 'Game', 'Goods', 'Other'] as const;
   const genres = ['幻想郷', '秘封', '红魔馆', '地灵殿', '永夜抄', '风神录', '妖妖梦'];
   const targetEvents = ['e_godousaiji', 'e_kyoto_goudou', 'e_kamui'];
   
@@ -38,8 +52,8 @@ export const generateCircles = (count: number): Circle[] => {
       penName: `Creator_${i + 100}`,
       description: `这是社团 ${id} 的简介。我们长期致力于 ${type} 创作。本次在 ${eventName} 的 ${spaceCode} 展位为大家带来最新的同人作品！`,
       genre: ['東方Project', genres[i % genres.length], type],
-      image: `https://images.unsplash.com/photo-${1500000000000 + (i * 12345)}?q=80&w=400&auto=format&fit=crop`,
-      banner: `https://images.unsplash.com/photo-${1510000000000 + (i * 12345)}?q=80&w=1000&auto=format&fit=crop`,
+      image: AVATAR_POOL[i % AVATAR_POOL.length],
+      banner: BANNER_POOL[i % BANNER_POOL.length],
       socials: { twitter: `https://twitter.com/circle_${i}` },
       tags: [type, '同人', genres[i % genres.length]],
       classification: { 
@@ -61,7 +75,7 @@ export const generateCircles = (count: number): Circle[] => {
               price: `¥${(i % 3 + 1) * 500}`, 
               type: 'New',
               description: '本次活动的首发作品，包含限定特典。',
-              image: `https://images.unsplash.com/photo-${1540000000000 + (i * 12345)}?q=80&w=500&auto=format&fit=crop`
+              image: PRODUCT_POOL[i % PRODUCT_POOL.length]
             }
           ]
         }

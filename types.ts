@@ -147,6 +147,7 @@ export interface PublicEventDetailResponse {
     illustrator: string | null;
     boothCount: number | null;
     entryFee: string | null;
+    website?: string | null;
     genre: string[];
     schedule: any[];
     news: any[];

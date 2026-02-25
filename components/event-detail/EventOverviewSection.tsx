@@ -1,15 +1,13 @@
 
 import React from 'react';
 import { ExternalLink, FileText } from 'lucide-react';
-import { PublicEventDetail, Theme } from '../../types';
-
-import { AdaptedEventDetail } from '../../services/adapters';
+import { AdaptedEventDetail, AdaptedEventNewsItem } from '../../services/adapters';
 
 interface EventOverviewSectionProps {
   event: AdaptedEventDetail;
   onOpenGuidelines: () => void;
-  onSelectSubEvent: (sub: any) => void;
-  renderNewsArchiveItem: (news: any, isPreview?: boolean) => React.ReactNode;
+  onSelectSubEvent: (sub: unknown) => void;
+  renderNewsArchiveItem: (news: AdaptedEventNewsItem, isPreview?: boolean) => React.ReactNode;
 }
 
 const EventOverviewSection: React.FC<EventOverviewSectionProps> = ({ event, onOpenGuidelines, onSelectSubEvent, renderNewsArchiveItem }) => {
@@ -22,7 +20,7 @@ const EventOverviewSection: React.FC<EventOverviewSectionProps> = ({ event, onOp
           </div>
           <div className="space-y-1">
             {event.news && event.news.length > 0 ? (
-              event.news.slice(0, 3).map((news: any, i: number) => (
+              event.news.slice(0, 3).map((news: AdaptedEventNewsItem, i: number) => (
                 <React.Fragment key={i}>{renderNewsArchiveItem(news, true)}</React.Fragment>
               ))
             ) : (
