@@ -6,10 +6,68 @@ import {
   MarketRegion, 
   PublicEventListItem, 
   PublicLiveListItem, 
-  PublicCircleListItem,
-  PublicLocation,
-  PublicPoster
+  PublicCircleListItem
 } from "./types";
+
+const DEFAULT_SOURCE_URL = "https://vanishinghermit.com/kkzsk/";
+
+const toMarketRegion = (worldRegion?: string): MarketRegion => (
+  worldRegion === "JP"
+    ? "JAPAN"
+    : worldRegion === "CN"
+      ? "CN_MAINLAND"
+      : "OVERSEAS"
+);
+
+const safeString = (value: unknown, fallback = ""): string =>
+  typeof value === "string" ? value : fallback;
+
+type FlatEventDocument = {
+  entityType: string;
+  label: string;
+  order: number;
+  url: string;
+  type: "PDF" | "Link";
+  category: "Attendee" | "Circle";
+};
+
+const flattenEventDocs = (event: any): FlatEventDocument[] => {
+  const docs = event?.docs || {};
+  const categories: Array<["attendee" | "circle", "Attendee" | "Circle"]> = [
+    ["attendee", "Attendee"],
+    ["circle", "Circle"],
+  ];
+  const output: FlatEventDocument[] = [];
+
+  categories.forEach(([key, category]) => {
+    const list = Array.isArray(docs?.[key]) ? docs[key] : [];
+    list.forEach((raw: any, index: number) => {
+      const label = safeString(raw?.title, `${category} Document ${index + 1}`);
+      const url = raw?.url && raw.url !== "#" ? raw.url : (event?.website || DEFAULT_SOURCE_URL);
+      output.push({
+        entityType: "event",
+        label,
+        order: output.length + 1,
+        url,
+        type: raw?.type === "PDF" ? "PDF" : "Link",
+        category,
+      });
+    });
+  });
+
+  if (output.length === 0) {
+    output.push({
+      entityType: "event",
+      label: "活动信息索引",
+      order: 1,
+      url: event?.website || DEFAULT_SOURCE_URL,
+      type: "Link",
+      category: "Attendee",
+    });
+  }
+
+  return output;
+};
 
 // Helper to map old Event to new PublicEventListItem
 const mapEventToListItem = (e: any): PublicEventListItem => ({
@@ -30,10 +88,10 @@ const mapEventToListItem = (e: any): PublicEventListItem => ({
     city: e.location.split(' ')[0],
     cityKey: null,
     countryCode: e.country || "JP",
-    lat: null,
-    lng: null
+    lat: e.venueCoordinates?.[1] != null ? String(e.venueCoordinates[1]) : null,
+    lng: e.venueCoordinates?.[0] != null ? String(e.venueCoordinates[0]) : null
   },
-  marketRegion: (e.worldRegion === 'JP' ? 'JAPAN' : e.worldRegion === 'CN' ? 'CN_MAINLAND' : 'OVERSEAS') as MarketRegion,
+  marketRegion: toMarketRegion(e.worldRegion),
   poster: {
     imageId: e.id,
     altText: e.title,
@@ -57,7 +115,7 @@ const mapEventToListItem = (e: any): PublicEventListItem => ({
   organizer: e.organizer,
   description: e.description,
   worldRegion: e.worldRegion,
-  docs: e.docs || []
+  docs: flattenEventDocs(e)
 });
 
 // Helper to map old Live to new PublicLiveListItem
@@ -76,8 +134,8 @@ const mapLiveToListItem = (l: any): PublicLiveListItem => ({
     city: l.venue.split(' ')[0],
     cityKey: null,
     countryCode: l.country || "JP",
-    lat: null,
-    lng: null
+    lat: l.venueCoordinates?.[1] != null ? String(l.venueCoordinates[1]) : null,
+    lng: l.venueCoordinates?.[0] != null ? String(l.venueCoordinates[0]) : null
   },
   venue: l.venue, // Keep venue as string for legacy if needed, though PublicLiveListItem has it as string|null
   poster: {
@@ -92,37 +150,57 @@ const mapLiveToListItem = (l: any): PublicLiveListItem => ({
     }
   },
   worldRegion: l.worldRegion,
-  marketRegion: (l.worldRegion === 'JP' ? 'JAPAN' : l.worldRegion === 'CN' ? 'CN_MAINLAND' : 'OVERSEAS') as MarketRegion,
+  marketRegion: toMarketRegion(l.worldRegion),
 });
 
 // Helper to map old Circle to new PublicCircleListItem
-const mapCircleToListItem = (c: any): PublicCircleListItem => ({
-  id: c.id,
-  title: c.name,
-  slug: c.id,
-  publishedAt: new Date().toISOString(),
-  isCertified: true,
-  organizer: { name: c.penName, url: null },
-  avatar: {
+const mapCircleToListItem = (c: any): PublicCircleListItem => {
+  const avatar = {
     imageId: c.id,
     altText: c.name,
-    variants: ["sm", "md", "lg"],
+    variants: ["sm", "md", "lg"] as Array<"sm" | "md" | "lg">,
     urls: {
       original: c.image,
       sm: c.image,
       md: c.image,
       lg: c.image
     }
-  },
-  penName: c.penName,
-  commissionStatus: "open",
-  classification: {
-    mainType: (c.genre?.[0] || "Other") as any,
-    scale: "Individual",
-    focus: "Event"
-  },
-  tags: c.genre || []
-});
+  };
+
+  const base: PublicCircleListItem = {
+    id: c.id,
+    title: c.name,
+    slug: c.id,
+    publishedAt: new Date().toISOString(),
+    isCertified: true,
+    organizer: { name: c.penName, url: null },
+    avatar,
+    penName: c.penName,
+    commissionStatus: "open",
+    classification: {
+      mainType: (c.classification?.mainType || c.genre?.[0] || "Other") as any,
+      subType: c.classification?.subType || null,
+      scale: (c.classification?.scale || "Individual") as any,
+      focus: (c.classification?.focus || "Event") as any
+    },
+    tags: c.tags || c.genre || []
+  };
+
+  // Compatibility payload for existing event-detail cards and preview modal.
+  return {
+    ...(base as any),
+    name: c.name,
+    image: c.image,
+    banner: c.banner || null,
+    summary: c.description || null,
+    poster: avatar,
+    genres: c.genre || [],
+    socials: c.socials || {},
+    events: c.events || [],
+    gallery: c.gallery || [],
+    spaceCode: c.events?.[0]?.spaceCode || null,
+  } as any;
+};
 
 async function startServer() {
   const app = express();
@@ -142,8 +220,10 @@ async function startServer() {
       filtered = filtered.filter(e => e.worldRegion === mappedRegion);
     }
 
-    const items = filtered.slice((page - 1) * pageSize, page * pageSize).map(mapEventToListItem);
-    
+    // Sort first to avoid "old first page" causing the UI to think there are no upcoming events.
+    const sorted = [...filtered].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    const items = sorted.slice((page - 1) * pageSize, page * pageSize).map(mapEventToListItem);
+     
     res.json({
       items,
       pageInfo: {
@@ -202,7 +282,7 @@ async function startServer() {
         urls: { original: img.url, lg: img.url }
       })),
       availableLocales: ["zh", "ja", "en"],
-      availableDocuments: []
+      availableDocuments: flattenEventDocs(event)
     });
   });
 
@@ -211,8 +291,9 @@ async function startServer() {
     const page = parseInt(req.query.page as string) || 1;
     const pageSize = parseInt(req.query.pageSize as string) || 20;
     
-    const items = LIVES.slice((page - 1) * pageSize, page * pageSize).map(mapLiveToListItem);
-    
+    const sorted = [...LIVES].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    const items = sorted.slice((page - 1) * pageSize, page * pageSize).map(mapLiveToListItem);
+     
     res.json({
       items,
       pageInfo: {

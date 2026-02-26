@@ -8,7 +8,7 @@ import { ChatMessage } from '../types';
 const AIChat: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'model', text: "你好！我是 Niji-chan 🤖。正在寻找特定展会或需要推荐？尽管问我吧！" }
+    { role: 'model', text: "你好，我是 Niji-chan。你可以问我展会、演出或社团信息，我会给出检索与推荐。" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);

@@ -95,9 +95,21 @@ const EventCirclesSection: React.FC<EventCirclesSectionProps> = ({
       {displayedCircles.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {displayedCircles.map(circle => {
+            const circleCompat = circle as any;
             const meta = circleMetadata.find(m => m.id === circle.id);
             const badge = getFocusBadge(meta?.focus || 'REGULAR');
-            const spaceCode = circle.spaceCode;
+            const eventRecord = Array.isArray(circleCompat.events)
+              ? circleCompat.events.find((ev: any) => ev.eventId === eventId)
+              : null;
+            const spaceCode = eventRecord?.spaceCode || circleCompat.spaceCode || 'TBD';
+            const displayName = circle.title || circleCompat.name || '未命名社团';
+            const avatarUrl =
+              circle.avatar?.urls.original ||
+              circleCompat.poster?.urls?.original ||
+              circleCompat.image ||
+              'https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=400&auto=format&fit=crop';
+            const summary = circleCompat.summary || circleCompat.description || '该社团尚未公开简介。';
+            const genres = circle.tags?.length > 0 ? circle.tags : (circleCompat.genres || []);
             
             return (
               <div 
@@ -125,18 +137,18 @@ const EventCirclesSection: React.FC<EventCirclesSectionProps> = ({
                 <div className="p-3 sm:p-4 flex-1 flex flex-col">
                     <div className="flex items-center gap-3 mb-2 sm:mb-3">
                         <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 overflow-hidden border-2 border-black">
-                            <img src={circle.poster?.urls.original || null} className="w-full h-full object-cover" alt={circle.name} />
+                            <img src={avatarUrl} className="w-full h-full object-cover" alt={displayName} referrerPolicy="no-referrer" />
                         </div>
                         <div className="min-w-0">
-                            <h4 className="font-black text-xs sm:text-sm truncate font-header">{circle.name}</h4>
+                            <h4 className="font-black text-xs sm:text-sm truncate font-header">{displayName}</h4>
                             <div className="text-[10px] text-slate-500 truncate font-mono uppercase font-black">{circle.penName}</div>
                         </div>
                     </div>
                     <p className="text-[11px] mb-3 sm:mb-4 line-clamp-2 leading-relaxed font-serif text-slate-700 italic">
-                        {circle.summary}
+                        {summary}
                     </p>
                     <div className="mt-auto flex flex-wrap gap-1">
-                        {circle.genres?.slice(0, 2).map(g => (
+                        {genres.slice(0, 2).map((g: string) => (
                             <span key={g} className="text-[9px] px-1.5 py-0.5 font-black uppercase bg-slate-100 border border-slate-300 text-slate-600">
                                 {g}
                             </span>

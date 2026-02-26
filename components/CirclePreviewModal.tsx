@@ -2,18 +2,34 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { X, User, MapPin, FileText, ShoppingBag, ExternalLink, Twitter, Globe, ImageIcon, Sparkles, BookOpen } from 'lucide-react';
-import { Circle, Theme } from '../types';
+import { Circle, PublicCircleListItem } from '../types';
+
+type CirclePreviewData = Circle | (PublicCircleListItem & Record<string, unknown>);
 
 interface CirclePreviewModalProps {
-  circle: Circle;
+  circle: CirclePreviewData;
   eventId: string;
   onClose: () => void;
   onNavigateToDetail: () => void;
 }
 
 const CirclePreviewModal: React.FC<CirclePreviewModalProps> = ({ circle, eventId, onClose, onNavigateToDetail }) => {
-  const eventData = circle.events.find(e => e.eventId === eventId);
+  const compatCircle = circle as any;
+  const eventData = Array.isArray(compatCircle.events)
+    ? compatCircle.events.find((e: any) => e.eventId === eventId)
+    : null;
   const products = eventData?.products || [];
+  const displayName = compatCircle.name || compatCircle.title || '未命名社团';
+  const displayGenres = compatCircle.genre || compatCircle.tags || [];
+  const displayImage =
+    compatCircle.image ||
+    compatCircle.avatar?.urls?.original ||
+    compatCircle.poster?.urls?.original ||
+    'https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=400&auto=format&fit=crop';
+  const displayBanner = compatCircle.banner || compatCircle.avatar?.urls?.lg || displayImage;
+  const displayDescription = compatCircle.description || compatCircle.summary || '该社团暂未提供详细简介。';
+  const displaySocials = compatCircle.socials || compatCircle.platformUrls || {};
+  const displayGallery = compatCircle.gallery || [];
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-6">
@@ -40,8 +56,8 @@ const CirclePreviewModal: React.FC<CirclePreviewModalProps> = ({ circle, eventId
         <div className="flex-1 overflow-y-auto scroll-smooth">
            {/* Banner Area */}
            <div className="relative h-40 sm:h-56 shrink-0 border-b-4 border-black">
-              {circle.banner ? (
-                <img src={circle.banner || null} className="w-full h-full object-cover" alt="Banner" />
+              {displayBanner ? (
+                <img src={displayBanner} className="w-full h-full object-cover" alt="Banner" referrerPolicy="no-referrer" />
               ) : (
                 <div className="w-full h-full bg-slate-200" />
               )}
@@ -66,14 +82,14 @@ const CirclePreviewModal: React.FC<CirclePreviewModalProps> = ({ circle, eventId
              {/* Profile Row */}
              <div className="flex flex-col sm:flex-row gap-6 -mt-12 mb-10 relative z-10">
                 <div className="w-28 h-28 sm:w-32 sm:h-32 shrink-0 overflow-hidden bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-                   <img src={circle.image || null} className="w-full h-full object-cover" alt={circle.name} />
+                   <img src={displayImage} className="w-full h-full object-cover" alt={displayName} referrerPolicy="no-referrer" />
                 </div>
                 
                 <div className="pt-2 sm:pt-14 flex-1 min-w-0">
                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                       <div>
                         <div className="text-[10px] font-black text-red-600 uppercase tracking-[0.2em] mb-1">Circle Profile</div>
-                        <h2 className="text-3xl sm:text-4xl font-black text-slate-900 leading-tight mb-1 font-header">{circle.name}</h2>
+                        <h2 className="text-3xl sm:text-4xl font-black text-slate-900 leading-tight mb-1 font-header">{displayName}</h2>
                         <div className="flex items-center text-slate-500 font-bold text-sm sm:text-base">
                            <User size={16} className="mr-2 text-red-600" />
                            {circle.penName}
@@ -87,7 +103,7 @@ const CirclePreviewModal: React.FC<CirclePreviewModalProps> = ({ circle, eventId
                            {circle.classification.mainType}
                          </span>
                       )}
-                      {circle.genre.map(g => (
+                      {displayGenres.map((g: string) => (
                          <span key={g} className="px-2 py-0.5 text-[10px] font-bold border transition-colors bg-white border-black text-black">
                            {g}
                          </span>
@@ -104,7 +120,7 @@ const CirclePreviewModal: React.FC<CirclePreviewModalProps> = ({ circle, eventId
                       <FileText size={18} className="mr-2 text-red-600" /> About Circle
                     </h3>
                     <div className="leading-relaxed text-slate-800 font-serif text-lg italic border-l-4 border-red-600 pl-6">
-                      <p className="whitespace-pre-line">{circle.description}</p>
+                      <p className="whitespace-pre-line">{displayDescription}</p>
                     </div>
                  </section>
 
@@ -167,18 +183,18 @@ const CirclePreviewModal: React.FC<CirclePreviewModalProps> = ({ circle, eventId
                   <div className="p-6 bg-[#F3F1E6] border-2 border-black newspaper-shadow-sm">
                      <h3 className="font-black mb-6 text-sm uppercase tracking-[0.2em] text-black">Dispatch Links</h3>
                      <div className="space-y-4">
-                        {circle.socials.twitter && (
-                          <a href={circle.socials.twitter} target="_blank" rel="noreferrer" className="flex items-center text-sm font-black transition-all group text-slate-900 hover:text-red-600">
+                        {displaySocials.twitter && (
+                          <a href={displaySocials.twitter} target="_blank" rel="noreferrer" className="flex items-center text-sm font-black transition-all group text-slate-900 hover:text-red-600">
                             <Twitter size={18} className="mr-3 shrink-0" /> Twitter <ExternalLink size={12} className="ml-auto opacity-30 group-hover:opacity-100 transition-opacity" />
                           </a>
                         )}
-                         {circle.socials.pixiv && (
-                          <a href={circle.socials.pixiv} target="_blank" rel="noreferrer" className="flex items-center text-sm font-black transition-all group text-slate-900 hover:text-red-600">
+                         {displaySocials.pixiv && (
+                          <a href={displaySocials.pixiv} target="_blank" rel="noreferrer" className="flex items-center text-sm font-black transition-all group text-slate-900 hover:text-red-600">
                             <ImageIcon size={18} className="mr-3 shrink-0" /> Pixiv <ExternalLink size={12} className="ml-auto opacity-30 group-hover:opacity-100 transition-opacity" />
                           </a>
                         )}
-                        {circle.socials.website && (
-                          <a href={circle.socials.website} target="_blank" rel="noreferrer" className="flex items-center text-sm font-black transition-all group text-slate-900 hover:text-red-600">
+                        {displaySocials.website && (
+                          <a href={displaySocials.website} target="_blank" rel="noreferrer" className="flex items-center text-sm font-black transition-all group text-slate-900 hover:text-red-600">
                             <Globe size={18} className="mr-3 shrink-0" /> Official Site <ExternalLink size={12} className="ml-auto opacity-30 group-hover:opacity-100 transition-opacity" />
                           </a>
                         )}
@@ -186,13 +202,13 @@ const CirclePreviewModal: React.FC<CirclePreviewModalProps> = ({ circle, eventId
                   </div>
 
                   {/* Portfolio Preview */}
-                  {circle.gallery && circle.gallery.length > 0 && (
+                  {displayGallery && displayGallery.length > 0 && (
                      <div className="p-6 bg-white border-2 border-black">
                         <h3 className="font-black mb-4 text-xs uppercase tracking-widest text-black">Portfolio Snippet</h3>
                         <div className="grid grid-cols-2 gap-2">
-                           {circle.gallery.slice(0, 4).map((img, i) => (
+                           {displayGallery.slice(0, 4).map((img: string, i: number) => (
                               <div key={i} className="aspect-square overflow-hidden bg-slate-100 border border-black">
-                               <img src={img || null} className="w-full h-full object-cover hover:scale-110 transition-all duration-500" />
+                               <img src={img} className="w-full h-full object-cover hover:scale-110 transition-all duration-500" referrerPolicy="no-referrer" />
                               </div>
                            ))}
                         </div>

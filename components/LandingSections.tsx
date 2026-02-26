@@ -20,7 +20,8 @@ export const HeroCarousel: React.FC<{
   userRegion?: string;
 }> = ({ events, onSelect, onNavigate, userRegion }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const featuredEvent = events[currentIndex];
+  const safeIndex = currentIndex < events.length ? currentIndex : 0;
+  const featuredEvent = events[safeIndex];
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,7 +32,56 @@ export const HeroCarousel: React.FC<{
     return () => clearInterval(timer);
   }, [events.length]);
 
-  if (!featuredEvent) return null;
+  useEffect(() => {
+    // Keep state valid when filters shrink the list.
+    setCurrentIndex((prev) => {
+      if (events.length === 0) return 0;
+      return Math.min(prev, events.length - 1);
+    });
+  }, [events.length]);
+
+  if (!featuredEvent) {
+    return (
+      <section className="max-w-7xl mx-auto px-4 pt-6 pb-6 relative font-serif">
+        <div className="flex items-center gap-4 mb-6 select-none">
+          <div className="bg-red-600 text-white px-3 py-1 text-xs font-black uppercase tracking-widest skew-x-[-12deg] border border-white shrink-0 shadow-sm">
+            <span className="skew-x-[12deg] inline-block">今日头条</span>
+          </div>
+          <div className="h-px flex-1 bg-red-600/20"></div>
+        </div>
+
+        <div className="min-h-[450px]">
+          <div className="w-full h-[450px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white/70 flex items-center">
+            <div className="p-8 sm:p-10 max-w-3xl">
+              <div className="inline-flex items-center gap-2 bg-black text-white px-2 py-1 text-xs font-black uppercase tracking-widest">
+                NO UPCOMING
+              </div>
+              <h3 className="mt-4 text-3xl sm:text-4xl font-black font-header text-slate-900 leading-tight">
+                近期暂无未来排期
+              </h3>
+              <p className="mt-3 text-sm sm:text-base text-slate-600 font-serif italic max-w-[65ch]">
+                当前数据集中没有可展示的未来展会。你仍可浏览展会存档与历史记录。
+              </p>
+              <div className="mt-7 flex flex-col sm:flex-row gap-3">
+                <Link
+                  to="/events"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 font-black text-xs sm:text-sm uppercase tracking-[0.22em] bg-red-600 text-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-slate-900 transition-colors"
+                >
+                  打开展会名录 <ArrowRight size={18} />
+                </Link>
+                <Link
+                  to="/lives"
+                  className="inline-flex items-center justify-center px-6 py-3 font-black text-xs sm:text-sm uppercase tracking-[0.22em] bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-black hover:text-white transition-colors"
+                >
+                  查看演出快讯
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const next = () => setCurrentIndex((prev) => (prev + 1) % events.length);
   const prev = () => setCurrentIndex((prev) => (prev - 1 + events.length) % events.length);
@@ -57,29 +107,34 @@ export const HeroCarousel: React.FC<{
           <span className="skew-x-[12deg] inline-block">今日头条</span>
         </div>
         <div className="h-px flex-1 bg-red-600/20"></div>
-        <div className="flex items-center gap-4">
-          {events.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentIndex(idx)}
-              className={`transition-all duration-500 ease-in-out ${
-                currentIndex === idx 
-                  ? 'w-14 h-[3px] bg-red-600' 
-                  : 'w-2 h-2 rounded-full bg-red-600/30 hover:bg-red-600/60'
-              }`}
-            />
-          ))}
-        </div>
-        <div className="flex gap-1 ml-6 shrink-0">
-          <button onClick={prev} className="p-1 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors"><ChevronLeft size={14} /></button>
-          <button onClick={next} className="p-1 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors"><ChevronRight size={14} /></button>
-        </div>
+        {events.length > 1 && (
+          <>
+            <div className="flex items-center gap-4">
+              {events.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  aria-label={`切换头条 ${idx + 1}`}
+                  className={`transition-all duration-500 ease-in-out ${
+                    safeIndex === idx 
+                      ? 'w-14 h-[3px] bg-red-600' 
+                      : 'w-2 h-2 rounded-full bg-red-600/30 hover:bg-red-600/60'
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="flex gap-1 ml-6 shrink-0">
+              <button onClick={prev} aria-label="上一条头条" className="p-1 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors"><ChevronLeft size={14} /></button>
+              <button onClick={next} aria-label="下一条头条" className="p-1 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors"><ChevronRight size={14} /></button>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="min-h-[450px]">
         <AnimatePresence mode="wait">
           <motion.div 
-            key={currentIndex}
+            key={safeIndex}
             className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch"
             initial={{ opacity: 0, y: 10 }} 
             animate={{ opacity: 1, y: 0 }} 
@@ -200,61 +255,119 @@ const ScoopItem: React.FC<{ event: PublicEventListItem; isToday: boolean }> = ({
 export const ScoopSection: React.FC<{ 
   events: PublicEventListItem[]; 
   todayStr: string;
-}> = ({ events, todayStr }) => (
-  <div className="lg:col-span-8 flex flex-col">
-    <div className="flex items-center gap-3 mb-8 border-b-2 border-black pb-2">
-      <Library className="shrink-0 text-red-600" size={28} />
-      <h2 className="text-3xl font-black font-header text-slate-900">速报存档</h2>
+}> = ({ events, todayStr }) => {
+  const hasEvents = events.length > 0;
+
+  return (
+    <div className="lg:col-span-8 flex flex-col">
+      <div className="flex items-center gap-3 mb-8 border-b-2 border-black pb-2">
+        <Library className="shrink-0 text-red-600" size={28} />
+        <h2 className="text-3xl font-black font-header text-slate-900">速报存档</h2>
+      </div>
+
+      {hasEvents ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12">
+            {events.map((event, idx) => (
+              <ScoopItem key={`${event.id}-${idx}`} event={event} isToday={event.startAt.split('T')[0] === todayStr} />
+            ))}
+          </div>
+          <div className="mt-12">
+            <Link 
+              to="/events"
+              className="w-full py-4 font-black text-sm uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-black hover:text-white"
+            >
+              浏览完整名录 <ArrowRight size={18} />
+            </Link>
+          </div>
+        </>
+      ) : (
+        <div className="border-2 border-dashed border-slate-300 bg-white/60 p-8 sm:p-10 text-center">
+          <div className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">
+            NO UPCOMING
+          </div>
+          <h3 className="mt-3 text-xl sm:text-2xl font-black font-header text-slate-900">
+            暂无可展示的速报条目
+          </h3>
+          <p className="mt-2 text-sm text-slate-600 font-serif italic max-w-[60ch] mx-auto">
+            当前频道没有未来排期的展会条目。你仍可打开完整名录查看存档与历史记录。
+          </p>
+          <div className="mt-6 flex justify-center">
+            <Link
+              to="/events"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 font-black text-xs sm:text-sm uppercase tracking-[0.22em] bg-red-600 text-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-slate-900 transition-colors"
+            >
+              打开展会名录 <ArrowRight size={18} />
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12">
-      {events.map((event, idx) => (
-        <ScoopItem key={`${event.id}-${idx}`} event={event} isToday={event.startAt.split('T')[0] === todayStr} />
-      ))}
-    </div>
-    <div className="mt-12">
-      <Link 
-        to="/events"
-        className="w-full py-4 font-black text-sm uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-black hover:text-white"
-      >
-        浏览完整名录 <ArrowRight size={18} />
-      </Link>
-    </div>
-  </div>
-);
+  );
+};
 
 export const LiveSidebar: React.FC<{ 
   lives: PublicLiveListItem[]; 
-}> = ({ lives }) => (
-  <div className="lg:col-span-4 pl-0 lg:pl-10 flex flex-col lg:border-l border-slate-300 border-dashed">
-    <div className="mb-8 bg-black text-white p-3 transform -rotate-1">
-      <h2 className="text-xl font-black font-header flex items-center uppercase tracking-widest">
-        <Zap className="mr-2 text-yellow-400 fill-current" /> 舞台排程
-      </h2>
-    </div>
-    <div className="space-y-8">
-      {lives.map((live) => (
-        <Link key={live.id} to="/lives" className="relative group cursor-pointer block overflow-hidden">
-          <div className="aspect-[16/9] overflow-hidden border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <img src={live.poster?.urls.original || null} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={live.title} />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
-            <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-black px-1.5 py-0.5 uppercase tracking-tighter shadow-sm">
-                {live.location?.countryCode || 'JP'}
-            </div>
-            <div className="absolute bottom-4 left-4 right-4">
-              <div className="text-yellow-500 text-xs sm:text-[12px] font-black mb-1 flex items-center uppercase tracking-widest"><Music size={12} className="mr-2"/> {live.startAt.split('T')[0]}</div>
-              <div className="text-white font-black font-header leading-tight truncate">{live.title}</div>
-            </div>
+}> = ({ lives }) => {
+  const hasLives = lives.length > 0;
+
+  return (
+    <div className="lg:col-span-4 pl-0 lg:pl-10 flex flex-col lg:border-l border-slate-300 border-dashed">
+      <div className="mb-8 bg-black text-white p-3 transform -rotate-1">
+        <h2 className="text-xl font-black font-header flex items-center uppercase tracking-widest">
+          <Zap className="mr-2 text-yellow-400 fill-current" /> 舞台排程
+        </h2>
+      </div>
+
+      {hasLives ? (
+        <>
+          <div className="space-y-8">
+            {lives.map((live) => (
+              <Link key={live.id} to="/lives/$liveId" params={{ liveId: live.id }} className="relative group cursor-pointer block overflow-hidden">
+                <div className="aspect-[16/9] overflow-hidden border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <img src={live.poster?.urls.original || null} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={live.title} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
+                  <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-black px-1.5 py-0.5 uppercase tracking-tighter shadow-sm">
+                      {live.location?.countryCode || 'JP'}
+                  </div>
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <div className="text-yellow-500 text-xs sm:text-[12px] font-black mb-1 flex items-center uppercase tracking-widest"><Music size={12} className="mr-2"/> {live.startAt.split('T')[0]}</div>
+                    <div className="text-white font-black font-header leading-tight truncate">{live.title}</div>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
-        </Link>
-      ))}
+          <div className="mt-12">
+            <Link 
+              to="/lives" 
+              className="w-full py-4 font-black text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center border-2 border-slate-900 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-slate-900 hover:text-white"
+            >
+              查看所有演出
+            </Link>
+          </div>
+        </>
+      ) : (
+        <div className="border-2 border-dashed border-slate-300 bg-white/60 p-8 text-center">
+          <div className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">
+            NO UPCOMING
+          </div>
+          <h3 className="mt-3 text-lg sm:text-xl font-black font-header text-slate-900">
+            暂无舞台排程
+          </h3>
+          <p className="mt-2 text-sm text-slate-600 font-serif italic max-w-[60ch] mx-auto">
+            当前频道没有可展示的未来演出。你可以查看演出列表，或切换版面频道。
+          </p>
+          <div className="mt-6 flex justify-center">
+            <Link
+              to="/lives"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 font-black text-xs sm:text-sm uppercase tracking-[0.22em] bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-black hover:text-white transition-colors"
+            >
+              查看演出快讯 <ArrowRight size={18} />
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
-    <div className="mt-12">
-      <Link 
-        to="/lives" 
-        className="w-full py-4 font-black text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center border-2 border-slate-900 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-slate-900 hover:text-white"
-      >
-        查看所有演出
-      </Link>
-    </div>
-  </div>
-);
+  );
+};

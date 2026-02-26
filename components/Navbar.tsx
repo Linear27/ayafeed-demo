@@ -128,7 +128,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, theme, language, onSetLang
                   }`}
                 >
                   <Globe size={14} />
-                  <span className="uppercase hidden xs:inline">{language}</span>
+                  <span className="uppercase hidden sm:inline">{language}</span>
                 </button>
 
                 <AnimatePresence>

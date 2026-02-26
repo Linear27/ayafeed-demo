@@ -168,6 +168,9 @@ export interface PublicEventDetailResponse {
     entityType: string;
     label: string;
     order: number;
+    url?: string | null;
+    type?: 'PDF' | 'Link' | null;
+    category?: 'Attendee' | 'Circle' | string | null;
   }>;
 }
 

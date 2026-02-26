@@ -1,5 +1,5 @@
 
-import { Circle } from '../../types';
+import { Circle, Event } from '../../types';
 
 const STABLE_IMAGE_POOL = [
   'https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=400&auto=format&fit=crop',
@@ -15,32 +15,40 @@ const AVATAR_POOL = STABLE_IMAGE_POOL;
 const BANNER_POOL = STABLE_IMAGE_POOL;
 const PRODUCT_POOL = STABLE_IMAGE_POOL;
 
-export const generateCircles = (count: number): Circle[] => {
+type EventSeed = Pick<Event, 'id' | 'title' | 'date'>;
+
+const DEFAULT_EVENT_SEEDS: EventSeed[] = [
+  { id: 'e_godousaiji', title: '東方合同祭事 拾伍', date: '2025-09-14' },
+  { id: 'e_kyoto_goudou', title: '京都合同同人祭 2025', date: '2025-11-08' },
+  { id: 'e_kamui', title: '大東方神居祭2', date: '2025-02-23' },
+];
+
+const getBoothBlock = (seed: EventSeed, index: number): string => {
+  const chars = ['文', '月', '星', '霊', '紅', '風', '地', '夢', '秘', '北', '海', '都'];
+  let hash = 0;
+  const text = `${seed.id}:${seed.title}`;
+  for (let i = 0; i < text.length; i++) hash = (hash + text.charCodeAt(i)) % 9973;
+  return chars[(hash + index) % chars.length];
+};
+
+const getStatusFromDate = (date: string): 'Upcoming' | 'Ended' => {
+  const today = new Date().toISOString().slice(0, 10);
+  return date >= today ? 'Upcoming' : 'Ended';
+};
+
+export const generateCircles = (count: number, eventSeeds: EventSeed[] = DEFAULT_EVENT_SEEDS): Circle[] => {
   const mainTypes = ['Music', 'Manga/Illust', 'Novel', 'Game', 'Goods', 'Other'] as const;
   const genres = ['幻想郷', '秘封', '红魔馆', '地灵殿', '永夜抄', '风神录', '妖妖梦'];
-  const targetEvents = ['e_godousaiji', 'e_kyoto_goudou', 'e_kamui'];
+  const seeds = eventSeeds.length > 0 ? eventSeeds : DEFAULT_EVENT_SEEDS;
   
   return Array.from({ length: count }).map((_, i) => {
     const id = `c_dynamic_${i + 1}`;
     const type = mainTypes[i % mainTypes.length];
-    const eventId = targetEvents[i % targetEvents.length];
-    
-    let eventName = 'Other Event';
-    let date = '2025-01-01';
-    let block = 'A';
-    if (eventId === 'e_godousaiji') {
-      eventName = '東方合同祭事 拾伍';
-      date = '2025-09-14';
-      block = ['灵', '魔', '红', '冥', '风', '月'][i % 6];
-    } else if (eventId === 'e_kyoto_goudou') {
-      eventName = '京都合同同人祭 2025';
-      date = '2025-11-08';
-      block = ['文', '求', '科', '秘'][i % 4];
-    } else {
-      eventName = '大東方神居祭2';
-      date = '2025-02-23';
-      block = '北';
-    }
+    const seed = seeds[i % seeds.length];
+    const eventId = seed.id;
+    const eventName = seed.title;
+    const date = seed.date;
+    const block = getBoothBlock(seed, i);
 
     const spaceNum = (i % 50) + 1;
     const spaceSide = i % 2 === 0 ? 'a' : 'b';
@@ -67,7 +75,7 @@ export const generateCircles = (count: number): Circle[] => {
           eventName,
           date,
           spaceCode,
-          status: 'Upcoming',
+          status: getStatusFromDate(date),
           products: [
             { 
               id: `p_${id}_new`, 

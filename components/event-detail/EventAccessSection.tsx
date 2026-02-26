@@ -1,9 +1,8 @@
 
 import React from 'react';
 import { Search, MapPin } from 'lucide-react';
-import { PublicEventDetail, Theme } from '../../types';
-
 import { AdaptedEventDetail } from '../../services/adapters';
+import MapContainer from '../MapContainer';
 
 interface EventAccessSectionProps {
   event: AdaptedEventDetail;
@@ -13,9 +12,26 @@ interface EventAccessSectionProps {
 
 const EventAccessSection: React.FC<EventAccessSectionProps> = ({ event, setActiveFloorMapIndex, setShowFloorMapModal }) => {
   const floorMaps = event.floorMapImages || [];
+  const hasCoordinates = event.lng !== null && event.lat !== null;
 
   return (
     <div className="space-y-8">
+      <section className="bg-white p-6 sm:p-8 border-2 border-black newspaper-shadow-sm">
+        <h3 className="font-black text-xl sm:text-2xl mb-6 font-header border-b-2 border-black pb-2 uppercase tracking-widest">会场地图</h3>
+        <div className="aspect-[16/9] border-2 border-black overflow-hidden bg-[#E5E5E5]">
+          {hasCoordinates ? (
+            <MapContainer lng={event.lng as number} lat={event.lat as number} />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">暂无坐标信息</div>
+          )}
+        </div>
+        {hasCoordinates && (
+          <p className="mt-4 text-xs font-mono text-slate-500">
+            坐标：{event.lat?.toFixed(6)}, {event.lng?.toFixed(6)}
+          </p>
+        )}
+      </section>
+
       <section className="bg-white p-6 sm:p-8 border-2 border-black newspaper-shadow-sm">
         <h3 className="font-black text-xl sm:text-2xl mb-6 font-header border-b-2 border-black pb-2 uppercase tracking-widest">交通指引</h3>
         <div className="prose prose-slate max-w-none text-slate-700 font-serif leading-relaxed">

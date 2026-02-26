@@ -20,6 +20,9 @@ export interface AdaptedEventDocumentItem {
   entityType: string;
   label: string;
   order: number;
+  url: string | null;
+  type: 'PDF' | 'Link' | null;
+  category: 'Attendee' | 'Circle' | string | null;
 }
 
 export interface AdaptedEventDetail {
@@ -33,6 +36,8 @@ export interface AdaptedEventDetail {
   date: string;
   location: string;
   address: string;
+  lat: number | null;
+  lng: number | null;
   transportation: string;
   poster: string | null;
   posterOrientation: 'portrait' | 'landscape' | null;
@@ -77,6 +82,11 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const asStringOrNull = (value: unknown): string | null =>
   typeof value === 'string' ? value : null;
 
+const asNumberOrNull = (value: unknown): number | null => {
+  const num = typeof value === 'string' ? Number(value) : NaN;
+  return Number.isFinite(num) ? num : null;
+};
+
 export const adaptEventDetail = (data: PublicEventDetailResponse): AdaptedEventDetail => {
   const { event, translations, meta, location, poster } = data;
   const translation = translations.find(t => t.locale === 'zh') || translations[0] || {
@@ -110,6 +120,8 @@ export const adaptEventDetail = (data: PublicEventDetailResponse): AdaptedEventD
     date: event.startAt.split('T')[0],
     location: location?.name || '未知地点',
     address: location?.address || '',
+    lat: asNumberOrNull(location?.lat),
+    lng: asNumberOrNull(location?.lng),
     transportation: translation.transportation || '',
     poster: poster?.urls.original || null,
     posterOrientation: event.posterOrientation,
@@ -130,6 +142,9 @@ export const adaptEventDetail = (data: PublicEventDetailResponse): AdaptedEventD
       entityType: doc.entityType,
       label: doc.label,
       order: doc.order,
+      url: doc.url || null,
+      type: doc.type || null,
+      category: doc.category || null,
     })),
   };
 };

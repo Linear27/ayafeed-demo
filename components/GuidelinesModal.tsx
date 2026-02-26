@@ -2,20 +2,55 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, X, FileText, ExternalLink, ArrowLeft, FolderOpen, FileCheck, ShieldAlert, Stamp, Users } from 'lucide-react';
-import { Theme, PublicEventDetail } from '../types';
+import { Theme } from '../types';
 
 interface ExtendedDoc {
   title: string;
   url: string;
   type: 'PDF' | 'Link';
-  category: string;
+  category: 'Attendee' | 'Circle';
+  order: number;
 }
 
 const GuidelinesModal: React.FC<{ 
-  docs: PublicEventDetail['docs']; 
+  docs: unknown; 
   onClose: () => void; 
+  theme?: Theme;
 }> = ({ docs, onClose }) => {
-  const allDocs: ExtendedDoc[] = docs?.map(d => ({ ...d, category: 'General', type: 'Link' })) || [];
+  const allDocs: ExtendedDoc[] = React.useMemo(() => {
+    if (Array.isArray(docs)) {
+      return docs
+        .map((doc: any, idx) => ({
+          title: doc.label || `文档 ${idx + 1}`,
+          url: doc.url || '#',
+          type: doc.type === 'PDF' ? 'PDF' : 'Link',
+          category: doc.category === 'Circle' ? 'Circle' : 'Attendee',
+          order: typeof doc.order === 'number' ? doc.order : idx + 1,
+        }))
+        .sort((a, b) => a.order - b.order);
+    }
+
+    if (docs && typeof docs === 'object') {
+      const raw = docs as { attendee?: any[]; circle?: any[] };
+      const attendeeDocs = (raw.attendee || []).map((doc, idx) => ({
+        title: doc.title || `Attendee Doc ${idx + 1}`,
+        url: doc.url || '#',
+        type: doc.type === 'PDF' ? 'PDF' : 'Link',
+        category: 'Attendee' as const,
+        order: idx + 1,
+      }));
+      const circleDocs = (raw.circle || []).map((doc, idx) => ({
+        title: doc.title || `Circle Doc ${idx + 1}`,
+        url: doc.url || '#',
+        type: doc.type === 'PDF' ? 'PDF' : 'Link',
+        category: 'Circle' as const,
+        order: attendeeDocs.length + idx + 1,
+      }));
+      return [...attendeeDocs, ...circleDocs];
+    }
+
+    return [];
+  }, [docs]);
 
   const [selectedDoc, setSelectedDoc] = useState<ExtendedDoc | null>(null);
 
@@ -104,7 +139,7 @@ const GuidelinesModal: React.FC<{
             
             {/* List Content */}
             <div className="flex-1 overflow-y-auto p-4 space-y-8">
-              {['Attendee', 'Circle'].map((cat) => {
+              {(['Attendee', 'Circle'] as const).map((cat) => {
                   const categoryDocs = allDocs.filter(d => d.category === cat);
                   if (categoryDocs.length === 0) return null;
 
@@ -177,9 +212,13 @@ const GuidelinesModal: React.FC<{
                    
                    <div className="flex items-center gap-3">
                       <a 
-                        href={selectedDoc.url} 
+                        href={selectedDoc.url && selectedDoc.url !== '#' ? selectedDoc.url : undefined} 
                         target="_blank" 
                         rel="noreferrer" 
+                        aria-disabled={!selectedDoc.url || selectedDoc.url === '#'}
+                        onClick={(e) => {
+                          if (!selectedDoc.url || selectedDoc.url === '#') e.preventDefault();
+                        }}
                         className="flex items-center px-4 py-2 text-sm font-bold transition-all bg-red-600 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none"
                       >
                          <span className="hidden sm:inline mr-2">Download / Open</span>

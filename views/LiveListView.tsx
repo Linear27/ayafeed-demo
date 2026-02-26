@@ -50,6 +50,7 @@ const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion, onS
   }, []);
 
   const adaptedLives = useMemo(() => lives.map(adaptLiveListItem), [lives]);
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
   const filteredLives = useMemo(() => {
     return adaptedLives.filter(live => {
@@ -61,8 +62,15 @@ const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion, onS
         return !q || 
                (live.title?.toLowerCase().includes(q) ?? false) || 
                (live.venue?.toLowerCase().includes(q) ?? false);
-    }).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-  }, [adaptedLives, searchTerm, activeRegion]);
+    }).sort((a, b) => {
+      const aPast = (a.date || '') < todayStr;
+      const bPast = (b.date || '') < todayStr;
+      if (aPast !== bPast) return aPast ? 1 : -1; // Upcoming first
+      return aPast
+        ? (b.date || '').localeCompare(a.date || '') // Past newest first
+        : (a.date || '').localeCompare(b.date || ''); // Upcoming nearest first
+    });
+  }, [adaptedLives, searchTerm, activeRegion, todayStr]);
 
   const getDisplayTitle = () => {
     const region = WORLD_REGIONS.find(r => r.id === activeRegion);
