@@ -81,9 +81,9 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, theme, language, onSetLang
   return (
     <nav className={`sticky top-0 z-50 w-full border-b-2 transition-colors duration-300 ${navBg}`}>
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center gap-6">
-            <div className="flex-shrink-0 flex items-center gap-3 select-none">
+        <div className="flex justify-between items-center h-14 sm:h-16">
+          <div className="flex items-center gap-4 sm:gap-6">
+            <div className="flex-shrink-0 flex items-center gap-2 sm:gap-3 select-none">
               {/* Logo with hover scale effect */}
               <motion.div 
                 className="cursor-pointer"
@@ -99,10 +99,10 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, theme, language, onSetLang
                 className="flex flex-col leading-none cursor-pointer"
                 onClick={() => navigate({ to: '/' })}
               >
-                <span className={`font-black text-lg font-header tracking-tighter ${isNewspaper ? 'text-slate-900' : 'text-slate-800'}`}>
+                <span className={`font-black text-base sm:text-lg font-header tracking-tighter ${isNewspaper ? 'text-slate-900' : 'text-slate-800'}`}>
                   {getBrandName()}
                 </span>
-                <span className={`text-xs font-bold uppercase tracking-widest origin-left ${isNewspaper ? 'text-red-700' : 'text-slate-400'}`}>
+                <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest origin-left ${isNewspaper ? 'text-red-700' : 'text-slate-400'}`}>
                    EST. 1000 G.S.T
                 </span>
               </div>
@@ -123,7 +123,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, theme, language, onSetLang
                   aria-haspopup="menu"
                   aria-expanded={isLangMenuOpen}
                   aria-controls="language-menu"
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                  className={`flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all border ${
                     isNewspaper ? 'bg-white border-black text-slate-900' : 'bg-white border-slate-200 text-slate-600'
                   }`}
                 >
@@ -169,7 +169,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, theme, language, onSetLang
                 aria-label={isMobileMenuOpen ? "关闭菜单" : "打开菜单"}
                 className="p-2 transition-colors"
               >
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
             </div>
           </div>
@@ -185,11 +185,11 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, theme, language, onSetLang
             exit={{ opacity: 0, height: 0 }}
             className={`md:hidden border-t-2 ${isNewspaper ? 'bg-[#FDFBF7] border-slate-900' : 'bg-white border-slate-100'}`}
           >
-            <div className="px-4 py-6 space-y-4 flex flex-col">
-              <NavItem to="/events" label="展会名录" className="w-full text-left py-4 border-b border-slate-100" />
-              <NavItem to="/events/exp" label="探索布局 (Beta)" className="w-full text-left py-4 border-b border-slate-100" />
-              <NavItem to="/lives" label="演出快讯" className="w-full text-left py-4 border-b border-slate-100" />
-              <NavItem to="/circles" label="社团检索" className="w-full text-left py-4 border-b border-slate-100" />
+            <div className="px-4 py-2 space-y-1 flex flex-col">
+              <NavItem to="/events" label="展会名录" className="w-full text-left py-3 border-b border-slate-200/50" />
+              <NavItem to="/events/exp" label="探索布局 (Beta)" className="w-full text-left py-3 border-b border-slate-200/50" />
+              <NavItem to="/lives" label="演出快讯" className="w-full text-left py-3 border-b border-slate-200/50" />
+              <NavItem to="/circles" label="社团检索" className="w-full text-left py-3" />
             </div>
           </motion.div>
         )}

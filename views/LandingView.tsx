@@ -58,13 +58,18 @@ const LandingView: React.FC<{
     if (region) {
         const regional = upcoming.filter(e => e.marketRegion === region);
         const others = upcoming.filter(e => e.marketRegion !== region);
-        return [...regional, ...others].slice(0, 6);
+        return [...regional, ...others];
     }
 
-    return upcoming.slice(0, 6);
+    return upcoming;
   }, [events, region]);
 
-  const featuredEvents = useMemo(() => displayEvents.slice(0, 5), [displayEvents]);
+  const featuredEvents = useMemo(() => displayEvents.slice(0, 4), [displayEvents]);
+
+  const scoopEvents = useMemo(() => {
+    const featuredIds = new Set(featuredEvents.map(e => e.id));
+    return displayEvents.filter(e => !featuredIds.has(e.id)).slice(0, 6);
+  }, [displayEvents, featuredEvents]);
 
   const upcomingLives = useMemo(() => {
     let filtered = lives.filter(l => l.startAt.split('T')[0] >= MOCK_TODAY);
@@ -226,9 +231,9 @@ const LandingView: React.FC<{
               />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 px-4 pt-16 border-t-2 border-black">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-4 pt-10 border-t-2 border-black">
               <ScoopSection 
-                events={displayEvents} 
+                events={scoopEvents} 
                 todayStr={MOCK_TODAY}
               />
 

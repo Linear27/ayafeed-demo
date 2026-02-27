@@ -18,18 +18,18 @@ const Footer: React.FC<FooterProps> = () => {
   const hoverColor = 'hover:text-red-700 hover:underline';
 
   return (
-    <footer className={`${footerBg} pt-8 pb-8 transition-colors duration-300 relative z-10`}>
+    <footer className={`${footerBg} pt-6 pb-6 transition-colors duration-300 relative z-10 border-t-4 border-black`}>
       <div className="max-w-[1200px] mx-auto px-4">
         {/* Newspaper Decorative Line */}
-        <div className="flex items-center gap-4 mb-16 opacity-40">
-            <div className="h-[2px] bg-black flex-1"></div>
-            <div className="font-mono text-[10px] font-black uppercase tracking-[0.3em] whitespace-nowrap">
+        <div className="flex items-center gap-4 mb-8">
+            <div className="h-1 border-t-2 border-b-2 border-black flex-1 opacity-40"></div>
+            <div className="font-mono text-[10px] font-black uppercase tracking-[0.3em] whitespace-nowrap text-slate-500">
                Archive Boundary / 完
             </div>
-            <div className="h-[2px] bg-black flex-1"></div>
+            <div className="h-1 border-t-2 border-b-2 border-black flex-1 opacity-40"></div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Brand Column */}
           <div className="col-span-1 md:col-span-1">
             <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => navigate({ to: '/' })}>
