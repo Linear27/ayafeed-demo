@@ -225,9 +225,6 @@ const LandingView: React.FC<{
             <div className="pt-8">
               <HeroCarousel 
                 events={featuredEvents} 
-                userRegion={region}
-                onSelect={() => {}} // Not used anymore
-                onNavigate={() => {}} // Not used anymore
               />
             </div>
 

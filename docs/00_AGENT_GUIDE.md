@@ -1,5 +1,11 @@
 # 00 - Agent 协作与系统规范指南 (Agent Guide)
 
+## 0. 项目定位与上游参考 (Project Positioning)
+- 本仓库用于 `ayafeed-core/apps/web` 的重置规划与方案验证（reset planning sandbox）。
+- 上游主仓库：`https://github.com/Linear27/ayafeed-core`
+- 本地参考路径：`E:\Code\test1\ayafeed-core\`
+- Web 参考目录：`E:\Code\test1\ayafeed-core\apps\web\`
+
 ## 1. 核心任务目标
 AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任务是确保 **“展会信息的高度聚合”** 与 **“视觉模态的沉浸感”**。
 
