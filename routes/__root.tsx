@@ -3,7 +3,8 @@ import { createRootRoute, Outlet } from '@tanstack/react-router';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AIChat from '@/components/AIChat';
-import { useAppContext } from '@/context/AppContext';
+import { AppProvider, useAppContext } from '@/context/AppContext';
+import { ViewState } from '@/types';
 import { AlertTriangle, RefreshCcw } from 'lucide-react';
 
 export const Route = createRootRoute({
@@ -38,21 +39,39 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
-  const { theme, language, setLanguage } = useAppContext();
+  const { theme, language, setLanguage, region, setRegion } = useAppContext();
+
+  const getViewState = (pathname: string): ViewState => {
+    if (pathname === '/') return 'LANDING';
+    if (pathname.startsWith('/events/exp')) return 'EVENT_LIST_EXP';
+    if (pathname.startsWith('/events/')) return 'EVENT_DETAIL';
+    if (pathname.startsWith('/events')) return 'EVENT_LIST';
+    if (pathname.startsWith('/lives/')) return 'LIVE_DETAIL';
+    if (pathname.startsWith('/lives')) return 'LIVE_LIST';
+    if (pathname.startsWith('/circles/')) return 'CIRCLE_DETAIL';
+    if (pathname.startsWith('/circles')) return 'CIRCLE_LIST';
+    if (pathname.startsWith('/showcase')) return 'COMPONENT_SHOWCASE';
+    return 'LANDING';
+  };
+
+  const pathname = window.location.pathname;
+  const currentView = getViewState(pathname);
 
   return (
     <div className="min-h-screen font-sans flex flex-col">
       <Navbar 
+        currentView={currentView} 
         theme={theme} 
         language={language}
         onSetLanguage={setLanguage}
+        region={region}
       />
       
       <main className="relative flex-1">
         <Outlet />
       </main>
 
-      <Footer />
+      <Footer theme={theme} />
       <AIChat />
     </div>
   );

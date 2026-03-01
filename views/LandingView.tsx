@@ -58,18 +58,13 @@ const LandingView: React.FC<{
     if (region) {
         const regional = upcoming.filter(e => e.marketRegion === region);
         const others = upcoming.filter(e => e.marketRegion !== region);
-        return [...regional, ...others];
+        return [...regional, ...others].slice(0, 6);
     }
 
-    return upcoming;
+    return upcoming.slice(0, 6);
   }, [events, region]);
 
-  const featuredEvents = useMemo(() => displayEvents.slice(0, 4), [displayEvents]);
-
-  const scoopEvents = useMemo(() => {
-    const featuredIds = new Set(featuredEvents.map(e => e.id));
-    return displayEvents.filter(e => !featuredIds.has(e.id)).slice(0, 6);
-  }, [displayEvents, featuredEvents]);
+  const featuredEvents = useMemo(() => displayEvents.slice(0, 5), [displayEvents]);
 
   const upcomingLives = useMemo(() => {
     let filtered = lives.filter(l => l.startAt.split('T')[0] >= MOCK_TODAY);
@@ -225,12 +220,15 @@ const LandingView: React.FC<{
             <div className="pt-8">
               <HeroCarousel 
                 events={featuredEvents} 
+                userRegion={region}
+                onSelect={() => {}} // Not used anymore
+                onNavigate={() => {}} // Not used anymore
               />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-4 pt-10 border-t-2 border-black">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 px-4 pt-16 border-t-2 border-black">
               <ScoopSection 
-                events={scoopEvents} 
+                events={displayEvents} 
                 todayStr={MOCK_TODAY}
               />
 

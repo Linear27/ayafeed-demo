@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 artifacts/
+.tmp-*/
+.tmp-*.zip
 
 # Editor directories and files
 .vscode/*
