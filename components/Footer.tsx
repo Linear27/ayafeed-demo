@@ -19,14 +19,14 @@ const Footer: React.FC<FooterProps> = () => {
 
   return (
     <footer className={`${footerBg} pt-8 pb-8 transition-colors duration-300 relative z-10`}>
-      <div className="max-w-[1200px] mx-auto px-4">
+      <div className="max-w-300 mx-auto px-4">
         {/* Newspaper Decorative Line */}
         <div className="flex items-center gap-4 mb-16 opacity-40">
-            <div className="h-[2px] bg-black flex-1"></div>
+            <div className="h-0.5 bg-black flex-1"></div>
             <div className="font-mono text-[10px] font-black uppercase tracking-[0.3em] whitespace-nowrap">
                Archive Boundary / 完
             </div>
-            <div className="h-[2px] bg-black flex-1"></div>
+            <div className="h-0.5 bg-black flex-1"></div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">

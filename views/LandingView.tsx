@@ -1,9 +1,9 @@
 
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PublicEventListItem, PublicLiveListItem } from '../types';
+import { PublicEventListItem, PublicLiveListItem, MarketRegion } from '../types';
 import { fetchEvents, fetchLives } from '../services/api';
-import { HeroCarousel, ScoopSection, LiveSidebar } from '../components/LandingSections';
+import { HeroCarousel, UnifiedTimeline, IndexSidebar } from '../components/LandingSections';
 import { EventCardSkeleton } from '../components/Skeleton';
 import { Link } from '@tanstack/react-router';
 import { ChevronDown, Radio, Check, AlertTriangle, RefreshCcw, ArrowRight } from 'lucide-react';
@@ -13,6 +13,20 @@ const WORLD_REGIONS = [
   { id: 'CN_MAINLAND', label: '中国大陆', desc: '特别特报频道' },
   { id: 'OVERSEAS', label: '海外分社', desc: '联合情报中心' },
 ];
+
+export type TimelineItem = {
+  id: string;
+  type: 'event' | 'live';
+  date: string;
+  title: string;
+  location: string | null;
+  image: string | null;
+  slug: string;
+  isToday: boolean;
+  marketRegion: MarketRegion | null;
+  summary: string | null;
+  originalData: PublicEventListItem | PublicLiveListItem;
+};
 
 const LandingView: React.FC<{ 
   region: string;
@@ -47,38 +61,67 @@ const LandingView: React.FC<{
     loadData();
   }, [loadData]);
 
-  const displayEvents = useMemo(() => {
-    const combined = [...events];
+  const timelineItems = useMemo(() => {
+    const items: TimelineItem[] = [];
     
-    const upcoming = combined
-      .filter(e => e.startAt.split('T')[0] >= MOCK_TODAY)
-      .sort((a, b) => a.startAt.localeCompare(b.startAt));
-    
-    // If a specific region is selected, prioritize it
+    events.forEach(e => {
+      const date = e.startAt.split('T')[0];
+      if (date >= MOCK_TODAY) {
+        items.push({
+          id: e.id,
+          type: 'event',
+          date,
+          title: e.title,
+          location: e.location?.name || null,
+          image: e.poster?.urls.original || null,
+          slug: e.slug,
+          isToday: date === MOCK_TODAY,
+          marketRegion: e.marketRegion,
+          summary: e.summary,
+          originalData: e
+        });
+      }
+    });
+
+    lives.forEach(l => {
+      const date = l.startAt.split('T')[0];
+      if (date >= MOCK_TODAY) {
+        items.push({
+          id: l.id,
+          type: 'live',
+          date,
+          title: l.title,
+          location: l.location?.name || l.venue || null,
+          image: l.poster?.urls.original || null,
+          slug: l.slug,
+          isToday: date === MOCK_TODAY,
+          marketRegion: l.marketRegion,
+          summary: l.description,
+          originalData: l
+        });
+      }
+    });
+
+    // Sort chronologically
+    items.sort((a, b) => a.date.localeCompare(b.date));
+
+    // Filter by region if set
     if (region) {
-        const regional = upcoming.filter(e => e.marketRegion === region);
-        const others = upcoming.filter(e => e.marketRegion !== region);
-        return [...regional, ...others].slice(0, 6);
+      const regional = items.filter(i => i.marketRegion === region);
+      const others = items.filter(i => i.marketRegion !== region);
+      return [...regional, ...others];
     }
 
-    return upcoming.slice(0, 6);
-  }, [events, region]);
+    return items;
+  }, [events, lives, MOCK_TODAY, region]);
 
-  const featuredEvents = useMemo(() => displayEvents.slice(0, 5), [displayEvents]);
-
-  const upcomingLives = useMemo(() => {
-    let filtered = lives.filter(l => l.startAt.split('T')[0] >= MOCK_TODAY);
-    
-    if (region) {
-        const regional = filtered.filter(l => l.marketRegion === region);
-        const others = filtered.filter(l => l.marketRegion !== region);
-        filtered = [...regional, ...others];
+  const featuredItems = useMemo(() => {
+    const todayItems = timelineItems.filter(i => i.isToday);
+    if (todayItems.length > 0) {
+      return todayItems;
     }
-    
-    return filtered
-      .sort((a, b) => a.startAt.localeCompare(b.startAt))
-      .slice(0, 3);
-  }, [lives, region]);
+    return timelineItems.slice(0, 5);
+  }, [timelineItems]);
 
   const regionLabels: Record<string, string> = {
     'JAPAN': '日本国内版',
@@ -93,7 +136,7 @@ const LandingView: React.FC<{
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
     >
       {/* Utility Dateline - Integrated Region Switcher */}
-      <div className="w-full border-b py-2 flex justify-between px-4 text-[10px] font-mono uppercase tracking-widest relative z-[60] border-slate-900 bg-slate-100 text-slate-600">
+      <div className="w-full border-b py-2 flex justify-between px-4 text-[10px] font-mono uppercase tracking-widest relative z-60 border-slate-900 bg-slate-100 text-slate-600">
            <span className="hidden sm:inline">Vol. 13,042</span>
            
            <div className="relative">
@@ -120,7 +163,7 @@ const LandingView: React.FC<{
                             initial={{ opacity: 0, y: -10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                            className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 shadow-2xl border-2 z-[70] bg-[#FDFBF7] border-black"
+                            className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 shadow-2xl border-2 z-70 bg-[#FDFBF7] border-black"
                         >
                             {WORLD_REGIONS.map((reg) => (
                                 <button
@@ -152,10 +195,10 @@ const LandingView: React.FC<{
            <span>Wind: 45m/s</span>
       </div>
 
-       <div className="max-w-[1200px] mx-auto">
+       <div className="max-w-300 mx-auto">
         {isLoading ? (
           <div className="px-4 pt-8">
-            <div className="h-[520px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white/60 animate-pulse" />
+            <div className="h-130 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white/60 animate-pulse" />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pt-16 border-t-2 border-black">
               <div className="lg:col-span-8 flex flex-col">
@@ -172,7 +215,7 @@ const LandingView: React.FC<{
                 </div>
                 <div className="space-y-8">
                   {Array.from({ length: 3 }).map((_, idx) => (
-                    <div key={idx} className="aspect-[16/9] border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-slate-200/70 animate-pulse" />
+                    <div key={idx} className="aspect-video border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-slate-200/70 animate-pulse" />
                   ))}
                 </div>
               </div>
@@ -219,21 +262,18 @@ const LandingView: React.FC<{
           <>
             <div className="pt-8">
               <HeroCarousel 
-                events={featuredEvents} 
+                items={featuredItems} 
                 userRegion={region}
-                onSelect={() => {}} // Not used anymore
-                onNavigate={() => {}} // Not used anymore
               />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 px-4 pt-16 border-t-2 border-black">
-              <ScoopSection 
-                events={displayEvents} 
-                todayStr={MOCK_TODAY}
+              <UnifiedTimeline 
+                items={timelineItems} 
               />
 
-              <LiveSidebar 
-                lives={upcomingLives} 
+              <IndexSidebar 
+                items={timelineItems} 
               />
             </div>
           </>
