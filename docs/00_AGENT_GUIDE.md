@@ -57,7 +57,7 @@ AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任
   - 外部交互参考：`https://www.nytimes.com/`
   - 上游参考区域：`ayafeed-core/apps/web/src/components/Navbar.tsx`、`ayafeed-core/apps/web/src/views/LandingView.tsx`
   - 详细决策文档：`docs/plans/2026-03-02-nyt-navbar-scroll-behavior.md`
-- **状态**: 已完成并通过 `npm run lint`、`npm run build`。
+- **状态**: 已完成并通过 `pnpm lint`、`pnpm build`。
 
 ### [2026-03-02] - Masthead 常驻导航与列表切换防闪烁 (Masthead Navigation + List Flicker Fix)
 - **执行内容**:
@@ -69,7 +69,7 @@ AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任
   - 外部交互参考：`https://www.nytimes.com/`
   - 本仓库改动文件：`components/Navbar.tsx`、`services/api.ts`、`views/EventListView.tsx`、`views/LiveListView.tsx`
   - 上游参考区域：`ayafeed-core/apps/web/src/components/Navbar.tsx`
-- **状态**: 已完成并通过 `npm run lint`、`npm run build`。
+- **状态**: 已完成并通过 `pnpm lint`、`pnpm build`。
 
 ### [2026-03-02] - Navbar C 方案：Utility 并入栏目导航行 (Utility Merged Into Section Nav Row)
 - **执行内容**:
@@ -83,7 +83,7 @@ AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任
   - 外部交互参考：`https://www.nytimes.com/`
   - 本仓库改动文件：`components/Navbar.tsx`
   - 上游参考区域：`ayafeed-core/apps/web/src/components/Navbar.tsx`
-- **状态**: 已完成并通过 `npm run lint`、`npm run build`。
+- **状态**: 已完成并通过 `pnpm lint`、`pnpm build`。
 
 ### [2026-03-03] - 导航收敛与地区入口去重 (Navigation Simplification + Region Control Dedup)
 - **执行内容**:
@@ -95,7 +95,7 @@ AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任
 - **参考与映射**:
   - 本仓库改动文件：`components/Navbar.tsx`、`components/Footer.tsx`、`views/EventListView.tsx`、`views/LiveListView.tsx`、`routes/events/index.tsx`、`routes/lives/index.tsx`
   - 上游参考区域：`ayafeed-core/apps/web/src/components/Navbar.tsx`、`ayafeed-core/apps/web/src/views/EventListView.tsx`、`ayafeed-core/apps/web/src/views/LiveListView.tsx`
-- **状态**: 已完成并通过 `npm run lint`、`npm run build`。
+- **状态**: 已完成并通过 `pnpm lint`、`pnpm build`。
 
 ### [2026-03-03] - Landing Page 全量 UX 修复 (Landing UX Stabilization)
 - **执行内容**:
@@ -112,7 +112,7 @@ AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任
   - 保留：报纸主题视觉语言与 Navbar 双态滚动模式
   - 有意变化：语义化交互、月锚点跳转链路、焦点体系统一、首屏视觉权重收敛
   - 详细决策文档：`docs/plans/2026-03-03-landing-ux-stabilization.md`
-- **状态**: 已完成并通过 `npm run lint`、`npm run build`（仅保留 Vite chunk size warning）。
+- **状态**: 已完成并通过 `pnpm lint`、`pnpm build`（仅保留 Vite chunk size warning）。
 
 ### [2026-03-03] - Landing 重构二阶段落地 (Landing Refactor Phase 2 Implementation)
 - **执行内容**:
@@ -130,7 +130,7 @@ AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任
   - 本仓库改动文件：`components/Navbar.tsx`、`components/LandingSections.tsx`、`views/LandingView.tsx`、`components/AIChat.tsx`、`index.css`、`docs/plans/2026-03-03-landing-ux-stabilization.md`
   - 外部行为参考：`https://www.nytimes.com/`（仅交互模型参考，不做视觉像素级复刻）
   - 上游参考区域：`ayafeed-core/apps/web/src/components/Navbar.tsx`、`ayafeed-core/apps/web/src/views/LandingView.tsx`、`ayafeed-core/apps/web/src/components/LandingSections.tsx`
-- **状态**: 已完成并通过 `npm run lint`、`npm run build`（仅保留 Vite chunk size warning）。
+- **状态**: 已完成并通过 `pnpm lint`、`pnpm build`（仅保留 Vite chunk size warning）。
 
 ### [2026-03-03] - 单主题口径统一 (Single-Theme Documentation Alignment)
 - **执行内容**:
@@ -142,6 +142,17 @@ AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任
   - 保留：报纸主题视觉语言与现有交互策略
   - 有意变化：删除历史兼容描述，统一单主题文案
 - **状态**: 已完成（文档口径已统一为单主题）。
+
+### [2026-03-03] - 包管理器口径统一为 PNPM (Package Manager Standardization)
+- **执行内容**:
+  - 删除 `package-lock.json`，避免与 `pnpm-lock.yaml` 双锁文件并存导致的依赖漂移。
+  - 在 `package.json` 增加 `packageManager: pnpm@10.26.1`，固定项目包管理器入口。
+  - 在 `AGENTS.md` 增加强约束：仅允许使用 `pnpm` 执行依赖安装与脚本命令。
+- **参考与映射**:
+  - 本仓库改动文件：`package.json`、`AGENTS.md`、`package-lock.json`
+  - 保留：现有 `pnpm-workspace.yaml` + `pnpm-lock.yaml` 工作流
+  - 有意变化：移除非 `pnpm` 工作流入口，统一至单一包管理器
+- **状态**: 已完成。
 
 ## 5. 后续建议 (Recommendations)
 - **图片资源**: 建议引入 CDN 或统一的占位图服务，以解决部分跨域图片加载不稳定的问题。

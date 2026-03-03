@@ -21,6 +21,7 @@
 - Reply to users in Chinese.
 - The product supports a single theme only: `theme-newspaper`.
 - Use English for git commit messages.
+- Use `pnpm` as the only package manager and script runner; do not use other package manager commands.
 - Do not add content entries directly in root `data.ts`.
 - Add data entries under `data/{category}/` and register them in that category `index.ts`.
 - After implementation, append a concise handover record in `docs/00_AGENT_GUIDE.md`.
@@ -32,3 +33,4 @@
 ## Documentation Policy
 - If a reset decision becomes stable, sync it into this repo docs first (`docs/**`), then prepare upstream migration notes.
 - For agent collaboration, treat this file and `docs/00_AGENT_GUIDE.md` as the baseline context.
+

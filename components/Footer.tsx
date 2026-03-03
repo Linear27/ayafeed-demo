@@ -25,7 +25,7 @@ const Footer: React.FC = () => {
           <div>
             <Link to="/" className={`mb-4 flex items-center gap-3 ${FOCUS_RING}`} aria-label="返回首页">
               <BrandLogo size="md" />
-              <span className={`text-xl font-black tracking-tight ${headerColor}`}>文文。快讯</span>
+              <span className={`font-brand text-xl font-black tracking-tight ${headerColor}`}>文文。快讯</span>
             </Link>
             <p className={`mb-4 text-sm leading-relaxed ${textColor}`}>
               为您带来幻想乡到外界的最快独家新闻。天狗信赖，人类喜爱。

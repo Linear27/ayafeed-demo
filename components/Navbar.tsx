@@ -203,7 +203,17 @@ const Navbar: React.FC<NavbarProps> = ({
     </Link>
   );
 
-  const BrandLink = ({ compact = false, className = '' }: { compact?: boolean; className?: string }) => (
+  const BrandLink = ({
+    compact = false,
+    showText = true,
+    textClassName = '',
+    className = '',
+  }: {
+    compact?: boolean;
+    showText?: boolean;
+    textClassName?: string;
+    className?: string;
+  }) => (
     <Link
       to="/"
       onClick={handleBrandClick}
@@ -211,9 +221,13 @@ const Navbar: React.FC<NavbarProps> = ({
       aria-label="返回首页"
     >
       <BrandLogo size={compact ? 'xs' : 'lg'} className={compact ? '' : 'hidden md:block'} />
-      <span className={`${compact ? 'text-sm md:text-base' : 'text-3xl md:text-6xl'} font-black uppercase leading-none tracking-tight`}>
-        {getBrandName()}
-      </span>
+      {showText ? (
+        <span
+          className={`font-brand ${compact ? 'text-sm md:text-base' : 'text-3xl md:text-6xl'} font-black uppercase leading-none tracking-tight ${textClassName}`}
+        >
+          {getBrandName()}
+        </span>
+      ) : null}
     </Link>
   );
 
@@ -396,12 +410,13 @@ const Navbar: React.FC<NavbarProps> = ({
         >
           <div className="border-t border-black/5 py-1">
             <div className="mx-auto flex max-w-[1400px] items-center gap-3 px-6">
-              <BrandLink compact className="md:hidden" />
+              <BrandLink compact showText={false} className="md:hidden" />
 
               <div className="hidden items-center md:flex md:w-56">
                 <BrandLink
                   compact
-                  className={`gap-3 transition-[opacity,transform] duration-150 ease-out ${
+                  textClassName="hidden xl:inline text-sm opacity-85"
+                  className={`gap-2 transition-[opacity,transform] duration-150 ease-out ${
                     isDockVisible ? 'translate-x-0 opacity-100' : '-translate-x-2 opacity-0 pointer-events-none'
                   }`}
                 />
@@ -479,7 +494,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <BrandLogo size="sm" />
             </motion.div>
             <div className="flex flex-col leading-none">
-              <span className="text-lg font-black tracking-tight text-slate-800">{getBrandName()}</span>
+              <span className="font-brand text-lg font-black tracking-tight text-slate-800">{getBrandName()}</span>
               <span className="origin-left text-xs font-bold uppercase tracking-widest text-slate-400">EST. 1000 G.S.T</span>
             </div>
           </Link>

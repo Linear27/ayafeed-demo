@@ -11,6 +11,7 @@
   --aya-color-surface: #ffffff;
   --aya-color-border: #0f172a;
   --aya-color-accent: #dc2626;
+  --aya-font-brand: "Cinzel", "Zen Old Mincho", "Noto Serif SC", "Noto Serif JP", "Shippori Mincho", serif;
   --aya-header-height-compact: 46px;
   --aya-motion-fast: 180ms;
   --aya-motion-medium: 200ms;
@@ -23,6 +24,14 @@ body {
   background: var(--aya-color-bg);
   color: #0f172a;
   font-family: var(--font-sans);
+}
+
+.font-brand {
+  font-family: var(--aya-font-brand);
+  font-feature-settings: "liga" 1, "kern" 1, "palt" 1;
+  font-optical-sizing: auto;
+  letter-spacing: 0.02em;
+  text-rendering: optimizeLegibility;
 }
 
 a,
