@@ -3,12 +3,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 interface BrandLogoProps {
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   className?: string;
 }
 
 const BrandLogo: React.FC<BrandLogoProps> = ({ size = 'md', className = "" }) => {
   const dimensions = {
+    xs: "w-6 h-6",
     sm: "w-8 h-8",
     md: "w-10 h-10",
     lg: "w-16 h-16"

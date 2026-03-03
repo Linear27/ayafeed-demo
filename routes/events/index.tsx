@@ -11,7 +11,7 @@ export const Route = createRoute({
 });
 
 function EventsIndex() {
-  const { language, region, setRegion } = useAppContext();
+  const { language, region } = useAppContext();
   const navigate = useNavigate();
 
   return (
@@ -19,7 +19,6 @@ function EventsIndex() {
       onSelect={(id) => navigate({ to: '/events/$eventId', params: { eventId: id } })} 
       userLanguage={language} 
       activeRegion={region}
-      onSetRegion={setRegion}
     />
   );
 }

@@ -240,6 +240,22 @@ const ComponentShowcaseView: React.FC<{ onNavigate: (v: ViewState) => void }> = 
                 进入实验室 <ArrowRight size={18}/>
               </button>
             </div>
+
+            <div className="p-8 bg-white border-2 border-black newspaper-shadow-sm">
+              <div className="flex items-center gap-2 mb-4 text-red-600">
+                <Zap size={20} />
+                <h3 className="text-lg font-black uppercase tracking-wider">Landing Page Experience</h3>
+              </div>
+              <p className="text-sm mb-6 font-serif italic">
+                基于竞品分析（DICE/Eventbrite）的实验性首页。强化“发现优先”逻辑与“时间切片”编排。
+              </p>
+              <button 
+                onClick={() => onNavigate('LANDING_EXP')}
+                className="w-full py-4 font-black text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-2 bg-black text-white hover:bg-red-600 transition-colors"
+              >
+                进入实验室 <ArrowRight size={18}/>
+              </button>
+            </div>
           </div>
         </Section>
       </div>

@@ -1,18 +1,18 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Search, SlidersHorizontal, MapPin } from 'lucide-react';
-import { fetchLives } from '../services/api';
+import { Search, MapPin } from 'lucide-react';
+import { fetchLives, getCachedLives } from '../services/api';
 import { PublicLiveListItem } from '../types';
 import { LiveCardSkeleton } from '../components/Skeleton';
 import { adaptLiveListItem } from '../services/adapters';
 
-const WORLD_REGIONS = [
-  { id: 'JAPAN', label: '日本国内' },
-  { id: 'CN_MAINLAND', label: '中国大陆' },
-  { id: 'OVERSEAS', label: '海外/其他' },
-  { id: 'GLOBAL', label: '全球特报' },
-];
+const WORLD_REGIONS: Record<string, string> = {
+  JAPAN: '日本国内',
+  CN_MAINLAND: '中国大陆',
+  OVERSEAS: '海外/其他',
+  GLOBAL: '全球特报',
+};
 
 const REGION_MAP: Record<string, string> = {
   'JP': 'JAPAN',
@@ -26,27 +26,40 @@ const REGION_MAP: Record<string, string> = {
 interface LiveListViewProps {
   onSelect: (id: string) => void; 
   activeRegion: string;
-  onSetRegion: (reg: string) => void;
 }
 
-const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion, onSetRegion }) => {
-  const [lives, setLives] = useState<PublicLiveListItem[]>([]);
+const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion }) => {
+  const [lives, setLives] = useState<PublicLiveListItem[]>(() => getCachedLives() ?? []);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => getCachedLives() === null);
 
   useEffect(() => {
+    let isMounted = true;
+    const cached = getCachedLives();
+
+    if (cached) {
+      setLives(cached);
+      setIsLoading(false);
+    }
+
     const loadLives = async () => {
-      setIsLoading(true);
+      if (!cached) setIsLoading(true);
       try {
-        const data = await fetchLives();
+        const data = await fetchLives({}, { forceRefresh: Boolean(cached) });
+        if (!isMounted) return;
         setLives(data);
       } catch (error) {
         console.error("Failed to fetch lives:", error);
       } finally {
-        setIsLoading(false);
+        if (!isMounted) return;
+        if (!cached) setIsLoading(false);
       }
     };
     loadLives();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const adaptedLives = useMemo(() => lives.map(adaptLiveListItem), [lives]);
@@ -73,32 +86,22 @@ const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion, onS
   }, [adaptedLives, searchTerm, activeRegion, todayStr]);
 
   const getDisplayTitle = () => {
-    const region = WORLD_REGIONS.find(r => r.id === activeRegion);
-    return region ? `${region.label}演出名录` : '演出名录';
+    const region = WORLD_REGIONS[activeRegion];
+    return region ? `${region}演出名录` : '演出名录';
   };
 
   return (
-    <motion.div className="w-full min-h-[100dvh] pb-20" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+    <motion.div className="w-full min-h-[100dvh] pb-20" initial={false} animate={{ opacity: 1 }}>
       <div className="max-w-[1200px] mx-auto px-4 py-8">
-        <div className="flex flex-wrap gap-2 mb-8 p-1 bg-slate-100/50 rounded-xl w-fit">
-          {WORLD_REGIONS.map(reg => (
-            <button key={reg.id} onClick={() => onSetRegion(reg.id)}
-              aria-label={`切换到${reg.label}`}
-              className={`px-4 py-2 text-xs font-black uppercase tracking-widest transition-all ${
-                activeRegion === reg.id ? 'bg-black text-white shadow-md' : 'text-slate-400 hover:text-slate-600'
-              }`}
-            >
-              {reg.label}
-            </button>
-          ))}
-        </div>
-
         <div className="flex flex-col md:flex-row justify-between items-end mb-8 pb-4 border-b-4 border-black">
            <div>
              <div className="bg-red-600 text-white px-2 py-0.5 text-xs font-black uppercase tracking-widest mb-2 inline-block">LIVE REVIEWS</div>
              <h2 className="text-3xl font-black font-header text-black">
                 {getDisplayTitle()}
              </h2>
+             <div className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">
+               当前地区：{WORLD_REGIONS[activeRegion] || '幻想乡全域'}
+             </div>
            </div>
         </div>
 
@@ -144,9 +147,9 @@ const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion, onS
               <div className="py-20 text-center border-2 border-dashed border-slate-300 rounded-xl">
                 <div className="text-slate-400 mb-4 flex justify-center"><Search size={48} /></div>
                 <h3 className="text-xl font-black text-slate-900 mb-2">未找到相关演出</h3>
-                <p className="text-slate-500 mb-6">尝试更换搜索词或切换区域</p>
+                <p className="text-slate-500 mb-6">尝试更换搜索词（地区可在顶部导航切换）</p>
                 <button 
-                  onClick={() => { setSearchTerm(''); onSetRegion('GLOBAL'); }}
+                  onClick={() => { setSearchTerm(''); }}
                   className="px-6 py-2 bg-black text-white text-xs font-black uppercase tracking-widest hover:bg-red-600 transition-colors"
                 >
                   重置筛选

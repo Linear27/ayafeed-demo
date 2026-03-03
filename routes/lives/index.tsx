@@ -11,14 +11,13 @@ export const Route = createRoute({
 });
 
 function LivesIndex() {
-  const { region, setRegion } = useAppContext();
+  const { region } = useAppContext();
   const navigate = useNavigate();
 
   return (
     <LiveListView 
       onSelect={(id) => navigate({ to: '/lives/$liveId', params: { liveId: id } })} 
       activeRegion={region}
-      onSetRegion={setRegion}
     />
   );
 }

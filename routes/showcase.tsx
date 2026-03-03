@@ -18,6 +18,7 @@ function Showcase() {
       onNavigate={(v) => {
         if (v === 'LANDING') navigate({ to: '/' });
         if (v === 'EVENT_LIST_EXP') navigate({ to: '/events/exp' });
+        if (v === 'LANDING_EXP') navigate({ to: '/landing-exp' });
       }} 
     />
   );

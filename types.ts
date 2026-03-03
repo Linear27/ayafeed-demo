@@ -409,9 +409,29 @@ export type ViewState =
   | 'CIRCLE_LIST' 
   | 'CIRCLE_DETAIL'
   | 'COMPONENT_SHOWCASE'
-  | 'EVENT_LIST_EXP';
+  | 'EVENT_LIST_EXP'
+  | 'LANDING_EXP';
 
 export interface ChatMessage {
   role: 'user' | 'model';
   text: string;
 }
+
+export type TimelineItem = {
+  id: string;
+  type: 'event' | 'live';
+  date: string;
+  title: string;
+  location: string | null;
+  image: string | null;
+  slug: string;
+  isToday: boolean;
+  isThisWeek: boolean;
+  marketRegion: MarketRegion | null;
+  summary: string | null;
+  boothCount?: number | null;
+  organizer?: string | null;
+  website?: string | null;
+  status?: 'RECRUITING' | 'ARRANGING' | 'UPCOMING' | 'ONGOING' | 'ENDED';
+  originalData: PublicEventListItem | PublicLiveListItem;
+};

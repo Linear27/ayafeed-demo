@@ -48,7 +48,7 @@ const Footer: React.FC<FooterProps> = () => {
             <h4 className={`font-bold mb-4 uppercase tracking-wider text-xs ${headerColor}`}>信息中心</h4>
             <ul className="space-y-2 text-sm">
               <li><Link to="/" className={`${textColor} ${hoverColor}`}>关于我们</Link></li>
-              <li><Link to="/showcase" className={`${textColor} ${hoverColor}`}>组件展示</Link></li>
+              <li><Link to="/showcase" className={`${textColor} ${hoverColor}`}>UI 组件库</Link></li>
               <li><Link to="/privacy" className={`${textColor} ${hoverColor}`}>隐私政策</Link></li>
               <li><Link to="/feedback" className={`${textColor} ${hoverColor}`}>问题反馈</Link></li>
             </ul>

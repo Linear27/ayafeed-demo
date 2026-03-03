@@ -1,5 +1,5 @@
 
-import { createRoute, useNavigate } from '@tanstack/react-router';
+import { createRoute } from '@tanstack/react-router';
 import { Route as rootRoute } from './__root';
 import LandingView from '@/views/LandingView';
 import { useAppContext } from '@/context/AppContext';
@@ -11,13 +11,11 @@ export const Route = createRoute({
 });
 
 function Index() {
-  const { region, setRegion } = useAppContext();
-  const navigate = useNavigate();
+  const { region } = useAppContext();
 
   return (
     <LandingView 
       region={region}
-      onSetRegion={setRegion}
     />
   );
 }

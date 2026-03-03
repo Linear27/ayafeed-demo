@@ -1,39 +1,17 @@
 
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { PublicEventListItem, PublicLiveListItem, MarketRegion } from '../types';
+import { motion } from 'framer-motion';
+import { PublicEventListItem, PublicLiveListItem, MarketRegion, TimelineItem } from '../types';
 import { fetchEvents, fetchLives } from '../services/api';
-import { HeroCarousel, UnifiedTimeline, IndexSidebar } from '../components/LandingSections';
+import { BentoHeader, ScrapbookTimeline, IndexSidebar } from '../components/LandingSections';
 import { EventCardSkeleton } from '../components/Skeleton';
 import { Link } from '@tanstack/react-router';
-import { ChevronDown, Radio, Check, AlertTriangle, RefreshCcw, ArrowRight } from 'lucide-react';
-
-const WORLD_REGIONS = [
-  { id: 'JAPAN', label: '日本国内', desc: '文文新闻本部' },
-  { id: 'CN_MAINLAND', label: '中国大陆', desc: '特别特报频道' },
-  { id: 'OVERSEAS', label: '海外分社', desc: '联合情报中心' },
-];
-
-export type TimelineItem = {
-  id: string;
-  type: 'event' | 'live';
-  date: string;
-  title: string;
-  location: string | null;
-  image: string | null;
-  slug: string;
-  isToday: boolean;
-  marketRegion: MarketRegion | null;
-  summary: string | null;
-  originalData: PublicEventListItem | PublicLiveListItem;
-};
+import { AlertTriangle, RefreshCcw, ArrowRight } from 'lucide-react';
 
 const LandingView: React.FC<{ 
   region: string;
-  onSetRegion: (reg: string) => void;
-}> = ({ region, onSetRegion }) => {
+}> = ({ region }) => {
   const MOCK_TODAY = useMemo(() => new Date().toISOString().split('T')[0], []);
-  const [isEditionMenuOpen, setIsEditionMenuOpen] = useState(false);
   const [events, setEvents] = useState<PublicEventListItem[]>([]);
   const [lives, setLives] = useState<PublicLiveListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,39 +42,60 @@ const LandingView: React.FC<{
   const timelineItems = useMemo(() => {
     const items: TimelineItem[] = [];
     
+    const now = new Date(MOCK_TODAY);
+    const endOfWeek = new Date(now);
+    endOfWeek.setDate(now.getDate() + 7);
+
     events.forEach(e => {
-      const date = e.startAt.split('T')[0];
-      if (date >= MOCK_TODAY) {
+      const dateStr = e.startAt.split('T')[0];
+      const date = new Date(dateStr);
+      if (dateStr >= MOCK_TODAY) {
+        // Simple status logic for demo
+        let status: TimelineItem['status'] = 'UPCOMING';
+        if (dateStr === MOCK_TODAY) status = 'ONGOING';
+        
         items.push({
           id: e.id,
           type: 'event',
-          date,
+          date: dateStr,
           title: e.title,
           location: e.location?.name || null,
           image: e.poster?.urls.original || null,
           slug: e.slug,
-          isToday: date === MOCK_TODAY,
+          isToday: dateStr === MOCK_TODAY,
+          isThisWeek: date <= endOfWeek,
           marketRegion: e.marketRegion,
           summary: e.summary,
+          boothCount: e.boothCount,
+          organizer: e.organizer,
+          website: (e as any).website || (e as any).websiteUrl || null,
+          status,
           originalData: e
         });
       }
     });
 
     lives.forEach(l => {
-      const date = l.startAt.split('T')[0];
-      if (date >= MOCK_TODAY) {
+      const dateStr = l.startAt.split('T')[0];
+      const date = new Date(dateStr);
+      if (dateStr >= MOCK_TODAY) {
+        let status: TimelineItem['status'] = 'UPCOMING';
+        if (dateStr === MOCK_TODAY) status = 'ONGOING';
+
         items.push({
           id: l.id,
           type: 'live',
-          date,
+          date: dateStr,
           title: l.title,
           location: l.location?.name || l.venue || null,
           image: l.poster?.urls.original || null,
           slug: l.slug,
-          isToday: date === MOCK_TODAY,
+          isToday: dateStr === MOCK_TODAY,
+          isThisWeek: date <= endOfWeek,
           marketRegion: l.marketRegion,
           summary: l.description,
+          website: (l as any).website || null,
+          status,
           originalData: l
         });
       }
@@ -115,6 +114,14 @@ const LandingView: React.FC<{
     return items;
   }, [events, lives, MOCK_TODAY, region]);
 
+  // 统计数据 (Social Proof)
+  const stats = useMemo(() => ({
+    totalEvents: events.length + lives.length,
+    todayCount: timelineItems.filter(i => i.isToday).length,
+    thisWeekCount: timelineItems.filter(i => i.isThisWeek).length,
+    updateCount: 5 // Mocked recent updates
+  }), [events, lives, timelineItems]);
+
   const featuredItems = useMemo(() => {
     const todayItems = timelineItems.filter(i => i.isToday);
     if (todayItems.length > 0) {
@@ -123,78 +130,11 @@ const LandingView: React.FC<{
     return timelineItems.slice(0, 5);
   }, [timelineItems]);
 
-  const regionLabels: Record<string, string> = {
-    'JAPAN': '日本国内版',
-    'CN_MAINLAND': '中国大陆版',
-    'OVERSEAS': '海外分社版',
-    'GLOBAL': '全球特报版'
-  };
-
   return (
     <motion.div 
       className="w-full pb-20 overflow-x-hidden"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
     >
-      {/* Utility Dateline - Integrated Region Switcher */}
-      <div className="w-full border-b py-2 flex justify-between px-4 text-[10px] font-mono uppercase tracking-widest relative z-60 border-slate-900 bg-slate-100 text-slate-600">
-           <span className="hidden sm:inline">Vol. 13,042</span>
-           
-           <div className="relative">
-             <button 
-                onClick={() => setIsEditionMenuOpen(!isEditionMenuOpen)}
-                className="flex items-center gap-1.5 font-black transition-all group px-2 py-0.5 -my-0.5 text-red-700 hover:bg-slate-200"
-             >
-                <Radio size={10} className={isEditionMenuOpen ? 'animate-none' : 'animate-pulse'} />
-                <span className="border-b border-dotted border-current">
-                    {regionLabels[region] || 'SPECIAL'} EDITION
-                </span>
-                <ChevronDown size={10} className={`transition-transform duration-300 ${isEditionMenuOpen ? 'rotate-180' : ''}`} />
-             </button>
-
-             <AnimatePresence>
-                {isEditionMenuOpen && (
-                    <>
-                        <motion.div 
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-transparent"
-                            onClick={() => setIsEditionMenuOpen(false)}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                            className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 shadow-2xl border-2 z-70 bg-[#FDFBF7] border-black"
-                        >
-                            {WORLD_REGIONS.map((reg) => (
-                                <button
-                                    key={reg.id}
-                                    onClick={() => {
-                                        onSetRegion(reg.id);
-                                        setIsEditionMenuOpen(false);
-                                    }}
-                                    className={`w-full text-left px-4 py-3 flex items-center justify-between transition-colors border-b last:border-b-0 ${
-                                        region === reg.id 
-                                            ? 'bg-red-600 text-white border-black'
-                                            : 'bg-white text-slate-900 hover:bg-slate-50 border-slate-200'
-                                    }`}
-                                >
-                                    <div className="flex flex-col">
-                                        <span className="text-[11px] font-black uppercase tracking-wider">{reg.label}</span>
-                                        <span className="text-[8px] opacity-60 font-serif italic">{reg.desc}</span>
-                                    </div>
-                                    {region === reg.id && <Check size={12} />}
-                                </button>
-                            ))}
-                        </motion.div>
-                    </>
-                )}
-             </AnimatePresence>
-           </div>
-
-           <span className="hidden sm:inline">GENSOKYO STANDARD TIME</span>
-           <span>Wind: 45m/s</span>
-      </div>
-
        <div className="max-w-300 mx-auto">
         {isLoading ? (
           <div className="px-4 pt-8">
@@ -260,15 +200,16 @@ const LandingView: React.FC<{
           </div>
         ) : (
           <>
-            <div className="pt-8">
-              <HeroCarousel 
+            <div className="pt-8 px-4">
+              <BentoHeader 
                 items={featuredItems} 
-                userRegion={region}
+                region={region}
+                stats={stats}
               />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 px-4 pt-16 border-t-2 border-black">
-              <UnifiedTimeline 
+              <ScrapbookTimeline 
                 items={timelineItems} 
               />
 

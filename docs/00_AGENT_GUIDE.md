@@ -39,6 +39,65 @@ AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任
   - **错误处理**: 实现了全局错误边界 (`routes/__root.tsx`)。
 - **状态**: 已完成并验证。
 
+### [2026-03-02] - Navbar 对齐 NYT 滚动样式 (NYT-Inspired Header Behavior)
+- **执行内容**:
+  - 将报纸模式 header 调整为“双态”：
+    - 顶部完整 masthead（文档流中自然滚出）
+    - 紧凑 fixed dock（滚动触发显示/隐藏）
+  - 滚动判定改为基于 masthead 位置并加入迟滞阈值：
+    - 显示：`mastheadBottom <= -24`
+    - 隐藏：`mastheadBottom >= 72`
+  - 动画策略改为 NYT 风格位移过渡：
+    - `transform: translate3d(...)` + `transition-all`
+    - 配合 `visibility` / `pointer-events` 消除卡顿与状态错位
+  - 信息架构调整：
+    - 移除 Landing 顶部 `Vol/Edition/GST/Wind` 条
+    - 区域切换入口收敛到 navbar 右上角
+    - 区域下拉菜单保持不透明白底
+- **参考与映射**:
+  - 外部交互参考：`https://www.nytimes.com/`
+  - 上游参考区域：`ayafeed-core/apps/web/src/components/Navbar.tsx`、`ayafeed-core/apps/web/src/views/LandingView.tsx`
+  - 详细决策文档：`docs/plans/2026-03-02-nyt-navbar-scroll-behavior.md`
+- **状态**: 已完成并通过 `npm run lint`、`npm run build`。
+
+### [2026-03-02] - Masthead 常驻导航与列表切换防闪烁 (Masthead Navigation + List Flicker Fix)
+- **执行内容**:
+  - 在 `theme-newspaper` 的完整 masthead 增加常驻导航条（桌面：展会/演出/社团/组件展示；移动：展会/演出/社团），使未折叠状态下也可跨页跳转。
+  - 保持滚动后 `fixed dock` 结构不变，形成 NYT 风格的“完整头部 + 紧凑 dock”双通路导航。
+  - 为 `events/lives` 列表引入内存缓存（按 query key），并在视图初始化时优先读取缓存，仅首访显示 skeleton，减少 Navbar 跨列表切换时的闪烁。
+  - 在有缓存时采用静默刷新（`forceRefresh`）更新数据，不阻塞首屏渲染。
+- **参考与映射**:
+  - 外部交互参考：`https://www.nytimes.com/`
+  - 本仓库改动文件：`components/Navbar.tsx`、`services/api.ts`、`views/EventListView.tsx`、`views/LiveListView.tsx`
+  - 上游参考区域：`ayafeed-core/apps/web/src/components/Navbar.tsx`
+- **状态**: 已完成并通过 `npm run lint`、`npm run build`。
+
+### [2026-03-02] - Navbar C 方案：Utility 并入栏目导航行 (Utility Merged Into Section Nav Row)
+- **执行内容**:
+  - 采纳 C 方案：移除 masthead 顶部独立 utility 条，将其并入 logo 下方栏目导航同一行。
+  - 新行布局为“三段式”：
+    - 左侧（`xl` 可见）：日期 + `Today's Intelligence`
+    - 中间：栏目导航（展会/演出/社团/组件展示）
+    - 右侧：区域与语言切换（`md` 下保留紧凑文案，`lg` 显示完整文案）
+  - 保持 NYT 双态滚动行为不变（masthead 自然滚出 + compact dock 固定切换）。
+- **参考与映射**:
+  - 外部交互参考：`https://www.nytimes.com/`
+  - 本仓库改动文件：`components/Navbar.tsx`
+  - 上游参考区域：`ayafeed-core/apps/web/src/components/Navbar.tsx`
+- **状态**: 已完成并通过 `npm run lint`、`npm run build`。
+
+### [2026-03-03] - 导航收敛与地区入口去重 (Navigation Simplification + Region Control Dedup)
+- **执行内容**:
+  - 将 `组件展示` 从 Navbar 主导航移除（完整 masthead 栏目行、compact dock、移动菜单），主导航收敛为展会/演出/社团。
+  - 将 `组件展示` 入口保留在 Footer 的“信息中心”中，作为次级入口。
+  - 移除 `EventListView` 与 `LiveListView` 顶部地区切换按钮，避免与 Navbar 全局地区选择重复。
+  - 在 `EventListView` 与 `LiveListView` 标题区新增只读“当前地区”提示，保留筛选上下文可见性。
+  - 详情空状态提示文案更新为“地区可在顶部导航切换”。
+- **参考与映射**:
+  - 本仓库改动文件：`components/Navbar.tsx`、`components/Footer.tsx`、`views/EventListView.tsx`、`views/LiveListView.tsx`、`routes/events/index.tsx`、`routes/lives/index.tsx`
+  - 上游参考区域：`ayafeed-core/apps/web/src/components/Navbar.tsx`、`ayafeed-core/apps/web/src/views/EventListView.tsx`、`ayafeed-core/apps/web/src/views/LiveListView.tsx`
+- **状态**: 已完成并通过 `npm run lint`、`npm run build`。
+
 ## 5. 后续建议 (Recommendations)
 - **图片资源**: 建议引入 CDN 或统一的占位图服务，以解决部分跨域图片加载不稳定的问题。
 - **国际化**: 进一步完善多语言支持，确保所有硬编码文本均可通过翻译配置。

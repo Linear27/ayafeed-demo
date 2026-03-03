@@ -65,6 +65,7 @@ function RootComponent() {
         language={language}
         onSetLanguage={setLanguage}
         region={region}
+        onSetRegion={setRegion}
       />
       
       <main className="relative flex-1">

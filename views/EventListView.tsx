@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, SlidersHorizontal, MapPin } from 'lucide-react';
 import { Language, PublicEventListItem, EventSlot } from '../types';
-import { fetchEvents } from '../services/api';
+import { fetchEvents, getCachedEvents } from '../services/api';
 import EventSlotCard from '../components/EventSlotCard';
 import EventFilters from '../components/EventFilters';
 import { EventCardSkeleton } from '../components/Skeleton';
@@ -45,11 +45,10 @@ interface EventListViewProps {
   onSelect: (id: string) => void; 
   userLanguage?: Language;
   activeRegion: string;
-  onSetRegion: (reg: string) => void;
 }
 
-const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, activeRegion, onSetRegion }) => {
-  const [events, setEvents] = useState<PublicEventListItem[]>([]);
+const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, activeRegion }) => {
+  const [events, setEvents] = useState<PublicEventListItem[]>(() => getCachedEvents() ?? []);
   const [searchTerm, setSearchTerm] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   
@@ -57,26 +56,44 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
   const [selectedLocalRegions, setSelectedLocalRegions] = useState<string[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => getCachedEvents() === null);
 
   const MOCK_TODAY = useMemo(() => new Date().toISOString().split('T')[0], []);
 
   const [hasAutoSwitched, setHasAutoSwitched] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+    const cached = getCachedEvents();
+
+    if (cached) {
+      setEvents(cached);
+      setIsLoading(false);
+    }
+
     const loadEvents = async () => {
-      setIsLoading(true);
+      if (!cached) setIsLoading(true);
       try {
-        const data = await fetchEvents();
+        const data = await fetchEvents({}, { forceRefresh: Boolean(cached) });
+        if (!isMounted) return;
         setEvents(data);
       } catch (error) {
         console.error("Failed to fetch events:", error);
       } finally {
-        setIsLoading(false);
+        if (!isMounted) return;
+        if (!cached) setIsLoading(false);
       }
     };
     loadEvents();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  useEffect(() => {
+    setSelectedLocalRegions([]);
+  }, [activeRegion]);
 
   // Auto-switch to PAST if UPCOMING is empty on initial load
   useEffect(() => {
@@ -171,26 +188,10 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
   };
 
   const labels = getJournalisticLabels(activeRegion);
+  const regionContextLabel = WORLD_REGIONS.find((r) => r.id === activeRegion)?.label ?? '幻想乡全域';
 
   return (
-    <motion.div className="max-w-[1200px] mx-auto px-4 py-8 min-h-[100dvh]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-      <div className="flex flex-wrap gap-2 mb-8 p-1 bg-slate-100/50 rounded-xl w-fit">
-        {WORLD_REGIONS.map(reg => (
-          <button
-            key={reg.id}
-            onClick={() => { onSetRegion(reg.id); setSelectedLocalRegions([]); }}
-            aria-label={`切换到${reg.label}`}
-            className={`px-4 py-2 text-xs font-black uppercase tracking-widest transition-all ${
-              activeRegion === reg.id 
-                ? 'bg-black text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            {reg.label}
-          </button>
-        ))}
-      </div>
-
+    <motion.div className="max-w-[1200px] mx-auto px-4 py-8 min-h-[100dvh]" initial={false} animate={{ opacity: 1 }}>
       <div className="flex flex-col md:flex-row justify-between items-end mb-8 border-b-4 border-black pb-4">
         <div>
             <div className="bg-red-600 text-white px-2 py-0.5 text-xs font-black uppercase tracking-widest mb-2 inline-block">
@@ -199,6 +200,9 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
            <h1 className="text-3xl font-black font-header text-slate-900">
              {labels.title}
            </h1>
+           <div className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">
+             当前地区：{regionContextLabel}
+           </div>
         </div>
         {hasAutoSwitched && (
           <div className="mt-4 md:mt-0 bg-amber-50 border border-amber-200 px-3 py-1.5 text-xs font-bold text-amber-700 flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
@@ -257,14 +261,13 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
             <div className="py-20 text-center border-2 border-dashed border-slate-300 rounded-xl">
               <div className="text-slate-400 mb-4 flex justify-center"><Search size={48} /></div>
               <h3 className="text-xl font-black text-slate-900 mb-2">未找到相关展会</h3>
-              <p className="text-slate-500 mb-6">尝试更换搜索词或切换区域</p>
+              <p className="text-slate-500 mb-6">尝试更换搜索词或调整筛选（地区可在顶部导航切换）</p>
               <button 
                 onClick={() => { 
                   setSearchTerm(''); 
                   setSelectedLocalRegions([]);
                   setSelectedGenres([]);
                   setTimeFilter('PAST');
-                  onSetRegion('GLOBAL'); 
                 }}
                 className="px-6 py-2 bg-black text-white text-xs font-black uppercase tracking-widest hover:bg-red-600 transition-colors"
               >

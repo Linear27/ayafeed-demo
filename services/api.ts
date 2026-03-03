@@ -14,6 +14,30 @@ import {
 
 const BASE_URL = '/v1/public';
 
+const eventsListCache = new Map<string, PublicEventListItem[]>();
+const livesListCache = new Map<string, PublicLiveListItem[]>();
+
+const buildEventsQuery = (params: { marketRegion?: string; page?: number }) => {
+  const query = new URLSearchParams();
+  if (params.marketRegion) query.append('marketRegion', params.marketRegion);
+  if (params.page) query.append('page', params.page.toString());
+  return query.toString();
+};
+
+const buildLivesQuery = (params: { page?: number }) => {
+  const query = new URLSearchParams();
+  if (params.page) query.append('page', params.page.toString());
+  return query.toString();
+};
+
+export const getCachedEvents = (params: { marketRegion?: string; page?: number } = {}): PublicEventListItem[] | null => {
+  return eventsListCache.get(buildEventsQuery(params)) ?? null;
+};
+
+export const getCachedLives = (params: { page?: number } = {}): PublicLiveListItem[] | null => {
+  return livesListCache.get(buildLivesQuery(params)) ?? null;
+};
+
 const fetchWithRetry = async (url: string, retries = 3, delay = 1000): Promise<Response> => {
   for (let i = 0; i < retries; i++) {
     try {
@@ -32,15 +56,24 @@ const fetchWithRetry = async (url: string, retries = 3, delay = 1000): Promise<R
   throw new Error(`Failed to fetch ${url} after ${retries} retries`);
 };
 
-export const fetchEvents = async (params: { marketRegion?: string; page?: number } = {}): Promise<PublicEventListItem[]> => {
+export const fetchEvents = async (
+  params: { marketRegion?: string; page?: number } = {},
+  options: { forceRefresh?: boolean } = {}
+): Promise<PublicEventListItem[]> => {
   try {
-    const query = new URLSearchParams();
-    if (params.marketRegion) query.append('marketRegion', params.marketRegion);
-    if (params.page) query.append('page', params.page.toString());
-    
-    const response = await fetchWithRetry(`${BASE_URL}/events?${query.toString()}`);
+    const query = buildEventsQuery(params);
+    const cacheKey = query;
+
+    if (!options.forceRefresh) {
+      const cached = eventsListCache.get(cacheKey);
+      if (cached) return cached;
+    }
+
+    const url = query ? `${BASE_URL}/events?${query}` : `${BASE_URL}/events`;
+    const response = await fetchWithRetry(url);
     if (!response.ok) throw new Error(`Failed to fetch events: ${response.statusText}`);
     const data: PublicEventsListResponse = await response.json();
+    eventsListCache.set(cacheKey, data.items);
     return data.items;
   } catch (error) {
     console.error("fetchEvents error:", error);
@@ -59,14 +92,24 @@ export const fetchEventBySlug = async (slug: string): Promise<PublicEventDetailR
   }
 };
 
-export const fetchLives = async (params: { page?: number } = {}): Promise<PublicLiveListItem[]> => {
+export const fetchLives = async (
+  params: { page?: number } = {},
+  options: { forceRefresh?: boolean } = {}
+): Promise<PublicLiveListItem[]> => {
   try {
-    const query = new URLSearchParams();
-    if (params.page) query.append('page', params.page.toString());
-    
-    const response = await fetchWithRetry(`${BASE_URL}/lives?${query.toString()}`);
+    const query = buildLivesQuery(params);
+    const cacheKey = query;
+
+    if (!options.forceRefresh) {
+      const cached = livesListCache.get(cacheKey);
+      if (cached) return cached;
+    }
+
+    const url = query ? `${BASE_URL}/lives?${query}` : `${BASE_URL}/lives`;
+    const response = await fetchWithRetry(url);
     if (!response.ok) throw new Error(`Failed to fetch lives: ${response.statusText}`);
     const data: PublicLivesListResponse = await response.json();
+    livesListCache.set(cacheKey, data.items);
     return data.items;
   } catch (error) {
     console.error("fetchLives error:", error);
