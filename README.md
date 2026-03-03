@@ -1,9 +1,8 @@
 # AyaFeed - Design Strategy & Technical Specification
 
-## 1. Visual Philosophy: The Duality
-AyaFeed is built on a toggleable UI system that caters to two distinct user psychological states:
+## 1. Visual Philosophy: Single Theme
+AyaFeed uses a single visual system:
 - **Newspaper Mode (Bunbunmaru)**: A high-contrast, "messy-but-organized" layout that evokes the feeling of 19th-century journalism. It prioritizes "flavor" and the "Scoop" identity.
-- **SaaS Mode (Clean)**: A modern, low-friction interface designed for data-heavy browsing and utility.
 
 ## 2. Component Strategies
 

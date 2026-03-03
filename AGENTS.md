@@ -6,12 +6,28 @@
 - Local reference workspace: `E:\Code\test1\ayafeed-core\`
 - Primary reference app path: `E:\Code\test1\ayafeed-core\apps\web\`
 
+## Sync Status
+- Last synced with `docs/00_AGENT_GUIDE.md`: **2026-03-03**
+- If this file conflicts with `docs/00_AGENT_GUIDE.md`, treat `docs/00_AGENT_GUIDE.md` as source of truth.
+
 ## How To Use References
 - Prefer using `ayafeed-core/apps/web` as architecture and interaction reference when planning or refactoring this repo.
 - Keep this repo independent for experiments; do not assume all upstream constraints are already satisfied here.
 - When proposing migration-ready changes, record:
   - Which upstream file/area was referenced.
   - What was kept vs. intentionally changed.
+
+## Critical Workflow Summary (from 00_AGENT_GUIDE)
+- Reply to users in Chinese.
+- The product supports a single theme only: `theme-newspaper`.
+- Use English for git commit messages.
+- Do not add content entries directly in root `data.ts`.
+- Add data entries under `data/{category}/` and register them in that category `index.ts`.
+- After implementation, append a concise handover record in `docs/00_AGENT_GUIDE.md`.
+
+## Stable Decision Index
+- `docs/plans/2026-03-02-nyt-navbar-scroll-behavior.md`
+- `docs/plans/2026-03-03-landing-ux-stabilization.md`
 
 ## Documentation Policy
 - If a reset decision becomes stable, sync it into this repo docs first (`docs/**`), then prepare upstream migration notes.

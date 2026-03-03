@@ -1,9 +1,9 @@
 
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { PublicEventListItem, PublicLiveListItem, MarketRegion, TimelineItem } from '../types';
+import { PublicEventListItem, PublicLiveListItem, TimelineItem } from '../types';
 import { fetchEvents, fetchLives } from '../services/api';
-import { BentoHeader, ScrapbookTimeline, IndexSidebar } from '../components/LandingSections';
+import { BentoHeader, ScrapbookTimeline, IndexSidebar, MobileQuickJumpBar } from '../components/LandingSections';
 import { EventCardSkeleton } from '../components/Skeleton';
 import { Link } from '@tanstack/react-router';
 import { AlertTriangle, RefreshCcw, ArrowRight } from 'lucide-react';
@@ -132,12 +132,13 @@ const LandingView: React.FC<{
 
   return (
     <motion.div 
-      className="w-full pb-20 overflow-x-hidden"
+      className="w-full pb-20"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
     >
        <div className="max-w-300 mx-auto">
+        <h1 className="sr-only">AyaFeed 落地页 - 幻想乡活动情报总览</h1>
         {isLoading ? (
-          <div className="px-4 pt-8">
+          <div className="px-4 pt-8" aria-live="polite">
             <div className="h-130 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white/60 animate-pulse" />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pt-16 border-t-2 border-black">
@@ -162,7 +163,7 @@ const LandingView: React.FC<{
             </div>
           </div>
         ) : error ? (
-          <div className="px-4 py-16">
+          <div className="px-4 py-16" role="alert" aria-live="polite">
             <div className="border-2 border-black bg-white newspaper-shadow p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row items-start gap-6">
                 <div className="w-14 h-14 shrink-0 bg-red-50 border-2 border-red-200 flex items-center justify-center text-red-700">
@@ -208,10 +209,11 @@ const LandingView: React.FC<{
               />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 px-4 pt-16 border-t-2 border-black">
-              <ScrapbookTimeline 
-                items={timelineItems} 
-              />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 pt-14 border-t-2 border-black">
+              <div className="lg:col-span-8">
+                <MobileQuickJumpBar items={timelineItems} />
+                <ScrapbookTimeline items={timelineItems} />
+              </div>
 
               <IndexSidebar 
                 items={timelineItems} 

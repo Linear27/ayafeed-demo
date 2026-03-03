@@ -3,7 +3,7 @@ import { createRootRoute, Outlet } from '@tanstack/react-router';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AIChat from '@/components/AIChat';
-import { AppProvider, useAppContext } from '@/context/AppContext';
+import { useAppContext } from '@/context/AppContext';
 import { ViewState } from '@/types';
 import { AlertTriangle, RefreshCcw } from 'lucide-react';
 
@@ -28,7 +28,7 @@ export const Route = createRootRoute({
         </div>
         <button 
           onClick={() => reset()}
-          className="flex items-center gap-2 px-8 py-3 bg-black text-white font-black uppercase tracking-widest hover:bg-red-600 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+          className="flex items-center gap-2 px-8 py-3 bg-black text-white font-black uppercase tracking-widest hover:bg-red-600 transition-[background-color,transform,box-shadow] duration-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FDFBF7]"
         >
           <RefreshCcw size={18} />
           重新加载频道
@@ -59,6 +59,12 @@ function RootComponent() {
 
   return (
     <div className="min-h-screen font-sans flex flex-col">
+      <a
+        href="#main-content"
+        className="sr-only absolute left-3 top-3 z-[70] bg-black px-3 py-2 text-xs font-bold uppercase tracking-widest text-white focus:not-sr-only focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FDFBF7]"
+      >
+        跳到主要内容
+      </a>
       <Navbar 
         currentView={currentView} 
         theme={theme} 
@@ -68,11 +74,11 @@ function RootComponent() {
         onSetRegion={setRegion}
       />
       
-      <main className="relative flex-1">
+      <main id="main-content" tabIndex={-1} className="relative flex-1">
         <Outlet />
       </main>
 
-      <Footer theme={theme} />
+      <Footer />
       <AIChat />
     </div>
   );

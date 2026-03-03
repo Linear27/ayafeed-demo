@@ -13,7 +13,7 @@ AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任
 1.  **启动阶段**：读取 `/docs` 下的所有文档，特别是本指南与 `02_EVENT_TAXONOMY.md`。
 2.  **执行阶段**：
     - **回复语言**: 回复用户时必须使用中文。
-    - 任何 UI 修改 must be 同时兼容 `theme-newspaper` 和 `theme-saas`。
+    - 仅支持单主题：`theme-newspaper`。
     - **数据维护规范**: 严禁修改 `data.ts` 根文件来添加条目。必须在 `data/{category}/` 下创建独立的条目文件（如 `sapporo_kamui.ts`），并在对应目录的 `index.ts` 中注册。
     - 保持 `Aya Shameimaru` (射命丸文) 的 AI 人格一致性。
 3.  **收尾阶段**：在本页面的 `5. 交接记录 (Handover)`底部追加本次修改的核心逻辑与后续建议。
@@ -23,9 +23,8 @@ AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任
   - 路径: `data/{category}/{entry_id}.ts`。
   - 导出: 每个文件导出一个命名的常量。
   - 聚合: `data/{category}/index.ts` 负责收集所有条目并导出 `EVENTS`, `LIVES`, `CIRCLES` 数组。
-- **双模态 (Dual-Mode)**：
-  - `Newspaper`: 粗边框 (4px/2px)、米色背景 (`#FDFBF7`)、衬线体。
-  - `SaaS`: 圆角、阴影、蓝色调、无衬线体。
+- **单主题 (Single Theme / Newspaper)**：
+  - 粗边框 (4px/2px)、米色背景 (`#FDFBF7`)、衬线体。
 
 ## 4. 交接记录 (Handover & Logs)
 
@@ -97,6 +96,52 @@ AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任
   - 本仓库改动文件：`components/Navbar.tsx`、`components/Footer.tsx`、`views/EventListView.tsx`、`views/LiveListView.tsx`、`routes/events/index.tsx`、`routes/lives/index.tsx`
   - 上游参考区域：`ayafeed-core/apps/web/src/components/Navbar.tsx`、`ayafeed-core/apps/web/src/views/EventListView.tsx`、`ayafeed-core/apps/web/src/views/LiveListView.tsx`
 - **状态**: 已完成并通过 `npm run lint`、`npm run build`。
+
+### [2026-03-03] - Landing Page 全量 UX 修复 (Landing UX Stabilization)
+- **执行内容**:
+  - 落地页交互语义修复：将关键点击区域替换为 `Link`/`button`，去除导航型 `div onClick`。
+  - 标题与主内容语义修复：新增页面主标题（`sr-only h1`），Navbar 品牌标题降级为非 `h1`，避免多主标题冲突。
+  - 快速跳转修复：`Quick Jump` 改为真实月锚点（`month-YYYY-MM`）并接入时间轴卡片首条锚点。
+  - 可访问性增强：新增全局 `skip link`、统一 `focus-visible` 样式、AI 对话消息区 `aria-live`、输入标签补齐。
+  - 视觉层级重排：弱化次级卡片和侧栏权重，保留主头条为首屏唯一高权重模块。
+  - 动画与性能收敛：替换核心页面 `transition-all` 为显式属性过渡；补齐关键图片 `width/height` 与 `loading/fetchPriority` 策略。
+  - 主题与交互细节：补充 `theme-color`，加入 `prefers-reduced-motion` 兜底规则与 `touch-action: manipulation`。
+- **参考与映射**:
+  - 本仓库改动文件：`components/LandingSections.tsx`、`views/LandingView.tsx`、`components/Navbar.tsx`、`components/Footer.tsx`、`components/AIChat.tsx`、`routes/__root.tsx`、`index.css`、`index.html`
+  - 上游参考区域：`ayafeed-core/apps/web/src/views/LandingView.tsx`、`ayafeed-core/apps/web/src/components/LandingSections.tsx`、`ayafeed-core/apps/web/src/components/Navbar.tsx`
+  - 保留：报纸主题视觉语言与 Navbar 双态滚动模式
+  - 有意变化：语义化交互、月锚点跳转链路、焦点体系统一、首屏视觉权重收敛
+  - 详细决策文档：`docs/plans/2026-03-03-landing-ux-stabilization.md`
+- **状态**: 已完成并通过 `npm run lint`、`npm run build`（仅保留 Vite chunk size warning）。
+
+### [2026-03-03] - Landing 重构二阶段落地 (Landing Refactor Phase 2 Implementation)
+- **执行内容**:
+  - Navbar 交互模型升级为 NYT 风格三态状态机：`top` / `reading-down` / `reading-up`，并新增 `data-aya-state` 调试钩子。
+  - compact dock 动画降噪：改为 200ms transform-only 过渡，消除旧版 `duration-500` 的迟滞与卡顿感。
+  - Landing 首屏层级收敛：
+    - 保留主故事主 CTA
+    - 降级侧栏高冲突 CTA 组为低权重文本入口
+    - `Next Major Event` 卡片从高饱和红块降级为次级白底信息卡
+  - 时间轴卡片可读性优化：取消全量旋转，仅保留极少量装饰性元素，阴影强度收敛。
+  - 移动端新增 sticky Quick Jump 条（月份 chips），并修复 `overflow-x-hidden` 导致 sticky 失效的问题。
+  - AI 浮窗干扰控制：landing 页面下滑自动弱化、上滑恢复，移动端按钮尺寸降低。
+  - 设计 token 基线补齐：`--aya-color-*`、`--aya-motion-*`、`--aya-shadow-*`、`--aya-header-height-compact`。
+- **参考与映射**:
+  - 本仓库改动文件：`components/Navbar.tsx`、`components/LandingSections.tsx`、`views/LandingView.tsx`、`components/AIChat.tsx`、`index.css`、`docs/plans/2026-03-03-landing-ux-stabilization.md`
+  - 外部行为参考：`https://www.nytimes.com/`（仅交互模型参考，不做视觉像素级复刻）
+  - 上游参考区域：`ayafeed-core/apps/web/src/components/Navbar.tsx`、`ayafeed-core/apps/web/src/views/LandingView.tsx`、`ayafeed-core/apps/web/src/components/LandingSections.tsx`
+- **状态**: 已完成并通过 `npm run lint`、`npm run build`（仅保留 Vite chunk size warning）。
+
+### [2026-03-03] - 单主题口径统一 (Single-Theme Documentation Alignment)
+- **执行内容**:
+  - 移除协作文档与设计文档中的过时主题兼容表述，统一为仅支持 `theme-newspaper`。
+  - 将 Agent workflow 中的 UI 约束改为单主题约束，避免后续实现误回退到历史兼容路径。
+  - 更新对外说明文档（README）为单主题视觉体系描述。
+- **参考与映射**:
+  - 本仓库改动文件：`AGENTS.md`、`docs/00_AGENT_GUIDE.md`、`docs/01_DESIGN_STRATEGY.md`、`README.md`
+  - 保留：报纸主题视觉语言与现有交互策略
+  - 有意变化：删除历史兼容描述，统一单主题文案
+- **状态**: 已完成（文档口径已统一为单主题）。
 
 ## 5. 后续建议 (Recommendations)
 - **图片资源**: 建议引入 CDN 或统一的占位图服务，以解决部分跨域图片加载不稳定的问题。

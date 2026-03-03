@@ -1,19 +1,26 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Sparkles, Bot } from 'lucide-react';
+import { MessageCircle, X, Send, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { sendMessageToGemini } from '../services/gemini';
 import { ChatMessage } from '../types';
 
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white';
+
 const AIChat: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showLauncher, setShowLauncher] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'model', text: "你好，我是 Niji-chan。你可以问我展会、演出或社团信息，我会给出检索与推荐。" }
+    { role: 'model', text: '你好，我是 Niji-chan。你可以问我展会、演出或社团信息，我会给出检索与推荐。' },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastScrollYRef = useRef(0);
+  const rafIdRef = useRef<number | null>(null);
+
   const pathname = window.location.pathname;
+  const isLandingRoute = pathname === '/';
   const isLiveDetailRoute = /^\/lives\/[^/]+$/.test(pathname);
   const isEventOrCircleDetailRoute = /^\/(events|circles)\/[^/]+$/.test(pathname);
   const mobileBottomClass = isLiveDetailRoute
@@ -23,7 +30,7 @@ const AIChat: React.FC = () => {
       : 'bottom-[calc(env(safe-area-inset-bottom,0px)+72px)]';
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -31,6 +38,52 @@ const AIChat: React.FC = () => {
       scrollToBottom();
     }
   }, [messages, isOpen]);
+
+  useEffect(() => {
+    if (!isLandingRoute || isOpen) {
+      setShowLauncher(true);
+      return;
+    }
+
+    const DIRECTION_DELTA = 8;
+    const SHOW_WHEN_SCROLL_TOP_LE = 120;
+
+    const updateLauncherVisibility = () => {
+      const currentScrollY = window.scrollY;
+      const delta = currentScrollY - lastScrollYRef.current;
+
+      if (currentScrollY <= SHOW_WHEN_SCROLL_TOP_LE || delta <= -DIRECTION_DELTA) {
+        setShowLauncher(true);
+      } else if (delta >= DIRECTION_DELTA) {
+        setShowLauncher(false);
+      }
+
+      lastScrollYRef.current = currentScrollY;
+    };
+
+    const onScroll = () => {
+      if (rafIdRef.current !== null) return;
+      rafIdRef.current = window.requestAnimationFrame(() => {
+        rafIdRef.current = null;
+        updateLauncherVisibility();
+      });
+    };
+
+    lastScrollYRef.current = window.scrollY;
+    updateLauncherVisibility();
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (rafIdRef.current !== null) {
+        window.cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    };
+  }, [isLandingRoute, isOpen]);
+
+  const isLauncherVisible = showLauncher || isOpen;
+  const launcherSizeClass = isLandingRoute ? 'h-11 w-11 sm:h-12 sm:w-12' : 'h-12 w-12';
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -44,129 +97,140 @@ const AIChat: React.FC = () => {
 
     try {
       const responseText = await sendMessageToGemini(
-        newMessages.map(m => ({ role: m.role, text: m.text })),
-        userText
+        newMessages.map((message) => ({ role: message.role, text: message.text })),
+        userText,
       );
-      
-      setMessages(prev => [...prev, { role: 'model', text: responseText }]);
-    } catch (error) {
-      setMessages(prev => [...prev, { role: 'model', text: "抱歉，连接服务器时遇到点麻烦。" }]);
+      setMessages((prev) => [...prev, { role: 'model', text: responseText }]);
+    } catch {
+      setMessages((prev) => [...prev, { role: 'model', text: '抱歉，连接服务器时遇到点麻烦。' }]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
       handleSend();
     }
   };
 
   return (
-    <div className={`fixed ${mobileBottomClass} right-[calc(env(safe-area-inset-right,0px)+16px)] sm:bottom-6 sm:right-6 z-50 flex flex-col items-end pointer-events-none`}>
-      {/* Chat Window */}
+    <div
+      className={`pointer-events-none fixed right-[calc(env(safe-area-inset-right,0px)+16px)] ${mobileBottomClass} z-50 flex flex-col items-end sm:bottom-6 sm:right-6`}
+      style={{
+        transform: isLauncherVisible ? 'translate3d(0, 0, 0)' : 'translate3d(0, 14px, 0)',
+        opacity: isLauncherVisible ? 1 : 0.18,
+        transition:
+          'transform var(--aya-motion-fast, 180ms) cubic-bezier(0.16, 1, 0.3, 1), opacity var(--aya-motion-fast, 180ms) ease-out',
+      }}
+    >
       <AnimatePresence>
-      {isOpen && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20, scale: 0.95, transformOrigin: "bottom right" }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 20, scale: 0.95 }}
-          className="pointer-events-auto mb-4 w-[calc(100vw-2rem)] sm:w-96 h-[500px] max-h-[calc(100dvh-8rem)] bg-white rounded-2xl shadow-2xl border border-red-100 flex flex-col overflow-hidden"
-        >
-          {/* Header */}
-          <div className="bg-gradient-to-r from-red-600 to-slate-900 p-4 flex justify-between items-center text-white">
-            <div className="flex items-center space-x-2">
-              <div className="p-1.5 bg-white/20 rounded-full">
-                <Bot size={20} className="text-white" />
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95, transformOrigin: 'bottom right' }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            role="dialog"
+            aria-modal="false"
+            aria-label="Niji-chan AI 对话窗口"
+            className="pointer-events-auto mb-4 flex h-[500px] max-h-[calc(100dvh-8rem)] w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-red-100 bg-white shadow-2xl sm:w-96"
+          >
+            <div className="flex items-center justify-between bg-gradient-to-r from-red-600 to-slate-900 p-4 text-white">
+              <div className="flex items-center space-x-2">
+                <div className="rounded-full bg-white/20 p-1.5">
+                  <Bot aria-hidden="true" size={20} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold">Niji-chan AI</h3>
+                  <p className="flex items-center text-xs text-red-100">
+                    <span className="mr-1 h-2 w-2 rounded-full bg-green-400" aria-hidden="true"></span>
+                    在线
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-sm">Niji-chan AI</h3>
-                <p className="text-xs text-red-100 flex items-center">
-                  <span className="w-2 h-2 bg-green-400 rounded-full mr-1"></span>
-                  在线
-                </p>
-              </div>
-            </div>
-            <button 
-              onClick={() => setIsOpen(false)}
-              aria-label="关闭对话"
-              className="text-white/80 hover:text-white transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
-            {messages.map((msg, idx) => (
-              <motion.div 
-                key={idx} 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                aria-label="关闭对话"
+                className={`text-white/80 transition-colors duration-200 hover:text-white ${FOCUS_RING}`}
               >
-                <div 
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
-                    msg.role === 'user' 
-                      ? 'bg-red-600 text-white rounded-br-none' 
-                      : 'bg-white text-slate-700 border border-slate-100 rounded-bl-none'
-                  }`}
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-1 space-y-4 overflow-y-auto bg-slate-50 p-4" aria-live="polite">
+              {messages.map((message, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <p className="whitespace-pre-wrap">{msg.text}</p>
-                </div>
-              </motion.div>
-            ))}
-            {isLoading && (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex justify-start"
-              >
-                <div className="bg-white border border-slate-100 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm w-[70%] space-y-2">
-                  <div className="h-2 w-full bg-slate-200 rounded animate-pulse"></div>
-                  <div className="h-2 w-3/4 bg-slate-200 rounded animate-pulse"></div>
-                  <div className="h-2 w-1/2 bg-slate-200 rounded animate-pulse"></div>
-                </div>
-              </motion.div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+                  <div
+                    className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
+                      message.role === 'user'
+                        ? 'rounded-br-none bg-red-600 text-white'
+                        : 'rounded-bl-none border border-slate-100 bg-white text-slate-700'
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap break-words">{message.text}</p>
+                  </div>
+                </motion.div>
+              ))}
 
-          {/* Input Area */}
-          <div className="p-4 bg-white border-t border-slate-100">
-            <div className="relative flex items-center">
-              <input
-                id="chat-input"
-                name="chat-input"
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="询问关于展会的信息..."
-                className="w-full bg-slate-100 text-slate-800 rounded-full py-3 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all text-sm"
-              />
-              <motion.button
-                onClick={handleSend}
-                disabled={!input.trim() || isLoading}
-                whileTap={{ scale: 0.9 }}
-                aria-label="发送消息"
-                className="absolute right-2 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <Send size={16} />
-              </motion.button>
+              {isLoading && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
+                  <div className="w-[70%] space-y-2 rounded-2xl rounded-bl-none border border-slate-100 bg-white px-4 py-3 shadow-sm">
+                    <div className="h-2 w-full animate-pulse rounded bg-slate-200"></div>
+                    <div className="h-2 w-3/4 animate-pulse rounded bg-slate-200"></div>
+                    <div className="h-2 w-1/2 animate-pulse rounded bg-slate-200"></div>
+                  </div>
+                </motion.div>
+              )}
+              <div ref={messagesEndRef} />
             </div>
-          </div>
-        </motion.div>
-      )}
+
+            <div className="border-t border-slate-100 bg-white p-4">
+              <label htmlFor="chat-input" className="sr-only">
+                输入问题
+              </label>
+              <div className="relative flex items-center">
+                <input
+                  id="chat-input"
+                  name="chat-input"
+                  type="text"
+                  value={input}
+                  onChange={(event) => setInput(event.target.value)}
+                  onKeyDown={handleKeyPress}
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder="询问关于展会的信息…"
+                  className={`w-full rounded-full bg-slate-100 py-3 pl-4 pr-12 text-sm text-slate-800 transition-colors duration-200 ${FOCUS_RING}`}
+                />
+                <motion.button
+                  type="button"
+                  onClick={handleSend}
+                  disabled={!input.trim() || isLoading}
+                  whileTap={{ scale: 0.92 }}
+                  aria-label="发送消息"
+                  className={`absolute right-2 rounded-full bg-red-600 p-2 text-white transition-colors duration-200 hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50 ${FOCUS_RING}`}
+                >
+                  <Send aria-hidden="true" size={16} />
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <motion.button
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label={isOpen ? "关闭 AI 助手" : "打开 AI 助手"}
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        aria-label={isOpen ? '关闭 AI 助手' : '打开 AI 助手'}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="pointer-events-auto flex items-center justify-center w-12 h-12 rounded-full shadow-xl z-50 bg-gradient-to-r from-red-600 to-red-500 text-white"
+        className={`${isLauncherVisible ? 'pointer-events-auto' : 'pointer-events-none'} z-50 flex ${launcherSizeClass} items-center justify-center rounded-full border border-black/10 bg-red-600 text-white shadow-lg transition-colors duration-200 hover:bg-red-700 touch-manipulation ${FOCUS_RING}`}
       >
         {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
       </motion.button>
