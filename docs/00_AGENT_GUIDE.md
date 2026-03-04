@@ -180,6 +180,39 @@ AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任
   - 有意变化：仅修复包名以满足 JSON schema / npm package name pattern
 - **状态**: 已完成（已通过正则匹配验证）。
 
+### [2026-03-04] - 组件展示 Logo 候选卡片动效修正 (Remove Card Hover Motion)
+- **执行内容**:
+  - 移除 `Logo Candidates` 区域外层卡片的 hover 位移动效，避免“卡片在动”偏离预期。
+  - 保留 `whileHover="hover"` 事件透传，用于继续触发 Logo 本体（`motion.path/circle/rect`）与内部文字等子元素动效。
+- **参考与映射**:
+  - 本仓库改动文件：`components/logo-candidates/AyaLogoCandidates.tsx`
+  - 上游参考区域：无（本仓库组件展示页行为修正）
+  - 保留：Logo 本体 hover 动效结构
+  - 有意变化：移除卡片容器 hover 位移
+- **状态**: 已完成并通过 `pnpm lint`、`pnpm build`（保留既有 chunk size warning）。
+
+### [2026-03-04] - Logo 候选动效范围收敛 (Only Icon Preview SVG Animates)
+- **执行内容**:
+  - 将 `Logo Candidates` 卡片内动画进一步收敛为仅 `Icon Preview` 顶部 SVG 在 hover 时触发。
+  - 移除其余区域 hover 动画：`Lockup` 文本位移、评分点 hover、推荐区卡片与问答条目 hover。
+- **参考与映射**:
+  - 本仓库改动文件：`components/logo-candidates/AyaLogoCandidates.tsx`
+  - 上游参考区域：无（本仓库展示交互修正）
+  - 保留：各 Logo 图形的 `variants.hover` 定义
+  - 有意变化：仅在 `Icon Preview` 包裹层保留 `whileHover="hover"`
+- **状态**: 已完成并通过 `pnpm lint`、`pnpm build`（保留既有 chunk size warning）。
+
+### [2026-03-04] - 候选 SVG 动效扩展 (Animate Candidate SVG Instances)
+- **执行内容**:
+  - 在 `Logo Candidates` 卡片中为各候选 SVG 实例统一增加 hover 触发（大图、Lockup 图标、24px、16px、B&W）。
+  - 保持“仅 SVG 动、卡片不动”的约束不变。
+- **参考与映射**:
+  - 本仓库改动文件：`components/logo-candidates/AyaLogoCandidates.tsx`
+  - 上游参考区域：无（本仓库展示交互调整）
+  - 保留：外层卡片无 hover 位移
+  - 有意变化：新增 `renderAnimatedIcon` 统一封装 SVG hover 触发
+- **状态**: 已完成并通过 `pnpm lint`、`pnpm build`（保留既有 chunk size warning）。
+
 ## 5. 后续建议 (Recommendations)
 - **图片资源**: 建议引入 CDN 或统一的占位图服务，以解决部分跨域图片加载不稳定的问题。
 - **国际化**: 进一步完善多语言支持，确保所有硬编码文本均可通过翻译配置。

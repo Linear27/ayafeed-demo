@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { motion, useReducedMotion, Variants } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Star, AlertCircle, Layers, Stamp, CheckCircle2, Info, Sparkles } from 'lucide-react';
 
 export type LogoCandidate = {
@@ -273,51 +273,31 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
 ];
 
 const AyaLogoCandidates: React.FC = () => {
-  const shouldReduceMotion = useReducedMotion();
-
-  // 基础卡片动效
-  const cardVariants: Variants = {
-    initial: { opacity: 1, y: 0 },
-    hover: { 
-      y: shouldReduceMotion ? 0 : -4,
-      transition: TRANSITION
-    }
-  };
-
-  // 文字动效
-  const textVariants: Variants = {
-    initial: { x: 0 },
-    hover: { 
-      x: shouldReduceMotion ? 0 : 2,
-      transition: TRANSITION
-    }
-  };
+  const renderAnimatedIcon = (icon: React.ReactNode) => (
+    <motion.div initial="initial" whileHover="hover" className="inline-flex items-center justify-center">
+      {icon}
+    </motion.div>
+  );
 
   return (
     <div className="space-y-24">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
         {LOGO_CANDIDATES.map((candidate) => (
-          <motion.div 
+          <div 
             key={candidate.id} 
-            initial="initial"
-            whileHover="hover"
-            variants={cardVariants}
             className="bg-white border-2 border-black newspaper-shadow-sm p-6 flex flex-col group transition-all cursor-default"
           >
             {/* 1. Large Icon Preview */}
             <div className="aspect-square bg-[#FDFBF7] border-b-2 border-black -mx-6 -mt-6 mb-6 flex items-center justify-center p-12 relative overflow-hidden">
                <div className="absolute top-2 left-2 text-[8px] font-mono font-bold opacity-20 uppercase tracking-widest">Icon Preview</div>
-               {candidate.renderIcon({ size: 120 })}
+               {renderAnimatedIcon(candidate.renderIcon({ size: 120 }))}
             </div>
 
             {/* 2. Lockup Preview */}
             <div className="mb-8">
                <div className="text-[8px] font-mono font-bold opacity-40 uppercase tracking-widest mb-3">Lockup (EN + ZH Suggestion)</div>
-               <motion.div 
-                 variants={textVariants}
-                 className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200"
-               >
-                  {candidate.renderIcon({ size: 32 })}
+               <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200">
+                  {renderAnimatedIcon(candidate.renderIcon({ size: 32 }))}
                   <div className="flex flex-col leading-none">
                     <span className="text-lg font-black tracking-tighter" style={{ fontFamily: candidate.font.en }}>
                       AyaFeed
@@ -326,30 +306,30 @@ const AyaLogoCandidates: React.FC = () => {
                       文文快讯
                     </span>
                   </div>
-               </motion.div>
+               </div>
             </div>
 
             {/* 3. Scale & B/W Feasibility */}
             <div className="grid grid-cols-3 gap-2 mb-8">
-               <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center">
                   <div className="text-[7px] font-mono font-bold opacity-40 uppercase mb-2">24px</div>
                   <div className="w-8 h-8 flex items-center justify-center bg-slate-50 border border-slate-200">
-                    {candidate.renderIcon({ size: 24 })}
+                    {renderAnimatedIcon(candidate.renderIcon({ size: 24 }))}
                   </div>
-               </div>
-               <div className="flex flex-col items-center">
+                </div>
+                <div className="flex flex-col items-center">
                   <div className="text-[7px] font-mono font-bold opacity-40 uppercase mb-2">16px</div>
                   <div className="w-8 h-8 flex items-center justify-center bg-slate-50 border border-slate-200">
-                    {candidate.renderIcon({ size: 16 })}
+                    {renderAnimatedIcon(candidate.renderIcon({ size: 16 }))}
                   </div>
-               </div>
-               <div className="flex flex-col items-center">
+                </div>
+                <div className="flex flex-col items-center">
                   <div className="text-[7px] font-mono font-bold opacity-40 uppercase mb-2">B&W</div>
                   <div className="w-8 h-8 flex items-center justify-center bg-black">
-                    {candidate.renderIcon({ size: 20, color: 'white' })}
+                    {renderAnimatedIcon(candidate.renderIcon({ size: 20, color: 'white' }))}
                   </div>
-               </div>
-            </div>
+                </div>
+             </div>
 
             {/* 4. Scores */}
             <div className="mb-6 space-y-2">
@@ -359,13 +339,7 @@ const AyaLogoCandidates: React.FC = () => {
                     <span className="text-[9px] uppercase opacity-60">{key}</span>
                     <div className="flex gap-0.5">
                        {[...Array(10)].map((_, i) => (
-                         <motion.div 
-                           key={i} 
-                           variants={{
-                             hover: { scale: 1.2, backgroundColor: i < val ? '#ef4444' : '#f1f5f9' }
-                           }}
-                           className={`w-1.5 h-1.5 ${i < val ? 'bg-red-600' : 'bg-slate-100'}`}
-                         />
+                         <div key={i} className={`w-1.5 h-1.5 ${i < val ? 'bg-red-600' : 'bg-slate-100'}`} />
                        ))}
                     </div>
                  </div>
@@ -394,7 +368,7 @@ const AyaLogoCandidates: React.FC = () => {
                   </div>
                </div>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
 
@@ -426,31 +400,23 @@ const AyaLogoCandidates: React.FC = () => {
                    slogan: "Solid as Print, Fast as Feed."
                  }
                ].map((rec) => (
-                 <motion.div 
+                 <div 
                    key={rec.id}
-                   initial="initial"
-                   whileHover="hover"
                    className="flex flex-col md:flex-row gap-8 items-start group"
                  >
-                    <motion.div 
-                      variants={{ hover: { scale: 1.1, rotate: -2 } }}
-                      className="w-16 h-16 bg-white text-black flex items-center justify-center text-3xl font-black shrink-0"
-                    >
+                    <div className="w-16 h-16 bg-white text-black flex items-center justify-center text-3xl font-black shrink-0">
                       {rec.id}
-                    </motion.div>
+                    </div>
                     <div>
                        <h3 className="text-xl font-black mb-2">{rec.name}</h3>
                        <p className="text-slate-400 text-sm mb-4 leading-relaxed">
                           {rec.desc}
                        </p>
-                       <motion.div 
-                         variants={{ hover: { x: 4 } }}
-                         className="inline-block px-4 py-1 bg-red-600 text-xs font-black uppercase tracking-widest"
-                       >
+                       <div className="inline-block px-4 py-1 bg-red-600 text-xs font-black uppercase tracking-widest">
                           "{rec.slogan}"
-                       </motion.div>
+                       </div>
                     </div>
-                 </motion.div>
+                 </div>
                ))}
             </div>
 
@@ -466,14 +432,10 @@ const AyaLogoCandidates: React.FC = () => {
                     "是否需要为 Top 3 方案开发一套专属的‘报纸纹理’背景应用规范？",
                     "在 16px 极端尺寸下，是否允许舍弃部分细节以换取更高的结构辨识度？"
                   ].map((q, i) => (
-                    <motion.div 
-                      key={i} 
-                      whileHover={{ x: 4, backgroundColor: "rgba(255,255,255,0.08)" }}
-                      className="flex gap-4 p-4 bg-white/5 border border-white/10 transition-colors"
-                    >
+                    <div key={i} className="flex gap-4 p-4 bg-white/5 border border-white/10 transition-colors">
                        <span className="text-red-500 font-mono font-bold">Q{i+1}.</span>
                        <p className="text-sm text-slate-300">{q}</p>
-                    </motion.div>
+                    </div>
                   ))}
                </div>
             </div>
