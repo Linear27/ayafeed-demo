@@ -1,5 +1,5 @@
 {
-  "name": "文文。快讯-|-ayafeed---同人展会与演出情报站",
+  "name": "ayafeed-demo",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,7 +7,8 @@
     "dev": "tsx server.ts",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "aistudio:clean-temp": "node scripts/cleanup-aistudio-temp.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.40.0",

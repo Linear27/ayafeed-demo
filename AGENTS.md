@@ -7,7 +7,7 @@
 - Primary reference app path: `E:\Code\test1\ayafeed-core\apps\web\`
 
 ## Sync Status
-- Last synced with `docs/00_AGENT_GUIDE.md`: **2026-03-03**
+- Last synced with `docs/00_AGENT_GUIDE.md`: **2026-03-04**
 - If this file conflicts with `docs/00_AGENT_GUIDE.md`, treat `docs/00_AGENT_GUIDE.md` as source of truth.
 
 ## How To Use References
@@ -25,6 +25,11 @@
 - Do not add content entries directly in root `data.ts`.
 - Add data entries under `data/{category}/` and register them in that category `index.ts`.
 - After implementation, append a concise handover record in `docs/00_AGENT_GUIDE.md`.
+
+## AI Studio Temp File Policy
+- All AI Studio pull/sync temporary artifacts must be stored under `.tmp/aistudio/`. Do not write them in repository root.
+- Before finishing any AI Studio pull/sync task, run `pnpm aistudio:clean-temp` to move misplaced root temp files into `.tmp/aistudio/`.
+- Enforce periodic cleanup with the same command (default retention: 7 days). To customize retention, run `pnpm aistudio:clean-temp -- --retention-days=<N>`.
 
 ## Stable Decision Index
 - `docs/plans/2026-03-02-nyt-navbar-scroll-behavior.md`

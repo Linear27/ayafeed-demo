@@ -14,6 +14,7 @@ AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任
 2.  **执行阶段**：
     - **回复语言**: 回复用户时必须使用中文。
     - 仅支持单主题：`theme-newspaper`。
+    - **AI Studio 临时文件规范**: pull/sync 产物必须写入 `.tmp/aistudio/`，禁止落盘到仓库根目录；完成相关任务前运行 `pnpm aistudio:clean-temp` 做搬运与过期清理（默认保留 7 天）。
     - **数据维护规范**: 严禁修改 `data.ts` 根文件来添加条目。必须在 `data/{category}/` 下创建独立的条目文件（如 `sapporo_kamui.ts`），并在对应目录的 `index.ts` 中注册。
     - 保持 `Aya Shameimaru` (射命丸文) 的 AI 人格一致性。
 3.  **收尾阶段**：在本页面的 `5. 交接记录 (Handover)`底部追加本次修改的核心逻辑与后续建议。
@@ -153,6 +154,31 @@ AyaFeed 是一个高度数据驱动的同人展会信息站。Agent 的首要任
   - 保留：现有 `pnpm-workspace.yaml` + `pnpm-lock.yaml` 工作流
   - 有意变化：移除非 `pnpm` 工作流入口，统一至单一包管理器
 - **状态**: 已完成。
+
+### [2026-03-04] - AI Studio 临时文件治理 (AI Studio Temp Artifact Governance)
+- **执行内容**:
+  - 在 `AGENTS.md` 新增 `AI Studio Temp File Policy`：要求 pull/sync 临时产物统一落盘到 `.tmp/aistudio/`，禁止直接写仓库根目录。
+  - 在 `.gitignore` 增加 `aistudio-*` 与 `.tmp-sync-*`/`.tmp-head-*.bin` 相关规则，避免临时产物污染 Git 变更。
+  - 新增脚本 `scripts/cleanup-aistudio-temp.mjs` 并在 `package.json` 暴露 `pnpm aistudio:clean-temp`：
+    - 自动搬运根目录误落盘临时文件到 `.tmp/aistudio/`
+    - 按保留天数清理旧文件（默认 7 天，可通过 `--retention-days=<N>` 覆盖）
+- **参考与映射**:
+  - 本仓库改动文件：`AGENTS.md`、`.gitignore`、`scripts/cleanup-aistudio-temp.mjs`、`package.json`
+  - 上游参考区域：无（仓库级协作与工作区治理策略）
+  - 保留：现有 `pnpm` 单包管理器工作流与 docs-first 协作规范
+  - 有意变化：新增 AI Studio 临时文件目录约束与可执行清理入口
+- **状态**: 已完成（已可通过 `pnpm aistudio:clean-temp` 执行治理）。
+
+### [2026-03-04] - package.json 包名规范修复 (Package Name Schema Fix)
+- **执行内容**:
+  - 将 `package.json` 中不符合 npm 命名规范的 `name`（含中文与特殊符号）改为合法小写包名 `ayafeed-demo`。
+  - 保持其余脚本、依赖与 `pnpm` 相关配置不变，确保为最小改动。
+- **参考与映射**:
+  - 本仓库改动文件：`package.json`
+  - 上游参考区域：无（仓库元数据规范修复）
+  - 保留：现有 `pnpm` 工作流与版本约束
+  - 有意变化：仅修复包名以满足 JSON schema / npm package name pattern
+- **状态**: 已完成（已通过正则匹配验证）。
 
 ## 5. 后续建议 (Recommendations)
 - **图片资源**: 建议引入 CDN 或统一的占位图服务，以解决部分跨域图片加载不稳定的问题。

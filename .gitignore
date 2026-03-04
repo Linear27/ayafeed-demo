@@ -14,6 +14,13 @@ dist-ssr
 artifacts/
 .tmp-*/
 .tmp-*.zip
+.tmp/aistudio/
+aistudio-*.png
+aistudio-*.jpg
+aistudio-*.jpeg
+aistudio-*.webp
+.tmp-sync-*
+.tmp-head-*.bin
 
 # Editor directories and files
 .vscode/*
