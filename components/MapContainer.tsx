@@ -46,21 +46,21 @@ const MapContainer: React.FC<{ lng: number; lat: number }> = ({ lng, lat }) => {
 
   if (error) {
      return (
-        <div className="w-full h-full bg-[#E5E5E5] flex flex-col items-center justify-center p-8 text-center border-2 border-black relative overflow-hidden">
+        <div className="w-full h-full bg-[var(--paper-bg-secondary)]/50 flex flex-col items-center justify-center p-8 text-center border-2 border-[var(--paper-border)] relative overflow-hidden">
            {/* Cross-out aesthetic for newspaper */}
            <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
-              <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(45deg,transparent_45%,#000_45%,#000_55%,transparent_55%),linear-gradient(-45deg,transparent_45%,#000_45%,#000_55%,transparent_55%)] bg-[length:20px_20px]"></div>
+              <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(45deg,transparent_45%,var(--paper-border)_45%,var(--paper-border)_55%,transparent_55%),linear-gradient(-45deg,transparent_45%,var(--paper-border)_45%,var(--paper-border)_55%,transparent_55%)] bg-[length:20px_20px]"></div>
            </div>
            
            <div className="relative z-10 flex flex-col items-center">
-               <div className="w-16 h-16 border-4 border-black/10 rounded-full flex items-center justify-center mb-4">
-                  <MapIcon size={32} className="text-black/10" />
+               <div className="w-16 h-16 border-4 border-[var(--paper-border)]/10 rounded-full flex items-center justify-center mb-4">
+                  <MapIcon size={32} className="text-[var(--paper-border)]/10" />
                </div>
-               <p className="text-xs font-black font-header text-black/40 uppercase tracking-[0.3em] mb-1">Navigation Unavailable</p>
-               <p className="text-[10px] font-mono font-bold text-black/30">CHECK EXTERNAL LINKS FOR ROUTING</p>
+               <p className="text-xs font-black font-header text-[var(--paper-text-muted)]/40 uppercase tracking-[0.3em] mb-1">Navigation Unavailable</p>
+               <p className="text-[10px] font-mono font-bold text-[var(--paper-text-muted)]/30">CHECK EXTERNAL LINKS FOR ROUTING</p>
            </div>
            
-           <div className="absolute bottom-2 right-2 opacity-5">
+           <div className="absolute bottom-2 right-2 opacity-5 text-[var(--paper-text-muted)]">
               <HelpCircle size={64}/>
            </div>
         </div>

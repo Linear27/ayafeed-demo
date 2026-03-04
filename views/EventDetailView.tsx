@@ -76,22 +76,22 @@ const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle
       : '--/--';
 
     return (
-    <div onClick={() => setSelectedNews(news)} className="group flex gap-4 cursor-pointer items-center p-4 border border-slate-200 hover:border-black bg-white hover:bg-slate-50 mb-2">
-      <div className="flex flex-col items-center justify-center w-14 shrink-0 py-1 border-r border-black">
-        <span className="text-xs font-mono font-black leading-none text-red-600">{dateLabel}</span>
+    <div onClick={() => setSelectedNews(news)} className="group flex gap-4 cursor-pointer items-center p-4 border border-[var(--paper-border)]/20 hover:border-[var(--paper-accent)] bg-[var(--paper-surface)] hover:bg-[var(--paper-bg-secondary)]/30 mb-2 transition-colors">
+      <div className="flex flex-col items-center justify-center w-14 shrink-0 py-1 border-r border-[var(--paper-border)]/20">
+        <span className="text-xs font-mono font-black leading-none text-[var(--paper-accent)]">{dateLabel}</span>
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="font-bold text-sm truncate leading-tight transition-colors text-slate-900 group-hover:text-red-700 font-header">{news.title}</h4>
+        <h4 className="font-bold text-sm truncate leading-tight transition-colors text-[var(--paper-text)] group-hover:text-[var(--paper-accent)] font-header">{news.title}</h4>
       </div>
-      <ArrowRight size={14} className="shrink-0 opacity-0 group-hover:opacity-100 transition-all text-red-600" />
+      <ArrowRight size={14} className="shrink-0 opacity-0 group-hover:opacity-100 transition-all text-[var(--paper-accent)]" />
     </div>
     );
   };
 
   const TabButton = ({ tab, label, icon: Icon }: { tab: TabType, label: string, icon: React.ComponentType<{ size?: number; className?: string }> }) => (
-    <button onClick={() => setActiveTab(tab)} className={`relative px-5 py-4 text-sm font-black border-r-2 border-t-2 border-l-2 border-black mr-[-2px] bg-[#FDFBF7] transition-all z-10 rounded-t-lg shrink-0 ${activeTab === tab ? 'z-20 bg-white translate-y-[2px] pb-5' : 'text-slate-500 bg-slate-100 hover:bg-slate-50 top-[4px]'}`}>
+    <button onClick={() => setActiveTab(tab)} className={`relative px-5 py-4 text-sm font-black border-r-2 border-t-2 border-l-2 border-[var(--paper-border)] mr-[-2px] bg-[var(--paper-bg-secondary)]/50 transition-all z-10 rounded-t-lg shrink-0 ${activeTab === tab ? 'z-20 bg-[var(--paper-surface)] translate-y-[2px] pb-5' : 'text-[var(--paper-text-muted)] bg-[var(--paper-bg-secondary)]/30 hover:bg-[var(--paper-bg-secondary)]/50 top-[4px]'}`}>
       <div className="flex items-center">
-         <Icon size={16} className={`mr-2 shrink-0 ${activeTab === tab ? 'text-red-600' : 'text-slate-400'}`} />
+         <Icon size={16} className={`mr-2 shrink-0 ${activeTab === tab ? 'text-[var(--paper-accent)]' : 'text-[var(--paper-text-muted)]/40'}`} />
          <span className="whitespace-nowrap uppercase tracking-tighter">{label}</span>
       </div>
     </button>
@@ -99,21 +99,21 @@ const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle
 
   return (
     <motion.div className="min-h-screen" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-      <div className="bg-white border-b-2 border-black pb-4">
+      <div className="bg-[var(--paper-surface)] border-b-2 border-[var(--paper-border)] pb-4">
         <div className="max-w-[1200px] mx-auto">
           <EventDetailHeader event={event} circleCount={eventCircles.length} onBack={onBack} onSelectCirclesTab={() => setActiveTab('CIRCLES')} />
         </div>
       </div>
 
-      <div className="bg-white">
-        <div className="max-w-[1200px] mx-auto px-4 border-b-2 border-black -mt-[2px] flex overflow-x-auto hide-scrollbar">
+      <div className="bg-[var(--paper-surface)]">
+        <div className="max-w-[1200px] mx-auto px-4 border-b-2 border-[var(--paper-border)] -mt-[2px] flex overflow-x-auto hide-scrollbar">
           <div className="flex shrink-0">
             <TabButton tab="OVERVIEW" label="内容总览" icon={Layout} />
             <TabButton tab="CIRCLES" label="参展社团" icon={Users} />
             <TabButton tab="INFO" label="展会公告" icon={Newspaper} />
             <TabButton tab="ACCESS" label="交通路线" icon={MapIcon} />
           </div>
-          <div className="flex-1 border-b-2 border-black min-w-[20px]"></div>
+          <div className="flex-1 border-b-2 border-[var(--paper-border)] min-w-[20px]"></div>
         </div>
       </div>
 

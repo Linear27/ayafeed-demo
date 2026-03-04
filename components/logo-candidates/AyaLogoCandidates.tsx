@@ -53,7 +53,7 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
     concept: '抽象的鸦羽构成 A 字，致敬射命丸文的极速与文化传播。',
     elements: '三片锐利羽毛、上升动感、流线型 A。',
     font: { en: 'Playfair Display', zh: '思源宋体 Bold' },
-    colors: { primary: '#111827', secondary: '#DC2626' },
+    colors: { primary: 'var(--paper-text)', secondary: 'var(--paper-accent)' },
     scores: { consistency: 10, recognition: 9, readability: 9, simplicity: 8, scalability: 9 },
     useCase: '全场景通用，尤其是社论、专栏与品牌核心标识。',
     feasibility: '极简剪影，16px 下依然保持 A 字轮廓，黑白表现完美。',
@@ -61,19 +61,19 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
       <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className={className}>
         <motion.path 
           d="M20 80C20 80 40 20 80 20" 
-          stroke={color || "#111827"} strokeWidth="8" strokeLinecap="round"
+          stroke={color || "var(--paper-text)"} strokeWidth="8" strokeLinecap="round"
           variants={{ hover: { y: -4, x: -2 } }}
           transition={TRANSITION}
         />
         <motion.path 
           d="M35 80C35 80 50 40 80 40" 
-          stroke={color || "#111827"} strokeWidth="8" strokeLinecap="round"
+          stroke={color || "var(--paper-text)"} strokeWidth="8" strokeLinecap="round"
           variants={{ hover: { y: -2, x: -1 } }}
           transition={TRANSITION}
         />
         <motion.path 
           d="M50 80C50 80 60 60 80 60" 
-          stroke={color || "#DC2626"} strokeWidth="8" strokeLinecap="round"
+          stroke={color || "var(--paper-accent)"} strokeWidth="8" strokeLinecap="round"
           variants={{ hover: { y: 0, x: 0, scale: 1.05 } }}
           transition={TRANSITION}
         />
@@ -86,7 +86,7 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
     concept: '几何化眼眸融合快门结构，象征全知视角与现场记录。',
     elements: '同心圆、十字准星、核心焦点。',
     font: { en: 'Inter Black', zh: '思源黑体 Bold' },
-    colors: { primary: '#111827', secondary: '#DC2626' },
+    colors: { primary: 'var(--paper-text)', secondary: 'var(--paper-accent)' },
     scores: { consistency: 8, recognition: 8, readability: 9, simplicity: 9, scalability: 8 },
     useCase: '摄影专题、现场快讯、调查报告。',
     feasibility: '圆形结构稳定，16px 下中心红点成为视觉重心。',
@@ -94,19 +94,19 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
       <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className={className}>
         <motion.circle 
           cx="50" cy="50" r="40" 
-          stroke={color || "#111827"} strokeWidth="8"
+          stroke={color || "var(--paper-text)"} strokeWidth="8"
           variants={{ hover: { scale: 0.95 } }}
           transition={TRANSITION}
         />
         <motion.circle 
           cx="50" cy="50" r="12" 
-          fill={color || "#DC2626"}
+          fill={color || "var(--paper-accent)"}
           variants={{ hover: { scale: 1.2 } }}
           transition={TRANSITION}
         />
         <motion.path 
           d="M30 30L40 40M70 70L60 60M70 30L60 40M30 70L40 60" 
-          stroke={color || "#111827"} strokeWidth="6" strokeLinecap="round"
+          stroke={color || "var(--paper-text)"} strokeWidth="6" strokeLinecap="round"
           variants={{ hover: { scale: 0.8, opacity: 0.6 } }}
           transition={TRANSITION}
         />
@@ -119,7 +119,7 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
     concept: '粗壮的垂直线条构成 A 字，模拟报纸排版立柱。',
     elements: '等宽垂直条、负空间 A、水平连接。',
     font: { en: 'Space Grotesk', zh: '阿里巴巴普惠体 Bold' },
-    colors: { primary: '#111827', secondary: '#DC2626' },
+    colors: { primary: 'var(--paper-text)', secondary: 'var(--paper-accent)' },
     scores: { consistency: 9, recognition: 7, readability: 10, simplicity: 9, scalability: 9 },
     useCase: '官方公告、展会名录、数据看板。',
     feasibility: '块状结构极度抗干扰，适合极小尺寸印刷。',
@@ -127,13 +127,13 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
       <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className={className}>
         <motion.path 
           d="M20 85V15H80V85" 
-          stroke={color || "#111827"} strokeWidth="14" strokeLinejoin="round"
+          stroke={color || "var(--paper-text)"} strokeWidth="14" strokeLinejoin="round"
           variants={{ hover: { y: -2 } }}
           transition={TRANSITION}
         />
         <motion.path 
           d="M20 55H80" 
-          stroke={color || "#DC2626"} strokeWidth="14"
+          stroke={color || "var(--paper-accent)"} strokeWidth="14"
           variants={{ hover: { opacity: 0.8, y: -2 } }}
           transition={TRANSITION}
         />
@@ -146,16 +146,16 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
     concept: '水平流动的讯息条结合报纸折角，体现数字快讯的即时性。',
     elements: '平行线条、动态位移、折角矩形。',
     font: { en: 'Roboto Mono', zh: '思源黑体' },
-    colors: { primary: '#111827', secondary: '#DC2626' },
+    colors: { primary: 'var(--paper-text)', secondary: 'var(--paper-accent)' },
     scores: { consistency: 7, recognition: 8, readability: 7, simplicity: 7, scalability: 8 },
     useCase: '实时动态流、社交媒体分享预览。',
     feasibility: '线条感强，但在 16px 下可能略显拥挤。',
     renderIcon: ({ size, color, className }) => (
       <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className={className}>
-        <motion.rect x="10" y="25" width="80" height="12" fill={color || "#111827"} variants={{ hover: { x: 2 } }} transition={TRANSITION} />
-        <motion.rect x="10" y="45" width="60" height="12" fill={color || "#DC2626"} variants={{ hover: { x: 6 } }} transition={TRANSITION} />
-        <motion.rect x="10" y="65" width="80" height="12" fill={color || "#111827"} variants={{ hover: { x: 2 } }} transition={TRANSITION} />
-        <motion.path d="M75 45L90 60H75V45Z" fill={color || "#111827"} variants={{ hover: { x: 4 } }} transition={TRANSITION} />
+        <motion.rect x="10" y="25" width="80" height="12" fill={color || "var(--paper-text)"} variants={{ hover: { x: 2 } }} transition={TRANSITION} />
+        <motion.rect x="10" y="45" width="60" height="12" fill={color || "var(--paper-accent)"} variants={{ hover: { x: 6 } }} transition={TRANSITION} />
+        <motion.rect x="10" y="65" width="80" height="12" fill={color || "var(--paper-text)"} variants={{ hover: { x: 2 } }} transition={TRANSITION} />
+        <motion.path d="M75 45L90 60H75V45Z" fill={color || "var(--paper-text)"} variants={{ hover: { x: 4 } }} transition={TRANSITION} />
       </svg>
     )
   },
@@ -165,7 +165,7 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
     concept: '钢笔尖与数字节点的结合，象征记录的权威与数字存储。',
     elements: '锐利三角形、中缝分割、核心圆点。',
     font: { en: 'Crimson Text', zh: '思源宋体' },
-    colors: { primary: '#111827', secondary: '#DC2626' },
+    colors: { primary: 'var(--paper-text)', secondary: 'var(--paper-accent)' },
     scores: { consistency: 9, recognition: 9, readability: 8, simplicity: 8, scalability: 7 },
     useCase: '深度阅读、历史存根、官方认证内容。',
     feasibility: '三角形轮廓极具指向性，24px 下笔尖结构清晰。',
@@ -173,19 +173,19 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
       <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className={className}>
         <motion.path 
           d="M50 10L85 70H15L50 10Z" 
-          stroke={color || "#111827"} strokeWidth="8" strokeLinejoin="round"
+          stroke={color || "var(--paper-text)"} strokeWidth="8" strokeLinejoin="round"
           variants={{ hover: { y: -3 } }}
           transition={TRANSITION}
         />
         <motion.path 
           d="M50 10V45" 
-          stroke={color || "#111827"} strokeWidth="6"
+          stroke={color || "var(--paper-text)"} strokeWidth="6"
           variants={{ hover: { y: -3, scaleY: 1.1 } }}
           transition={TRANSITION}
         />
         <motion.circle 
           cx="50" cy="58" r="10" 
-          fill={color || "#DC2626"}
+          fill={color || "var(--paper-accent)"}
           variants={{ hover: { scale: 1.15, y: -1 } }}
           transition={TRANSITION}
         />
@@ -198,7 +198,7 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
     concept: '菱形快门结构，象征突破性的新闻爆发力。',
     elements: '旋转菱形、内部十字、负空间。',
     font: { en: 'Outfit', zh: '阿里巴巴普惠体' },
-    colors: { primary: '#111827', secondary: '#DC2626' },
+    colors: { primary: 'var(--paper-text)', secondary: 'var(--paper-accent)' },
     scores: { consistency: 7, recognition: 7, readability: 8, simplicity: 9, scalability: 8 },
     useCase: '突发爆料、限时活动、动态封面。',
     feasibility: '几何感极强，黑白模式下反差极大，极具现代感。',
@@ -206,13 +206,13 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
       <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className={className}>
         <motion.path 
           d="M50 10L90 50L50 90L10 50L50 10Z" 
-          stroke={color || "#111827"} strokeWidth="8"
+          stroke={color || "var(--paper-text)"} strokeWidth="8"
           variants={{ hover: { rotate: 5 } }}
           transition={TRANSITION}
         />
         <motion.path 
           d="M50 10V40M90 50H60M50 90V60M10 50H40" 
-          stroke={color || "#DC2626"} strokeWidth="8" strokeLinecap="round"
+          stroke={color || "var(--paper-accent)"} strokeWidth="8" strokeLinecap="round"
           variants={{ hover: { scale: 1.1, rotate: -5 } }}
           transition={TRANSITION}
         />
@@ -225,7 +225,7 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
     concept: '互锁的几何环，象征同人社群的紧密链接。',
     elements: '双圆环、交叠负空间、中心连接点。',
     font: { en: 'Quicksand', zh: '微软雅黑 Bold' },
-    colors: { primary: '#111827', secondary: '#DC2626' },
+    colors: { primary: 'var(--paper-text)', secondary: 'var(--paper-accent)' },
     scores: { consistency: 6, recognition: 8, readability: 9, simplicity: 10, scalability: 9 },
     useCase: '社交功能、社团协作、互动社区。',
     feasibility: '结构极其简单，16px 下依然能识别出双环结构。',
@@ -233,19 +233,19 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
       <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className={className}>
         <motion.circle 
           cx="40" cy="50" r="25" 
-          stroke={color || "#111827"} strokeWidth="10"
+          stroke={color || "var(--paper-text)"} strokeWidth="10"
           variants={{ hover: { x: 5 } }}
           transition={TRANSITION}
         />
         <motion.circle 
           cx="60" cy="50" r="25" 
-          stroke={color || "#DC2626"} strokeWidth="10"
+          stroke={color || "var(--paper-accent)"} strokeWidth="10"
           variants={{ hover: { x: -5 } }}
           transition={TRANSITION}
         />
         <motion.circle 
           cx="50" cy="50" r="6" 
-          fill={color || "#111827"}
+          fill={color || "var(--paper-text)"}
           variants={{ hover: { scale: 1.5 } }}
           transition={TRANSITION}
         />
@@ -258,7 +258,7 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
     concept: '沉稳的方块印章，内置抽象字标，传达官方认证感。',
     elements: '粗边框、几何 A、水平横杠。',
     font: { en: 'Crimson Text', zh: '思源宋体 Bold' },
-    colors: { primary: '#111827', secondary: '#DC2626' },
+    colors: { primary: 'var(--paper-text)', secondary: 'var(--paper-accent)' },
     scores: { consistency: 9, recognition: 8, readability: 10, simplicity: 9, scalability: 8 },
     useCase: '官方声明、版权标识、高端画册。',
     feasibility: '印章形式天然适配小尺寸，16px 下是一个稳固的红黑方块。',
@@ -266,19 +266,19 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
       <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className={className}>
         <motion.rect 
           x="15" y="15" width="70" height="70" 
-          stroke={color || "#111827"} strokeWidth="12"
+          stroke={color || "var(--paper-text)"} strokeWidth="12"
           variants={{ hover: { scale: 0.96 } }}
           transition={TRANSITION}
         />
         <motion.path 
           d="M30 70L50 30L70 70" 
-          stroke={color || "#DC2626"} strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"
+          stroke={color || "var(--paper-accent)"} strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"
           variants={{ hover: { scale: 0.9, opacity: 0.8 } }}
           transition={TRANSITION}
         />
         <motion.path 
           d="M42 55H58" 
-          stroke={color || "#111827"} strokeWidth="6"
+          stroke={color || "var(--paper-text)"} strokeWidth="6"
           variants={{ hover: { scale: 0.9 } }}
           transition={TRANSITION}
         />
@@ -346,10 +346,10 @@ const AyaLogoCandidates: React.FC = () => {
         {LOGO_CANDIDATES.map((candidate) => (
           <div 
             key={candidate.id} 
-            className="bg-white border-2 border-black newspaper-shadow-sm p-6 flex flex-col group transition-all cursor-default"
+            className="bg-[var(--paper-surface)] border-2 border-[var(--paper-border)] newspaper-shadow-sm p-6 flex flex-col group transition-all cursor-default text-[var(--paper-text)]"
           >
             {/* 1. Large Icon Preview */}
-            <div className="aspect-square bg-[#FDFBF7] border-b-2 border-black -mx-6 -mt-6 mb-6 flex items-center justify-center p-12 relative overflow-hidden">
+            <div className="aspect-square bg-[var(--paper-bg)] border-b-2 border-[var(--paper-border)] -mx-6 -mt-6 mb-6 flex items-center justify-center p-12 relative overflow-hidden">
                <div className="absolute top-2 left-2 text-[8px] font-mono font-bold opacity-20 uppercase tracking-widest">Icon Preview</div>
                {renderAnimatedIcon(candidate.renderIcon({ size: 120 }), 'hero')}
             </div>
@@ -357,7 +357,7 @@ const AyaLogoCandidates: React.FC = () => {
             {/* 2. Lockup Preview */}
             <div className="mb-8">
                <div className="text-[8px] font-mono font-bold opacity-40 uppercase tracking-widest mb-3">Lockup (EN + ZH Suggestion)</div>
-               <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200">
+               <div className="flex items-center gap-3 p-3 bg-[var(--paper-bg-secondary)] border border-[var(--paper-border)]/10">
                   {renderAnimatedIcon(candidate.renderIcon({ size: 32 }), 'inline')}
                   <div className="flex flex-col leading-none">
                     <span className="text-lg font-black tracking-tighter" style={{ fontFamily: candidate.font.en }}>
@@ -374,20 +374,20 @@ const AyaLogoCandidates: React.FC = () => {
             <div className="grid grid-cols-3 gap-2 mb-8">
                 <div className="flex flex-col items-center">
                   <div className="text-[7px] font-mono font-bold opacity-40 uppercase mb-2">24px</div>
-                  <div className="w-8 h-8 flex items-center justify-center bg-slate-50 border border-slate-200">
+                  <div className="w-8 h-8 flex items-center justify-center bg-[var(--paper-bg-secondary)] border border-[var(--paper-border)]/10">
                     {renderAnimatedIcon(candidate.renderIcon({ size: 24 }), 'mini')}
                   </div>
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="text-[7px] font-mono font-bold opacity-40 uppercase mb-2">16px</div>
-                  <div className="w-8 h-8 flex items-center justify-center bg-slate-50 border border-slate-200">
+                  <div className="w-8 h-8 flex items-center justify-center bg-[var(--paper-bg-secondary)] border border-[var(--paper-border)]/10">
                     {renderAnimatedIcon(candidate.renderIcon({ size: 16 }), 'mini')}
                   </div>
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="text-[7px] font-mono font-bold opacity-40 uppercase mb-2">B&W</div>
-                  <div className="w-8 h-8 flex items-center justify-center bg-black">
-                    {renderAnimatedIcon(candidate.renderIcon({ size: 20, color: 'white' }), 'mini')}
+                  <div className="w-8 h-8 flex items-center justify-center bg-[var(--paper-border)]">
+                    {renderAnimatedIcon(candidate.renderIcon({ size: 20, color: 'var(--paper-surface)' }), 'mini')}
                   </div>
                 </div>
              </div>
@@ -400,7 +400,7 @@ const AyaLogoCandidates: React.FC = () => {
                     <span className="text-[9px] uppercase opacity-60">{key}</span>
                     <div className="flex gap-0.5">
                        {[...Array(10)].map((_, i) => (
-                         <div key={i} className={`w-1.5 h-1.5 ${i < val ? 'bg-red-600' : 'bg-slate-100'}`} />
+                         <div key={i} className={`w-1.5 h-1.5 ${i < val ? 'bg-[var(--paper-accent)]' : 'bg-black/5'}`} />
                        ))}
                     </div>
                  </div>
@@ -411,21 +411,21 @@ const AyaLogoCandidates: React.FC = () => {
             <div className="flex-1 space-y-4">
                <div>
                   <h3 className="text-lg font-black leading-tight mb-1">{candidate.name}</h3>
-                  <p className="text-xs font-serif italic text-slate-600">{candidate.concept}</p>
+                  <p className="text-xs font-serif italic text-[var(--paper-text-muted)]">{candidate.concept}</p>
                </div>
                
                <div className="space-y-2">
                   <div className="flex items-start gap-2">
-                    <Layers size={12} className="mt-0.5 shrink-0 text-slate-400" />
+                    <Layers size={12} className="mt-0.5 shrink-0 text-[var(--paper-text-muted)]" />
                     <span className="text-[10px] leading-tight"><span className="font-bold">元素：</span>{candidate.elements}</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Stamp size={12} className="mt-0.5 shrink-0 text-slate-400" />
+                    <Stamp size={12} className="mt-0.5 shrink-0 text-[var(--paper-text-muted)]" />
                     <span className="text-[10px] leading-tight"><span className="font-bold">字体建议：</span>{candidate.font.en} / {candidate.font.zh}</span>
                   </div>
-                  <div className="pt-2 border-t border-slate-100">
-                    <div className="text-[9px] font-black uppercase text-red-600 mb-1">Best For</div>
-                    <p className="text-[10px] text-slate-500">{candidate.useCase}</p>
+                  <div className="pt-2 border-t border-black/10">
+                    <div className="text-[9px] font-black uppercase text-[var(--paper-accent)] mb-1">Best For</div>
+                    <p className="text-[10px] text-[var(--paper-text-muted)]">{candidate.useCase}</p>
                   </div>
                </div>
             </div>

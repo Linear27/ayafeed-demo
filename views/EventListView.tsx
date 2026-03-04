@@ -192,36 +192,36 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
 
   return (
     <motion.div className="max-w-[1200px] mx-auto px-4 py-8 min-h-[100dvh]" initial={false} animate={{ opacity: 1 }}>
-      <div className="flex flex-col md:flex-row justify-between items-end mb-8 border-b-4 border-black pb-4">
+      <div className="flex flex-col md:flex-row justify-between items-end mb-8 border-b-4 border-[var(--paper-border)] pb-4">
         <div>
-            <div className="bg-red-600 text-white px-2 py-0.5 text-xs font-black uppercase tracking-widest mb-2 inline-block">
+            <div className="bg-[var(--paper-accent)] text-[var(--paper-surface)] px-2 py-0.5 text-xs font-black uppercase tracking-widest mb-2 inline-block">
               {labels.badge}
             </div>
-           <h1 className="text-3xl font-black font-header text-slate-900">
+           <h1 className="text-3xl font-black font-header text-[var(--paper-text)]">
              {labels.title}
            </h1>
-           <div className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">
+           <div className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--paper-text-muted)]">
              当前地区：{regionContextLabel}
            </div>
         </div>
         {hasAutoSwitched && (
-          <div className="mt-4 md:mt-0 bg-amber-50 border border-amber-200 px-3 py-1.5 text-xs font-bold text-amber-700 flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+          <div className="mt-4 md:mt-0 bg-[var(--paper-accent)]/10 border border-[var(--paper-accent)]/20 px-3 py-1.5 text-xs font-bold text-[var(--paper-accent)] flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--paper-accent)] animate-pulse"></span>
             当前时段暂无新展会，已自动切换至过往存档
           </div>
         )}
       </div>
 
-      <div className="mb-12 sticky top-[68px] z-30 py-2 transition-all bg-[#FDFBF7]/95">
+      <div className="mb-12 sticky top-[68px] z-30 py-2 transition-all bg-[var(--paper-bg)]/95">
          <div className="flex gap-3">
             <div className="relative flex-1 group">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-black" size={18} />
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-[var(--paper-text)]" size={18} />
                 <input 
                   id="event-search"
                   name="event-search"
                   type="text" 
                   placeholder={activeRegion === 'GLOBAL' ? "搜索全球展会..." : `在 ${labels.title} 中检索...`}
-                  className="w-full pl-12 pr-12 py-3.5 text-sm font-bold focus:outline-none transition-all bg-white border-2 border-black focus:ring-4 focus:ring-red-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                  className="w-full pl-12 pr-12 py-3.5 text-sm font-bold focus:outline-none transition-all bg-[var(--paper-surface)] border-2 border-[var(--paper-border)] focus:ring-4 focus:ring-[var(--paper-accent)]/10 shadow-[4px_4px_0px_0px_var(--paper-border)] text-[var(--paper-text)] placeholder-[var(--paper-text-muted)]/50"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -229,7 +229,7 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
             <button 
               onClick={() => setFiltersOpen(!filtersOpen)} 
               aria-label="打开筛选"
-              className="px-5 flex items-center justify-center font-bold text-sm border-2 border-black bg-white"
+              className="px-5 flex items-center justify-center font-bold text-sm border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] text-[var(--paper-text)] hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)] transition-colors"
             >
                <SlidersHorizontal size={18} />
             </button>
@@ -258,10 +258,10 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
               ))}
             </div>
           ) : (
-            <div className="py-20 text-center border-2 border-dashed border-slate-300 rounded-xl">
-              <div className="text-slate-400 mb-4 flex justify-center"><Search size={48} /></div>
-              <h3 className="text-xl font-black text-slate-900 mb-2">未找到相关展会</h3>
-              <p className="text-slate-500 mb-6">尝试更换搜索词或调整筛选（地区可在顶部导航切换）</p>
+            <div className="py-20 text-center border-2 border-dashed border-[var(--paper-border)]/20 rounded-xl bg-[var(--paper-surface)]/50">
+              <div className="text-[var(--paper-text-muted)]/40 mb-4 flex justify-center"><Search size={48} /></div>
+              <h3 className="text-xl font-black text-[var(--paper-text)] mb-2">未找到相关展会</h3>
+              <p className="text-[var(--paper-text-muted)] mb-6">尝试更换搜索词或调整筛选（地区可在顶部导航切换）</p>
               <button 
                 onClick={() => { 
                   setSearchTerm(''); 
@@ -269,7 +269,7 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
                   setSelectedGenres([]);
                   setTimeFilter('PAST');
                 }}
-                className="px-6 py-2 bg-black text-white text-xs font-black uppercase tracking-widest hover:bg-red-600 transition-colors"
+                className="px-6 py-2 bg-[var(--paper-border)] text-[var(--paper-surface)] text-xs font-black uppercase tracking-widest hover:bg-[var(--paper-accent)] transition-colors"
               >
                 重置筛选并查看存档
               </button>

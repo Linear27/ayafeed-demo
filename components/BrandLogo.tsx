@@ -45,7 +45,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ size = 'md', className = "" }) =>
         {/* The Messenger / 急速羽翼 */}
         <motion.path 
           d="M20 80C20 80 40 20 80 20"
-          stroke="#111827"
+          stroke="var(--paper-text)"
           strokeWidth="8"
           strokeLinecap="round"
           variants={{
@@ -55,7 +55,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ size = 'md', className = "" }) =>
         />
         <motion.path
           d="M35 80C35 80 50 40 80 40"
-          stroke="#111827"
+          stroke="var(--paper-text)"
           strokeWidth="8"
           strokeLinecap="round"
           variants={{
@@ -65,7 +65,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ size = 'md', className = "" }) =>
         />
         <motion.path
           d="M50 80C50 80 60 60 80 60"
-          stroke="#DC2626"
+          stroke="var(--paper-accent)"
           strokeWidth="8"
           strokeLinecap="round"
           variants={{

@@ -139,24 +139,24 @@ const LandingView: React.FC<{
         <h1 className="sr-only">AyaFeed 落地页 - 幻想乡活动情报总览</h1>
         {isLoading ? (
           <div className="px-4 pt-8" aria-live="polite">
-            <div className="h-130 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white/60 animate-pulse" />
+            <div className="h-130 border-4 border-[var(--paper-border)] shadow-[8px_8px_0px_0px_var(--paper-border)] bg-[var(--paper-surface)]/60 animate-pulse" />
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pt-16 border-t-2 border-black">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pt-16 border-t-2 border-[var(--paper-border)]">
               <div className="lg:col-span-8 flex flex-col">
-                <div className="flex items-center gap-3 mb-8 border-b-2 border-black pb-2">
-                  <div className="w-7 h-7 bg-slate-200 border border-slate-300 animate-pulse" />
-                  <div className="h-9 w-44 bg-slate-200 border border-slate-300 animate-pulse" />
+                <div className="flex items-center gap-3 mb-8 border-b-2 border-[var(--paper-border)] pb-2">
+                  <div className="w-7 h-7 bg-[var(--paper-border)]/10 border border-[var(--paper-border)]/5 animate-pulse" />
+                  <div className="h-9 w-44 bg-[var(--paper-border)]/10 border border-[var(--paper-border)]/5 animate-pulse" />
                 </div>
                 <EventCardSkeleton count={4} />
               </div>
 
-              <div className="lg:col-span-4 pl-0 lg:pl-10 flex flex-col lg:border-l border-slate-300 border-dashed">
-                <div className="mb-8 bg-black text-white p-3 transform -rotate-1">
-                  <div className="h-6 w-28 bg-white/20 rounded animate-pulse" />
+              <div className="lg:col-span-4 pl-0 lg:pl-10 flex flex-col lg:border-l border-[var(--paper-border)]/20 border-dashed">
+                <div className="mb-8 bg-[var(--paper-border)] text-[var(--paper-surface)] p-3 transform -rotate-1">
+                  <div className="h-6 w-28 bg-[var(--paper-surface)]/20 rounded animate-pulse" />
                 </div>
                 <div className="space-y-8">
                   {Array.from({ length: 3 }).map((_, idx) => (
-                    <div key={idx} className="aspect-video border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-slate-200/70 animate-pulse" />
+                    <div key={idx} className="aspect-video border-2 border-[var(--paper-border)] shadow-[4px_4px_0px_0px_var(--paper-border)] bg-[var(--paper-border)]/5 animate-pulse" />
                   ))}
                 </div>
               </div>
@@ -164,33 +164,33 @@ const LandingView: React.FC<{
           </div>
         ) : error ? (
           <div className="px-4 py-16" role="alert" aria-live="polite">
-            <div className="border-2 border-black bg-white newspaper-shadow p-6 sm:p-8">
+            <div className="border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] newspaper-shadow p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row items-start gap-6">
-                <div className="w-14 h-14 shrink-0 bg-red-50 border-2 border-red-200 flex items-center justify-center text-red-700">
+                <div className="w-14 h-14 shrink-0 bg-[var(--paper-accent)]/10 border-2 border-[var(--paper-accent)]/20 flex items-center justify-center text-[var(--paper-accent)]">
                   <AlertTriangle size={28} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">
+                  <div className="text-xs font-black uppercase tracking-[0.22em] text-[var(--paper-text-muted)]">
                     TRANSMISSION ERROR
                   </div>
-                  <h2 className="mt-2 text-2xl sm:text-3xl font-black font-header text-slate-900">
+                  <h2 className="mt-2 text-2xl sm:text-3xl font-black font-header text-[var(--paper-text)]">
                     频道暂时失联
                   </h2>
-                  <p className="mt-2 text-sm text-slate-600 font-serif italic">
+                  <p className="mt-2 text-sm text-[var(--paper-text-muted)] font-serif italic">
                     {error}
                   </p>
 
                   <div className="mt-6 flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={loadData}
-                      className="inline-flex items-center justify-center gap-2 px-6 py-3 font-black text-xs sm:text-sm uppercase tracking-[0.22em] bg-black text-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-red-600 transition-colors"
+                      className="inline-flex items-center justify-center gap-2 px-6 py-3 font-black text-xs sm:text-sm uppercase tracking-[0.22em] bg-[var(--paper-border)] text-[var(--paper-surface)] border-2 border-[var(--paper-border)] shadow-[4px_4px_0px_0px_var(--paper-border)] hover:bg-[var(--paper-accent)] transition-colors"
                     >
                       <RefreshCcw size={18} /> 重新拉取
                     </button>
 
                     <Link
                       to="/events"
-                      className="inline-flex items-center justify-center gap-2 px-6 py-3 font-black text-xs sm:text-sm uppercase tracking-[0.22em] bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-black hover:text-white transition-colors"
+                      className="inline-flex items-center justify-center gap-2 px-6 py-3 font-black text-xs sm:text-sm uppercase tracking-[0.22em] bg-[var(--paper-surface)] border-2 border-[var(--paper-border)] shadow-[4px_4px_0px_0px_var(--paper-border)] hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)] transition-colors"
                     >
                       打开展会名录 <ArrowRight size={18} />
                     </Link>
@@ -209,7 +209,7 @@ const LandingView: React.FC<{
               />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 pt-14 border-t-2 border-black">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 pt-14 border-t-2 border-[var(--paper-border)]">
               <div className="lg:col-span-8">
                 <MobileQuickJumpBar items={timelineItems} />
                 <ScrapbookTimeline items={timelineItems} />

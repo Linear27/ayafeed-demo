@@ -15,7 +15,7 @@ import { Link } from '@tanstack/react-router';
 import { TimelineItem } from '../types';
 
 const FOCUS_RING =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FDFBF7]';
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper-bg)]';
 
 const monthKeyFromDate = (date: string) => date.slice(0, 7);
 
@@ -52,12 +52,12 @@ const normalizeWebsiteUrl = (url: string) => {
  */
 export const Tape: React.FC<{ className?: string; color?: string; rotate?: number }> = ({
   className = '',
-  color = 'bg-yellow-200/60',
+  color = 'bg-[var(--paper-accent)]/10',
   rotate = -2,
 }) => (
   <div
     aria-hidden="true"
-    className={`pointer-events-none absolute z-50 h-6 w-20 ${color} border-x border-black/5 shadow-sm backdrop-blur-[1px] ${className}`}
+    className={`pointer-events-none absolute z-50 h-6 w-20 ${color} border-x border-[var(--paper-border)]/5 shadow-sm backdrop-blur-[1px] ${className}`}
     style={{
       transform: `rotate(${rotate}deg)`,
       clipPath: 'polygon(0% 0%, 100% 0%, 95% 50%, 100% 100%, 0% 100%, 5% 50%)',
@@ -70,7 +70,7 @@ export const Tape: React.FC<{ className?: string; color?: string; rotate?: numbe
  */
 const Stamp: React.FC<{ text: string; color?: string; rotate?: number; className?: string }> = ({
   text,
-  color = 'border-red-600 text-red-600',
+  color = 'border-[var(--paper-accent)] text-[var(--paper-accent)]',
   rotate = -15,
   className = '',
 }) => (
@@ -119,10 +119,10 @@ export const BentoHeader: React.FC<{
   return (
     <section className="mx-auto max-w-7xl" aria-labelledby="landing-feature-heading">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <article className="group relative min-h-[420px] overflow-hidden border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.9)] lg:col-span-8">
+        <article className="group relative min-h-[420px] overflow-hidden border-4 border-[var(--paper-border)] bg-[var(--paper-surface)] shadow-[6px_6px_0px_0px_var(--paper-border)] lg:col-span-8">
           <Tape className="left-1/2 top-0 w-32 -translate-x-1/2" rotate={1} />
           <div className="flex h-full flex-col md:flex-row">
-            <div className="relative flex items-center justify-center overflow-hidden border-b-4 border-black bg-[#E5E5E5] p-4 md:w-1/2 md:border-b-0 md:border-r-4">
+            <div className="relative flex items-center justify-center overflow-hidden border-b-4 border-[var(--paper-border)] bg-[var(--paper-bg-secondary)] p-4 md:w-1/2 md:border-b-0 md:border-r-4">
               <img
                 src={mainItem.image || ''}
                 alt={mainItem.title}
@@ -133,7 +133,7 @@ export const BentoHeader: React.FC<{
               />
               {mainItem.isToday && (
                 <div className="absolute left-4 top-4 z-30">
-                  <Stamp text="TODAY" rotate={-10} className="bg-white/85 px-4 py-2 text-base" />
+                  <Stamp text="TODAY" rotate={-10} className="bg-[var(--paper-surface)]/85 px-4 py-2 text-base" />
                 </div>
               )}
             </div>
@@ -141,29 +141,29 @@ export const BentoHeader: React.FC<{
             <div className="flex flex-col justify-between bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')] p-7 md:w-1/2 md:p-8">
               <div>
                 <div className="mb-4 flex items-center gap-2">
-                  <span className="bg-red-600 px-2 py-0.5 text-xs font-black uppercase tracking-[0.16em] text-white">
+                  <span className="bg-[var(--paper-accent)] px-2 py-0.5 text-xs font-black uppercase tracking-[0.16em] text-[var(--paper-surface)]">
                     {mainItem.isToday ? '今日头条' : '近期焦点'}
                   </span>
-                  <span className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                  <span className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-[var(--paper-text-muted)]">
                     {mainItem.type} / {mainItem.id.slice(0, 6)}
                   </span>
                 </div>
-                <h2 id="landing-feature-heading" className="mb-5 text-2xl leading-tight font-black text-slate-900 sm:text-4xl">
+                <h2 id="landing-feature-heading" className="mb-5 text-2xl leading-tight font-black text-[var(--paper-text)] sm:text-4xl">
                   {mainItem.title}
                 </h2>
-                <div className="mb-8 space-y-2 text-sm font-bold text-slate-700">
+                <div className="mb-8 space-y-2 text-sm font-bold text-[var(--paper-text-muted)]">
                   <div className="flex items-center gap-2">
-                    <Calendar aria-hidden="true" size={16} className="text-red-600" /> {mainItem.date}
+                    <Calendar aria-hidden="true" size={16} className="text-[var(--paper-accent)]" /> {mainItem.date}
                   </div>
                   <div className="flex items-center gap-2">
-                    <MapPin aria-hidden="true" size={16} className="text-red-600" /> {mainItem.location || '未知'}
+                    <MapPin aria-hidden="true" size={16} className="text-[var(--paper-accent)]" /> {mainItem.location || '未知'}
                   </div>
                 </div>
               </div>
 
               <Link
                 {...(mainTarget as any)}
-                className={`inline-flex w-full items-center justify-center gap-2 border-2 border-black bg-black py-3 text-sm font-black uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-red-600 ${FOCUS_RING}`}
+                className={`inline-flex w-full items-center justify-center gap-2 border-2 border-[var(--paper-border)] bg-[var(--paper-border)] py-3 text-sm font-black uppercase tracking-[0.12em] text-[var(--paper-surface)] transition-colors duration-200 hover:bg-[var(--paper-accent)] ${FOCUS_RING}`}
               >
                 查看详细情报 <ArrowRight aria-hidden="true" size={18} />
               </Link>
@@ -175,55 +175,55 @@ export const BentoHeader: React.FC<{
           {nextMajor && (
             <Link
               {...(getDetailTarget(nextMajor) as any)}
-              className={`group relative flex-1 overflow-hidden border-2 border-black bg-white p-6 text-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.35)] transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-red-600 hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,0.45)] ${FOCUS_RING}`}
+              className={`group relative flex-1 overflow-hidden border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 text-[var(--paper-text)] shadow-[2px_2px_0px_0px_var(--paper-border)] transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[var(--paper-accent)] hover:shadow-[3px_3px_0px_0px_var(--paper-border)] ${FOCUS_RING}`}
             >
               <div className="pointer-events-none absolute -bottom-6 -right-6 opacity-5 transition-transform duration-200 group-hover:scale-110">
                 <Clock aria-hidden="true" size={124} />
               </div>
               <div className="relative z-10">
-                <div className="mb-2 text-xs font-black uppercase tracking-[0.16em] text-red-700">Next Major Event</div>
-                <div className="mb-1 text-4xl leading-none font-black tracking-tight text-slate-900">
+                <div className="mb-2 text-xs font-black uppercase tracking-[0.16em] text-[var(--paper-accent)]">Next Major Event</div>
+                <div className="mb-1 text-4xl leading-none font-black tracking-tight text-[var(--paper-text)]">
                   {daysLeft === 0 ? 'TODAY' : `${daysLeft} DAYS`}
                 </div>
-                <div className="line-clamp-1 text-sm font-bold text-slate-700">距离 {nextMajor.title}</div>
-                <div className="mt-4 inline-flex items-center gap-1 text-xs font-black uppercase tracking-[0.12em] text-red-700">
+                <div className="line-clamp-1 text-sm font-bold text-[var(--paper-text-muted)]">距离 {nextMajor.title}</div>
+                <div className="mt-4 inline-flex items-center gap-1 text-xs font-black uppercase tracking-[0.12em] text-[var(--paper-accent)]">
                   查看情报 <ArrowRight aria-hidden="true" size={14} />
                 </div>
               </div>
             </Link>
           )}
 
-          <div className="flex-1 border-2 border-black bg-white p-5 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]">
-            <div className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-slate-500">AyaFeed Stats</div>
+          <div className="flex-1 border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 shadow-[2px_2px_0px_0px_var(--paper-border)]">
+            <div className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--paper-text-muted)]">AyaFeed Stats</div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <div className="text-xs font-bold uppercase text-slate-500">已收录</div>
-                <div className="text-2xl font-black tabular-nums">{stats.totalEvents}</div>
+                <div className="text-xs font-bold uppercase text-[var(--paper-text-muted)]">已收录</div>
+                <div className="text-2xl font-black tabular-nums text-[var(--paper-text)]">{stats.totalEvents}</div>
               </div>
               <div>
-                <div className="text-xs font-bold uppercase text-slate-500">本周活动</div>
-                <div className="text-2xl font-black text-red-600 tabular-nums">{stats.thisWeekCount}</div>
+                <div className="text-xs font-bold uppercase text-[var(--paper-text-muted)]">本周活动</div>
+                <div className="text-2xl font-black text-[var(--paper-accent)] tabular-nums">{stats.thisWeekCount}</div>
               </div>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-4">
               <div>
-                <div className="text-xs font-bold uppercase text-slate-500">今日进行中</div>
-                <div className="text-xl font-black tabular-nums">{stats.todayCount}</div>
+                <div className="text-xs font-bold uppercase text-[var(--paper-text-muted)]">今日进行中</div>
+                <div className="text-xl font-black tabular-nums text-[var(--paper-text)]">{stats.todayCount}</div>
               </div>
               <div>
-                <div className="text-xs font-bold uppercase text-slate-500">近期更新</div>
-                <div className="text-xl font-black tabular-nums">{stats.updateCount}</div>
+                <div className="text-xs font-bold uppercase text-[var(--paper-text-muted)]">近期更新</div>
+                <div className="text-xl font-black tabular-nums text-[var(--paper-text)]">{stats.updateCount}</div>
               </div>
             </div>
           </div>
 
-          <div className="border border-black/30 bg-slate-50 p-4">
-            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Related Paths</div>
+          <div className="border border-[var(--paper-border)]/30 bg-[var(--paper-bg-secondary)]/50 p-4">
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--paper-text-muted)]">Related Paths</div>
             <div className="mt-2 flex flex-wrap gap-3 text-xs font-bold">
-              <Link to="/events" className={`text-slate-700 underline-offset-2 hover:text-red-700 hover:underline ${FOCUS_RING}`}>
+              <Link to="/events" className={`text-[var(--paper-text-muted)] underline-offset-2 hover:text-[var(--paper-accent)] hover:underline ${FOCUS_RING}`}>
                 浏览展会名录
               </Link>
-              <Link to="/feedback" className={`text-slate-700 underline-offset-2 hover:text-red-700 hover:underline ${FOCUS_RING}`}>
+              <Link to="/feedback" className={`text-[var(--paper-text-muted)] underline-offset-2 hover:text-[var(--paper-accent)] hover:underline ${FOCUS_RING}`}>
                 提交活动情报
               </Link>
             </div>
@@ -236,9 +236,9 @@ export const BentoHeader: React.FC<{
               <Link
                 key={item.id}
                 {...(getDetailTarget(item) as any)}
-                className={`group flex gap-4 border border-black bg-white p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.18)] transition-[background-color,box-shadow,border-color] duration-200 hover:border-red-600 hover:bg-slate-50 hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,0.42)] ${FOCUS_RING}`}
+                className={`group flex gap-4 border border-[var(--paper-border)] bg-[var(--paper-surface)] p-4 shadow-[2px_2px_0px_0px_var(--paper-border)] transition-[background-color,box-shadow,border-color] duration-200 hover:border-[var(--paper-accent)] hover:bg-[var(--paper-bg-secondary)]/50 hover:shadow-[3px_3px_0px_0px_var(--paper-border)] ${FOCUS_RING}`}
               >
-                <div className="flex h-24 w-20 shrink-0 items-center justify-center overflow-hidden border border-black bg-slate-100">
+                <div className="flex h-24 w-20 shrink-0 items-center justify-center overflow-hidden border border-[var(--paper-border)] bg-[var(--paper-bg-secondary)]">
                   <img
                     src={item.image || ''}
                     alt={item.title}
@@ -252,16 +252,16 @@ export const BentoHeader: React.FC<{
                 <div className="flex min-w-0 flex-1 flex-col justify-center">
                   <div className="mb-1 flex items-center gap-2">
                     <span
-                      className={`border border-black px-1 py-0.5 text-[11px] font-black ${item.type === 'live' ? 'bg-yellow-400' : 'bg-black text-white'}`}
+                      className={`border border-[var(--paper-border)] px-1 py-0.5 text-[11px] font-black ${item.type === 'live' ? 'bg-yellow-400 text-black' : 'bg-[var(--paper-border)] text-[var(--paper-surface)]'}`}
                     >
                       {item.type.toUpperCase()}
                     </span>
-                    <span className="text-xs font-bold text-slate-500">{item.date}</span>
+                    <span className="text-xs font-bold text-[var(--paper-text-muted)]">{item.date}</span>
                   </div>
-                  <h3 className="line-clamp-1 text-lg leading-tight font-black text-slate-900 transition-colors duration-200 group-hover:text-red-600">
+                  <h3 className="line-clamp-1 text-lg leading-tight font-black text-[var(--paper-text)] transition-colors duration-200 group-hover:text-[var(--paper-accent)]">
                     {item.title}
                   </h3>
-                  <div className="mt-1 flex items-center gap-1 text-xs font-bold text-slate-600">
+                  <div className="mt-1 flex items-center gap-1 text-xs font-bold text-[var(--paper-text-muted)]">
                     <MapPin aria-hidden="true" size={12} /> {item.location || '未知地点'}
                   </div>
                 </div>
@@ -310,9 +310,9 @@ export const ScrapbookTimeline: React.FC<{
   return (
     <div className="flex flex-col" id="timeline-root">
       <div className="relative mb-12 flex items-center gap-3">
-        <Library aria-hidden="true" className="shrink-0 text-red-600" size={32} />
-        <h2 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">幻想乡编年史</h2>
-        <div className="absolute -bottom-2 left-0 h-1 w-full bg-black/5" aria-hidden="true"></div>
+        <Library aria-hidden="true" className="shrink-0 text-[var(--paper-accent)]" size={32} />
+        <h2 className="text-3xl font-black tracking-tight text-[var(--paper-text)] sm:text-4xl uppercase">幻想乡编年史</h2>
+        <div className="absolute -bottom-2 left-0 h-1 w-full bg-[var(--paper-border)]/5" aria-hidden="true"></div>
       </div>
 
       <div className="space-y-20">
@@ -320,20 +320,20 @@ export const ScrapbookTimeline: React.FC<{
           sections.map((section) => (
             <section key={section.title} className="relative" aria-label={section.title}>
               <div
-                className={`mb-8 flex items-center justify-between border-y-2 border-black bg-[#FDFBF7]/95 px-5 py-3 shadow-sm ${
+                className={`mb-8 flex items-center justify-between border-y-2 border-[var(--paper-border)] bg-[var(--paper-bg)]/95 px-5 py-3 shadow-sm ${
                   section.id === 'upcoming' ? '' : 'lg:sticky lg:top-[calc(var(--aya-header-height-compact,46px)+12px)]'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   {section.icon}
-                  <h3 className="text-2xl font-black tracking-tight sm:text-3xl">{section.title}</h3>
+                  <h3 className="text-2xl font-black tracking-tight sm:text-3xl uppercase">{section.title}</h3>
                 </div>
-                <div className="bg-black px-2 py-1 text-xs font-black uppercase tracking-[0.12em] text-white tabular-nums">
+                <div className="bg-[var(--paper-border)] px-2 py-1 text-xs font-black uppercase tracking-[0.12em] text-[var(--paper-surface)] tabular-nums">
                   {section.items.length} ITEMS
                 </div>
               </div>
 
-              <div className="relative ml-3 flex flex-col gap-10 border-l-4 border-black/10 pl-8">
+              <div className="relative ml-3 flex flex-col gap-10 border-l-4 border-[var(--paper-border)]/10 pl-8">
                 {section.items.map((item, index) => {
                   const monthKey = monthKeyFromDate(item.date);
                   const anchorId = anchoredMonths.has(monthKey) ? undefined : `month-${monthKey}`;
@@ -347,22 +347,22 @@ export const ScrapbookTimeline: React.FC<{
             </section>
           ))
         ) : (
-          <div className="relative overflow-hidden border-4 border-dashed border-slate-300 bg-white/60 p-12 text-center">
+          <div className="relative overflow-hidden border-4 border-dashed border-[var(--paper-border)]/20 bg-[var(--paper-surface)]/60 p-12 text-center">
             <div className="absolute -right-10 -top-10 rotate-12 opacity-5" aria-hidden="true">
               <Library size={200} />
             </div>
-            <div className="mb-4 text-xs font-black uppercase tracking-[0.25em] text-slate-400">ARCHIVE EMPTY</div>
-            <h3 className="mb-4 text-2xl font-black text-slate-900">暂无可展示的日程条目</h3>
-            <p className="mx-auto max-w-[50ch] text-base leading-relaxed text-slate-600 italic">
+            <div className="mb-4 text-xs font-black uppercase tracking-[0.25em] text-[var(--paper-text-muted)]">ARCHIVE EMPTY</div>
+            <h3 className="mb-4 text-2xl font-black text-[var(--paper-text)]">暂无可展示的日程条目</h3>
+            <p className="mx-auto max-w-[50ch] text-base leading-relaxed text-[var(--paper-text-muted)] italic">
               当前频道没有未来排期的活动条目。文文新闻编辑部正在加紧取材中，请稍后再来。
             </p>
           </div>
         )}
 
-        <div className="mt-8 border-t-4 border-double border-black/20 pt-10">
+        <div className="mt-8 border-t-4 border-double border-[var(--paper-border)]/20 pt-10">
           <Link
             to="/events"
-            className={`flex w-full items-center justify-center gap-3 border-4 border-black bg-white py-5 text-base font-black uppercase tracking-[0.28em] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-[background-color,color,transform,box-shadow] duration-200 hover:bg-black hover:text-white active:translate-y-1 active:shadow-none ${FOCUS_RING}`}
+            className={`flex w-full items-center justify-center gap-3 border-4 border-[var(--paper-border)] bg-[var(--paper-surface)] py-5 text-base font-black uppercase tracking-[0.28em] shadow-[8px_8px_0px_0px_var(--paper-border)] transition-[background-color,color,transform,box-shadow] duration-200 hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)] active:translate-y-1 active:shadow-none ${FOCUS_RING}`}
           >
             查看完整历史存档 <ArrowRight aria-hidden="true" size={20} />
           </Link>
@@ -388,16 +388,16 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
     <article id={anchorId} className="group relative scroll-mt-28" aria-labelledby={`timeline-title-${item.id}`}>
       <div
         aria-hidden="true"
-        className="absolute -left-[38px] top-8 z-10 h-4 w-4 rounded-full border-4 border-black bg-white transition-colors duration-200 group-hover:bg-red-600"
+        className="absolute -left-[38px] top-8 z-10 h-4 w-4 rounded-full border-4 border-[var(--paper-border)] bg-[var(--paper-surface)] transition-colors duration-200 group-hover:bg-[var(--paper-accent)]"
       />
 
       {index === 0 && <Tape className="-top-3 left-10" rotate={-5} />}
 
       <div
-        className={`relative border-2 border-black bg-white p-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.12)] transition-[box-shadow,border-color] duration-200 hover:border-red-600 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] ${isLive ? 'bg-yellow-50/20' : ''}`}
+        className={`relative border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 shadow-[3px_3px_0px_0px_var(--paper-border)]/20 transition-[box-shadow,border-color] duration-200 hover:border-[var(--paper-accent)] hover:shadow-[4px_4px_0px_0px_var(--paper-border)]/30 ${isLive ? 'bg-[var(--paper-accent)]/5' : ''}`}
       >
         <div className="flex flex-col gap-5 md:flex-row">
-          <div className="relative flex h-44 w-full shrink-0 items-center justify-center overflow-hidden border-2 border-black bg-slate-100 md:w-32">
+          <div className="relative flex h-44 w-full shrink-0 items-center justify-center overflow-hidden border-2 border-[var(--paper-border)] bg-[var(--paper-bg-secondary)] md:w-32">
             <img
               src={item.image || ''}
               className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
@@ -407,17 +407,17 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
               loading="lazy"
               decoding="async"
             />
-            {item.isToday && <div className="pointer-events-none absolute inset-0 bg-red-600/10" aria-hidden="true"></div>}
+            {item.isToday && <div className="pointer-events-none absolute inset-0 bg-[var(--paper-accent)]/10" aria-hidden="true"></div>}
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col">
             <div className="mb-3 flex flex-wrap items-center gap-3">
               <span
-                className={`border border-black px-2 py-0.5 text-xs font-black uppercase tracking-[0.12em] ${isLive ? 'bg-yellow-400' : 'bg-black text-white'}`}
+                className={`border border-[var(--paper-border)] px-2 py-0.5 text-xs font-black uppercase tracking-[0.12em] ${isLive ? 'bg-yellow-400 text-black' : 'bg-[var(--paper-border)] text-[var(--paper-surface)]'}`}
               >
                 {isLive ? '演出 LIVE' : '展会 EVENT'}
               </span>
-              <span className="font-mono text-xs font-bold text-slate-500">{item.date}</span>
+              <span className="font-mono text-xs font-bold text-[var(--paper-text-muted)]">{item.date}</span>
               {item.status && (
                 <Stamp
                   text={item.status === 'ONGOING' ? '举办中' : item.status === 'RECRUITING' ? '募集终' : '筹备中'}
@@ -429,23 +429,23 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
 
             <h4
               id={`timeline-title-${item.id}`}
-              className={`mb-3 text-xl leading-tight font-black transition-colors duration-200 sm:text-2xl ${isLive ? 'text-red-800' : 'text-slate-900'} group-hover:text-red-600`}
+              className={`mb-3 text-xl leading-tight font-black transition-colors duration-200 sm:text-2xl ${isLive ? 'text-[var(--paper-accent)]' : 'text-[var(--paper-text)]'} group-hover:text-[var(--paper-accent)]`}
             >
               {item.title}
             </h4>
 
-            <div className="mb-4 grid grid-cols-1 gap-x-6 gap-y-2 text-sm font-bold text-slate-700 sm:grid-cols-2">
+            <div className="mb-4 grid grid-cols-1 gap-x-6 gap-y-2 text-sm font-bold text-[var(--paper-text-muted)] sm:grid-cols-2">
               <div className="flex items-center gap-2">
-                <MapPin aria-hidden="true" size={14} className="text-slate-500" /> {item.location || '未知地点'}
+                <MapPin aria-hidden="true" size={14} className="text-[var(--paper-text-muted)]/60" /> {item.location || '未知地点'}
               </div>
               {item.boothCount && (
                 <div className="flex items-center gap-2">
-                  <Users aria-hidden="true" size={14} className="text-slate-500" /> 预计 {item.boothCount} 摊位
+                  <Users aria-hidden="true" size={14} className="text-[var(--paper-text-muted)]/60" /> 预计 {item.boothCount} 摊位
                 </div>
               )}
               {item.organizer && (
                 <div className="flex items-center gap-2">
-                  <Building2 aria-hidden="true" size={14} className="text-slate-500" /> {item.organizer}
+                  <Building2 aria-hidden="true" size={14} className="text-[var(--paper-text-muted)]/60" /> {item.organizer}
                 </div>
               )}
               {website && (
@@ -453,21 +453,21 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
                   href={website}
                   target="_blank"
                   rel="noreferrer"
-                  className={`inline-flex items-center gap-1 text-red-600 underline-offset-2 hover:underline ${FOCUS_RING}`}
+                  className={`inline-flex items-center gap-1 text-[var(--paper-accent)] underline-offset-2 hover:underline ${FOCUS_RING}`}
                 >
                   <ExternalLink aria-hidden="true" size={14} /> 官方网站
                 </a>
               )}
             </div>
 
-            <p className="mt-auto line-clamp-2 border-t border-dashed border-slate-200 pt-3 text-sm text-slate-600 italic break-words">
+            <p className="mt-auto line-clamp-2 border-t border-dashed border-[var(--paper-border)]/10 pt-3 text-sm text-[var(--paper-text-muted)] italic break-words">
               {item.summary || '暂无详细摘要信息。'}
             </p>
 
             <div className="mt-4">
               <Link
                 {...(detailTarget as any)}
-                className={`inline-flex items-center gap-2 border-2 border-black bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.12em] transition-colors duration-200 hover:bg-black hover:text-white ${FOCUS_RING}`}
+                className={`inline-flex items-center gap-2 border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] transition-colors duration-200 hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)] ${FOCUS_RING}`}
               >
                 查看详情 <ArrowRight aria-hidden="true" size={14} />
               </Link>
@@ -498,8 +498,8 @@ export const IndexSidebar: React.FC<{
   }, [items]);
 
   return (
-    <aside className="mt-8 flex flex-col border-dashed border-slate-300 lg:col-span-4 lg:mt-0 lg:border-l lg:pl-10" aria-label="检索与索引">
-      <div className="mb-8 -rotate-1 bg-black p-3 text-white">
+    <aside className="mt-8 flex flex-col border-dashed border-[var(--paper-border)]/20 lg:col-span-4 lg:mt-0 lg:border-l lg:pl-10" aria-label="检索与索引">
+      <div className="mb-8 -rotate-1 bg-[var(--paper-border)] p-3 text-[var(--paper-surface)]">
         <h2 className="flex items-center text-xl font-black uppercase tracking-[0.12em]">
           <Bookmark aria-hidden="true" className="mr-2 fill-current" /> 检索与索引
         </h2>
@@ -507,7 +507,7 @@ export const IndexSidebar: React.FC<{
 
       <div className="space-y-8">
         <section className="hidden lg:block">
-          <h3 className="mb-3 border-b border-slate-300 pb-1 text-sm font-black uppercase tracking-[0.12em] text-slate-600">
+          <h3 className="mb-3 border-b border-[var(--paper-border)]/20 pb-1 text-sm font-black uppercase tracking-[0.12em] text-[var(--paper-text-muted)]">
             快速跳转 (Quick Jump)
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -516,37 +516,37 @@ export const IndexSidebar: React.FC<{
                 key={month.key}
                 type="button"
                 onClick={() => scrollToMonthAnchor(month.key)}
-                className={`border border-black px-3 py-1.5 text-xs font-bold transition-colors duration-200 hover:bg-black hover:text-white ${FOCUS_RING}`}
+                className={`border border-[var(--paper-border)] bg-[var(--paper-surface)] px-3 py-1.5 text-xs font-bold transition-colors duration-200 hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)] ${FOCUS_RING}`}
               >
                 {month.label}
               </button>
             ))}
-            {months.length === 0 && <span className="text-sm text-slate-400 italic">无可用月份</span>}
+            {months.length === 0 && <span className="text-sm text-[var(--paper-text-muted)] italic">无可用月份</span>}
           </div>
         </section>
 
         <section>
-          <h3 className="mb-3 border-b border-slate-300 pb-1 text-sm font-black uppercase tracking-[0.12em] text-slate-600">
+          <h3 className="mb-3 border-b border-[var(--paper-border)]/20 pb-1 text-sm font-black uppercase tracking-[0.12em] text-[var(--paper-text-muted)]">
             地区分布 (Region)
           </h3>
-          <ul className="space-y-2 text-sm font-bold font-mono">
+          <ul className="space-y-2 text-sm font-bold font-mono text-[var(--paper-text)]">
             <li className="flex items-center justify-between">
               <span>日本 (JAPAN)</span>
-              <span className="border border-slate-300 bg-slate-100 px-2 py-0.5 tabular-nums">{regionCounts.JAPAN}</span>
+              <span className="border border-[var(--paper-border)]/20 bg-[var(--paper-bg-secondary)] px-2 py-0.5 tabular-nums">{regionCounts.JAPAN}</span>
             </li>
             <li className="flex items-center justify-between">
               <span>大陆 (CN_MAINLAND)</span>
-              <span className="border border-slate-300 bg-slate-100 px-2 py-0.5 tabular-nums">{regionCounts.CN_MAINLAND}</span>
+              <span className="border border-[var(--paper-border)]/20 bg-[var(--paper-bg-secondary)] px-2 py-0.5 tabular-nums">{regionCounts.CN_MAINLAND}</span>
             </li>
             <li className="flex items-center justify-between">
               <span>海外 (OVERSEAS)</span>
-              <span className="border border-slate-300 bg-slate-100 px-2 py-0.5 tabular-nums">{regionCounts.OVERSEAS}</span>
+              <span className="border border-[var(--paper-border)]/20 bg-[var(--paper-bg-secondary)] px-2 py-0.5 tabular-nums">{regionCounts.OVERSEAS}</span>
             </li>
           </ul>
         </section>
 
         <section>
-          <h3 className="mb-3 border-b border-slate-300 pb-1 text-sm font-black uppercase tracking-[0.12em] text-slate-600">
+          <h3 className="mb-3 border-b border-[var(--paper-border)]/20 pb-1 text-sm font-black uppercase tracking-[0.12em] text-[var(--paper-text-muted)]">
             热门标签 (Tags)
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -554,7 +554,7 @@ export const IndexSidebar: React.FC<{
               <Link
                 key={tag}
                 to="/events"
-                className={`text-xs font-bold text-red-700 underline-offset-2 transition-colors duration-200 hover:text-red-900 hover:underline ${FOCUS_RING}`}
+                className={`text-xs font-bold text-[var(--paper-accent)] underline-offset-2 transition-colors duration-200 hover:text-[var(--paper-accent)] hover:underline ${FOCUS_RING}`}
               >
                 {tag}
               </Link>
@@ -562,15 +562,15 @@ export const IndexSidebar: React.FC<{
           </div>
         </section>
 
-        <section className="relative mt-8 border-4 border-black bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] p-4">
-          <div className="absolute right-0 top-0 bg-black px-1 text-[10px] font-bold uppercase text-white">AD</div>
-          <h4 className="mb-2 text-lg font-black">社团入驻开放中</h4>
-          <p className="mb-4 text-sm leading-relaxed text-slate-700 italic">
+        <section className="relative mt-8 border-4 border-[var(--paper-border)] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] p-4">
+          <div className="absolute right-0 top-0 bg-[var(--paper-border)] px-1 text-[10px] font-bold uppercase text-[var(--paper-surface)]">AD</div>
+          <h4 className="mb-2 text-lg font-black text-[var(--paper-text)]">社团入驻开放中</h4>
+          <p className="mb-4 text-sm leading-relaxed text-[var(--paper-text-muted)] italic">
             想要在幻想乡日程表上展示您的社团信息吗？现在就申请入驻，获取专属展示页面。
           </p>
           <Link
             to="/circles"
-            className={`block w-full bg-black py-2 text-center text-xs font-bold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-red-600 ${FOCUS_RING}`}
+            className={`block w-full bg-[var(--paper-border)] py-2 text-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--paper-surface)] transition-colors duration-200 hover:bg-[var(--paper-accent)] ${FOCUS_RING}`}
           >
             了解详情
           </Link>
@@ -588,15 +588,15 @@ export const MobileQuickJumpBar: React.FC<{
   if (months.length === 0) return null;
 
   return (
-    <section className="sticky top-[var(--aya-header-height-compact,46px)] z-30 -mx-4 mb-8 border-y border-black/15 bg-[#FDFBF7]/95 px-4 py-2 backdrop-blur-sm lg:hidden">
-      <div className="mb-2 text-[11px] font-black uppercase tracking-[0.14em] text-slate-600">快速跳转</div>
+    <section className="sticky top-[var(--aya-header-height-compact,46px)] z-30 -mx-4 mb-8 border-y border-[var(--paper-border)]/15 bg-[var(--paper-bg)]/95 px-4 py-2 backdrop-blur-sm lg:hidden">
+      <div className="mb-2 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--paper-text-muted)]">快速跳转</div>
       <div className="flex gap-2 overflow-x-auto pb-1">
         {months.map((month) => (
           <button
             key={month.key}
             type="button"
             onClick={() => scrollToMonthAnchor(month.key)}
-            className={`shrink-0 whitespace-nowrap border border-black bg-white px-3 py-1.5 text-xs font-bold transition-colors duration-200 hover:bg-black hover:text-white ${FOCUS_RING}`}
+            className={`shrink-0 whitespace-nowrap border border-[var(--paper-border)] bg-[var(--paper-surface)] px-3 py-1.5 text-xs font-bold transition-colors duration-200 hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)] ${FOCUS_RING}`}
           >
             {month.label}
           </button>
