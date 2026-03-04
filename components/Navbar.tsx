@@ -17,6 +17,7 @@ interface NavbarProps {
 type NewspaperHeaderState = 'top' | 'scrolled';
 
 const REGION_OPTIONS = [
+  { code: 'GLOBAL', label: '全球版' },
   { code: 'JAPAN', label: '日本国内版' },
   { code: 'CN_MAINLAND', label: '中国大陆版' },
   { code: 'OVERSEAS', label: '海外分社版' },
@@ -24,6 +25,27 @@ const REGION_OPTIONS = [
 
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FDFBF7]';
+
+const LanguageBadgeIcon = ({ size = 14 }: { size?: number }) => (
+  <svg
+    aria-hidden="true"
+    width={size}
+    height={size}
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className="shrink-0"
+  >
+    <rect x="1" y="2" width="14" height="12" rx="2" stroke="currentColor" strokeWidth="1.2" />
+    <path d="M8 2.6V13.4" stroke="currentColor" strokeWidth="1" />
+    <text x="4.5" y="10.6" textAnchor="middle" fontSize="6" fontWeight="700" fill="currentColor">
+      A
+    </text>
+    <text x="11.5" y="10.6" textAnchor="middle" fontSize="5.5" fontWeight="700" fill="currentColor">
+      文
+    </text>
+  </svg>
+);
 
 const Navbar: React.FC<NavbarProps> = ({
   currentView,
@@ -155,6 +177,7 @@ const Navbar: React.FC<NavbarProps> = ({
   };
 
   const getRegionLabel = () => {
+    if (region === 'GLOBAL') return '全球版';
     if (region === 'JAPAN') return '日本国内版';
     if (region === 'CN_MAINLAND') return '中国大陆版';
     if (region === 'OVERSEAS') return '海外分社版';
@@ -307,7 +330,7 @@ const Navbar: React.FC<NavbarProps> = ({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 5 }}
                         role="menu"
-                        className="absolute right-0 top-full z-50 mt-2 w-40 border-2 border-black bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                        className="absolute right-0 top-full z-50 mt-2 w-44 border-2 border-black bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                       >
                         {REGION_OPTIONS.map((option) => (
                           <button
@@ -341,8 +364,9 @@ const Navbar: React.FC<NavbarProps> = ({
                     aria-label="切换语言"
                     aria-haspopup="menu"
                     aria-expanded={isLangMenuOpen}
-                    className={`whitespace-nowrap transition-colors duration-200 hover:text-red-600 ${FOCUS_RING}`}
+                    className={`flex items-center gap-1 whitespace-nowrap transition-colors duration-200 hover:text-red-600 ${FOCUS_RING}`}
                   >
+                    <LanguageBadgeIcon size={12} />
                     <span className="hidden lg:inline">Language: {language.toUpperCase()}</span>
                     <span className="lg:hidden">{language.toUpperCase()}</span>
                   </button>
@@ -519,7 +543,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 isNewspaper ? 'border-black bg-white text-slate-900' : 'border-slate-200 bg-white text-slate-600'
               } ${FOCUS_RING}`}
             >
-              <Globe aria-hidden="true" size={14} />
+              <LanguageBadgeIcon size={14} />
               <span className="hidden uppercase sm:inline">{language}</span>
             </button>
 

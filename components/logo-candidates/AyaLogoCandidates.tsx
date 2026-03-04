@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion, Variants } from 'framer-motion';
 import { Star, AlertCircle, Layers, Stamp, CheckCircle2, Info, Sparkles } from 'lucide-react';
 
 export type LogoCandidate = {
@@ -28,8 +28,23 @@ export type LogoCandidate = {
   renderIcon: (props: { size: number, color?: string, className?: string, isHovered?: boolean }) => React.ReactNode;
 };
 
-// 统一动效配置
-const TRANSITION = { duration: 0.18, ease: "easeOut" };
+// 统一动效配置（参考 Atomic Brand Assets 的弹性响应）
+const TRANSITION = { type: "spring", stiffness: 320, damping: 18, mass: 0.45 } as const;
+
+type IconMotionPreset = 'hero' | 'inline' | 'mini';
+
+const ICON_MOTION_PRESETS: Record<IconMotionPreset, {
+  idleY: number;
+  idleRotate: number;
+  hoverY: number;
+  hoverScale: number;
+  hoverRotate: number;
+  idleDuration: number;
+}> = {
+  hero: { idleY: 1.2, idleRotate: 0.9, hoverY: -2.6, hoverScale: 1.065, hoverRotate: -1.2, idleDuration: 3.2 },
+  inline: { idleY: 0.8, idleRotate: 0.7, hoverY: -1.8, hoverScale: 1.055, hoverRotate: -0.9, idleDuration: 3.6 },
+  mini: { idleY: 0.45, idleRotate: 0.45, hoverY: -0.9, hoverScale: 1.07, hoverRotate: -0.5, idleDuration: 4.1 }
+};
 
 export const LOGO_CANDIDATES: LogoCandidate[] = [
   {
@@ -273,8 +288,54 @@ export const LOGO_CANDIDATES: LogoCandidate[] = [
 ];
 
 const AyaLogoCandidates: React.FC = () => {
-  const renderAnimatedIcon = (icon: React.ReactNode) => (
-    <motion.div initial="initial" whileHover="hover" className="inline-flex items-center justify-center">
+  const shouldReduceMotion = useReducedMotion();
+
+  const buildIconMotionVariants = (preset: IconMotionPreset): Variants => {
+    const config = ICON_MOTION_PRESETS[preset];
+    if (shouldReduceMotion) {
+      return {
+        initial: { y: 0, rotate: 0, scale: 1 },
+        idle: { y: 0, rotate: 0, scale: 1 },
+        hover: { y: 0, rotate: 0, scale: 1.01, transition: { duration: 0.12, ease: "easeOut" } }
+      };
+    }
+
+    return {
+      initial: {
+        y: 0,
+        rotate: 0,
+        scale: 1,
+        filter: "drop-shadow(0 0 0 rgba(220,38,38,0))"
+      },
+      idle: {
+        y: [0, -config.idleY, 0],
+        rotate: [0, -config.idleRotate, config.idleRotate, 0],
+        scale: [1, 1.01, 1],
+        transition: {
+          duration: config.idleDuration,
+          ease: "easeInOut",
+          repeat: Infinity,
+          repeatType: "mirror"
+        }
+      },
+      hover: {
+        y: config.hoverY,
+        scale: config.hoverScale,
+        rotate: config.hoverRotate,
+        filter: "drop-shadow(0 6px 12px rgba(220,38,38,0.22))",
+        transition: { type: "spring", stiffness: 300, damping: 16, mass: 0.5 }
+      }
+    };
+  };
+
+  const renderAnimatedIcon = (icon: React.ReactNode, preset: IconMotionPreset) => (
+    <motion.div
+      variants={buildIconMotionVariants(preset)}
+      initial="initial"
+      animate="idle"
+      whileHover="hover"
+      className="inline-flex items-center justify-center will-change-transform"
+    >
       {icon}
     </motion.div>
   );
@@ -290,14 +351,14 @@ const AyaLogoCandidates: React.FC = () => {
             {/* 1. Large Icon Preview */}
             <div className="aspect-square bg-[#FDFBF7] border-b-2 border-black -mx-6 -mt-6 mb-6 flex items-center justify-center p-12 relative overflow-hidden">
                <div className="absolute top-2 left-2 text-[8px] font-mono font-bold opacity-20 uppercase tracking-widest">Icon Preview</div>
-               {renderAnimatedIcon(candidate.renderIcon({ size: 120 }))}
+               {renderAnimatedIcon(candidate.renderIcon({ size: 120 }), 'hero')}
             </div>
 
             {/* 2. Lockup Preview */}
             <div className="mb-8">
                <div className="text-[8px] font-mono font-bold opacity-40 uppercase tracking-widest mb-3">Lockup (EN + ZH Suggestion)</div>
                <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200">
-                  {renderAnimatedIcon(candidate.renderIcon({ size: 32 }))}
+                  {renderAnimatedIcon(candidate.renderIcon({ size: 32 }), 'inline')}
                   <div className="flex flex-col leading-none">
                     <span className="text-lg font-black tracking-tighter" style={{ fontFamily: candidate.font.en }}>
                       AyaFeed
@@ -314,19 +375,19 @@ const AyaLogoCandidates: React.FC = () => {
                 <div className="flex flex-col items-center">
                   <div className="text-[7px] font-mono font-bold opacity-40 uppercase mb-2">24px</div>
                   <div className="w-8 h-8 flex items-center justify-center bg-slate-50 border border-slate-200">
-                    {renderAnimatedIcon(candidate.renderIcon({ size: 24 }))}
+                    {renderAnimatedIcon(candidate.renderIcon({ size: 24 }), 'mini')}
                   </div>
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="text-[7px] font-mono font-bold opacity-40 uppercase mb-2">16px</div>
                   <div className="w-8 h-8 flex items-center justify-center bg-slate-50 border border-slate-200">
-                    {renderAnimatedIcon(candidate.renderIcon({ size: 16 }))}
+                    {renderAnimatedIcon(candidate.renderIcon({ size: 16 }), 'mini')}
                   </div>
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="text-[7px] font-mono font-bold opacity-40 uppercase mb-2">B&W</div>
                   <div className="w-8 h-8 flex items-center justify-center bg-black">
-                    {renderAnimatedIcon(candidate.renderIcon({ size: 20, color: 'white' }))}
+                    {renderAnimatedIcon(candidate.renderIcon({ size: 20, color: 'white' }), 'mini')}
                   </div>
                 </div>
              </div>

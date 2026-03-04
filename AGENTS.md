@@ -24,7 +24,7 @@
 - Use `pnpm` as the only package manager and script runner; do not use other package manager commands.
 - Do not add content entries directly in root `data.ts`.
 - Add data entries under `data/{category}/` and register them in that category `index.ts`.
-- After implementation, append a concise handover record in `docs/00_AGENT_GUIDE.md`.
+- `docs/00_AGENT_GUIDE.md` only keeps long-term effective rules and stable decision index; do not append daily change logs.
 
 ## AI Studio Temp File Policy
 - All AI Studio pull/sync temporary artifacts must be stored under `.tmp/aistudio/`. Do not write them in repository root.
@@ -37,5 +37,6 @@
 
 ## Documentation Policy
 - If a reset decision becomes stable, sync it into this repo docs first (`docs/**`), then prepare upstream migration notes.
+- Do not write daily implementation logs into `docs/00_AGENT_GUIDE.md`; use dedicated plan docs for stable decisions.
 - For agent collaboration, treat this file and `docs/00_AGENT_GUIDE.md` as the baseline context.
 

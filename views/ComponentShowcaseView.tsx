@@ -10,7 +10,6 @@ import {
 import { ViewState } from '../types';
 import { TagBadge, StatusBadge } from '../components/Common';
 import BrandLogo from '../components/BrandLogo';
-import AyaLogoCandidates from '../components/logo-candidates/AyaLogoCandidates';
 import { EventCardSkeleton, LiveCardSkeleton, CircleCardSkeleton } from '../components/Skeleton';
 
 const ComponentShowcaseView: React.FC<{ onNavigate: (v: ViewState) => void }> = ({ onNavigate }) => {
@@ -66,18 +65,6 @@ const ComponentShowcaseView: React.FC<{ onNavigate: (v: ViewState) => void }> = 
               </div>
             </div>
           </div>
-        </Section>
-
-        {/* Logo Candidates Section */}
-        <Section title="Logo Candidates / 品牌标识候选">
-           <div className="mb-12 p-6 bg-red-50 border-l-4 border-red-600">
-              <h3 className="text-lg font-black uppercase mb-2">设计说明 (Design Note)</h3>
-              <p className="text-sm text-slate-700 font-serif leading-relaxed">
-                以下 8 个方向旨在探索 AyaFeed 在保留“天狗新闻”核心基因的同时，如何通过不同的视觉隐喻（镜头、羽翼、印章等）
-                建立更具辨识度的品牌资产。所有方案均遵循几何化、高对比度的设计原则，确保在 24px 极小尺寸下的可识别性。
-              </p>
-           </div>
-           <AyaLogoCandidates />
         </Section>
 
         <Section title="1. 徽章与标签 (Badges & Tags)">
