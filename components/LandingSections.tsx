@@ -18,6 +18,7 @@ import { diffCalendarDays } from '../services/date';
 import { rankHeroItems } from '../services/landingHero';
 import { buildRegionDistribution } from '../services/landingRegions';
 import { getScrapbookCardInteractionPolicy } from '../services/scrapbookCardPolicy';
+import { buildUnsplashSrcSet } from '../services/responsiveImage';
 
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--paper-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper-bg)]';
@@ -117,7 +118,7 @@ const PosterImage: React.FC<{
   decoding?: 'async' | 'auto' | 'sync';
   fetchPriority?: 'high' | 'low' | 'auto';
   compactFallback?: boolean;
-  backdropClassName?: string;
+  sizes?: string;
 }> = ({
   src,
   alt,
@@ -129,9 +130,10 @@ const PosterImage: React.FC<{
   decoding = 'async',
   fetchPriority,
   compactFallback = false,
-  backdropClassName,
+  sizes = '100vw',
 }) => {
   const [hasError, setHasError] = useState(false);
+  const srcSet = buildUnsplashSrcSet(src);
 
   if (!src || hasError) {
     return <PosterFallback title={title} compact={compactFallback} />;
@@ -140,30 +142,19 @@ const PosterImage: React.FC<{
   const handleError = () => setHasError(true);
 
   return (
-    <>
-      {backdropClassName ? (
-        <img
-          src={src}
-          alt=""
-          aria-hidden="true"
-          className={backdropClassName}
-          loading="lazy"
-          decoding="async"
-          onError={handleError}
-        />
-      ) : null}
-      <img
-        src={src}
-        alt={alt}
-        width={width}
-        height={height}
-        fetchPriority={fetchPriority}
-        loading={loading}
-        decoding={decoding}
-        onError={handleError}
-        className={className}
-      />
-    </>
+    <img
+      src={src}
+      srcSet={srcSet}
+      sizes={sizes}
+      alt={alt}
+      width={width}
+      height={height}
+      fetchPriority={fetchPriority}
+      loading={loading}
+      decoding={decoding}
+      onError={handleError}
+      className={className}
+    />
   );
 };
 
@@ -199,6 +190,7 @@ export const BentoHeader: React.FC<{
             <div className="mt-[var(--space-lg)] flex flex-col gap-[var(--space-sm)] sm:flex-row">
               <Link
                 to="/events"
+                id="landing-primary-cta"
                 className={`inline-flex items-center justify-center gap-[var(--space-sm)] border-2 border-[var(--paper-border)] bg-[var(--paper-border)] px-[var(--space-lg)] py-[var(--space-sm)] text-xs font-black uppercase tracking-[0.14em] text-[var(--paper-surface)] transition-colors duration-200 hover:bg-[var(--paper-accent)] active:bg-[var(--paper-active)] ${FOCUS_RING}`}
               >
                 浏览展会名录 <ArrowRight aria-hidden="true" size={16} />
@@ -235,9 +227,15 @@ export const BentoHeader: React.FC<{
                 height={960}
                 fetchPriority="high"
                 loading="eager"
+                sizes="(min-width: 1024px) 50vw, 100vw"
                 className="relative z-10 h-full w-full object-contain transition-transform duration-200 group-hover:scale-[1.02]"
-                backdropClassName="absolute inset-0 h-full w-full scale-125 object-cover opacity-35 blur-2xl saturate-[0.7]"
               />
+              {mainItem.image && (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/12 via-transparent to-black/16 opacity-45"
+                />
+              )}
               {mainItem.image && (
                 <div
                   aria-hidden="true"
@@ -258,7 +256,7 @@ export const BentoHeader: React.FC<{
                     {mainIsFeatured ? '重点活动' : mainItem.isToday ? '今日头条' : '近期焦点'}
                   </span>
                   <span className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-[var(--paper-text-muted)]">
-                    {mainItem.type} / {mainItem.id.slice(0, 6)}
+                    {mainItem.type === 'live' ? 'LIVE BRIEF' : 'EVENT BRIEF'}
                   </span>
                 </div>
                 <h2 id="landing-feature-heading" className="mb-5 text-2xl leading-tight font-black text-[var(--paper-text)] sm:text-4xl">
@@ -276,6 +274,7 @@ export const BentoHeader: React.FC<{
 
               <Link
                 {...(mainTarget as any)}
+                id="landing-primary-cta"
                 className={`inline-flex w-full items-center justify-center gap-[var(--space-sm)] border-2 border-[var(--paper-border)] bg-[var(--paper-border)] py-[var(--space-sm)] text-sm font-black uppercase tracking-[0.12em] text-[var(--paper-surface)] transition-colors duration-200 hover:bg-[var(--paper-accent)] active:bg-[var(--paper-active)] ${FOCUS_RING}`}
               >
                 查看详细情报 <ArrowRight aria-hidden="true" size={18} />
@@ -300,6 +299,7 @@ export const BentoHeader: React.FC<{
                     width={240}
                     height={320}
                     compactFallback
+                    sizes="80px"
                     className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
@@ -460,6 +460,7 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
               width={320}
               height={440}
               compactFallback
+              sizes="(min-width: 768px) 128px, 100vw"
               className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
             />
             {item.isToday && <div className="pointer-events-none absolute inset-0 bg-[var(--paper-accent)]/10" aria-hidden="true"></div>}
@@ -613,7 +614,7 @@ export const IndexSidebar: React.FC<{
               <div className="text-xl font-black tabular-nums text-[var(--paper-text)]">{stats.updateCount}</div>
             </div>
           </div>
-          <p className="mt-3 text-[11px] text-[var(--paper-text-muted)]">统计口径：按活动开始日期计算近 7 天新增条目</p>
+          <p className="mt-3 text-xs leading-relaxed text-[var(--paper-text-muted)]">统计口径：按活动开始日期计算近 7 天新增条目</p>
         </section>
 
         {nextMajor && (
@@ -649,13 +650,13 @@ export const IndexSidebar: React.FC<{
           <div className="flex flex-wrap gap-[var(--space-sm)] text-xs font-bold">
             <Link
               to="/events"
-                className={`text-[var(--paper-muted)] underline-offset-2 transition-colors duration-200 hover:text-[var(--paper-accent)] hover:underline ${FOCUS_RING}`}
+                className={`inline-flex min-h-11 items-center px-2 text-[var(--paper-muted)] underline-offset-2 transition-colors duration-200 hover:text-[var(--paper-accent)] hover:underline ${FOCUS_RING}`}
             >
               浏览展会名录
             </Link>
             <Link
               to="/feedback"
-                className={`text-[var(--paper-muted)] underline-offset-2 transition-colors duration-200 hover:text-[var(--paper-accent)] hover:underline ${FOCUS_RING}`}
+                className={`inline-flex min-h-11 items-center px-2 text-[var(--paper-muted)] underline-offset-2 transition-colors duration-200 hover:text-[var(--paper-accent)] hover:underline ${FOCUS_RING}`}
             >
               提交活动情报
             </Link>
@@ -691,7 +692,7 @@ export const IndexSidebar: React.FC<{
               <Link
                 key={tag}
                 to="/events"
-                className={`text-xs font-bold text-[var(--paper-accent)] underline-offset-2 transition-colors duration-200 hover:text-[var(--paper-accent)] hover:underline ${FOCUS_RING}`}
+                className={`inline-flex min-h-11 items-center rounded-sm px-2 text-xs font-bold text-[var(--paper-accent)] underline-offset-2 transition-colors duration-200 hover:bg-[var(--paper-hover)] hover:text-[var(--paper-accent)] hover:underline ${FOCUS_RING}`}
               >
                 {tag}
               </Link>
@@ -700,14 +701,14 @@ export const IndexSidebar: React.FC<{
         </section>
 
         <section className="relative mt-8 border-4 border-[var(--paper-border)] p-4" style={{ backgroundImage: 'var(--paper-cubes)' }}>
-          <div className="absolute right-0 top-0 bg-[var(--paper-border)] px-1 text-[10px] font-bold uppercase text-[var(--paper-surface)]">AD</div>
+          <div className="absolute right-0 top-0 bg-[var(--paper-border)] px-1 text-[11px] font-bold uppercase text-[var(--paper-surface)]">AD</div>
           <h4 className="mb-2 text-lg font-black text-[var(--paper-text)]">社团入驻开放中</h4>
           <p className="mb-4 text-sm leading-relaxed text-[var(--paper-text-muted)] italic">
             想要在幻想乡日程表上展示您的社团信息吗？现在就申请入驻，获取专属展示页面。
           </p>
           <Link
             to="/circles"
-            className={`block w-full bg-[var(--paper-border)] py-[var(--space-sm)] text-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--paper-surface)] transition-colors duration-200 hover:bg-[var(--paper-accent)] active:bg-[var(--paper-active)] ${FOCUS_RING}`}
+            className={`flex min-h-11 w-full items-center justify-center bg-[var(--paper-border)] py-[var(--space-sm)] text-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--paper-surface)] transition-colors duration-200 hover:bg-[var(--paper-accent)] active:bg-[var(--paper-active)] ${FOCUS_RING}`}
           >
             了解详情
           </Link>
@@ -726,7 +727,7 @@ export const MobileQuickJumpBar: React.FC<{
 
   return (
     <section className="sticky top-[var(--aya-header-height-compact,46px)] z-30 -mx-4 mb-8 border-y border-[var(--paper-border)]/15 bg-[var(--paper-bg)]/95 px-4 py-2 backdrop-blur-sm lg:hidden">
-      <div className="mb-2 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--paper-text-muted)]">快速跳转</div>
+      <div className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--paper-text-muted)]">快速跳转</div>
       <div className="flex gap-2 overflow-x-auto pb-1">
         {months.map((month) => (
           <button

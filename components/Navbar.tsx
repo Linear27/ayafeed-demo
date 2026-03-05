@@ -184,6 +184,9 @@ const Navbar: React.FC<NavbarProps> = ({
     return '幻想乡全域版';
   };
 
+  const mobileRegionButtonClass =
+    'min-h-11 shrink-0 border border-(--paper-border) px-3 py-2 text-xs font-black uppercase tracking-[0.1em] transition-colors duration-200';
+
   const navBg = isNewspaper ? 'bg-(--paper-bg) border-(--paper-border)' : 'bg-white/90 backdrop-blur-md border-slate-200';
   const activeText = isNewspaper ? 'text-(--paper-accent)' : 'text-indigo-600';
   const inactiveText = isNewspaper ? 'text-(--paper-text) hover:text-(--paper-accent)' : 'text-slate-600 hover:text-indigo-600';
@@ -269,7 +272,7 @@ const Navbar: React.FC<NavbarProps> = ({
             <div className="hidden md:block md:flex-1" />
 
             <div className="flex flex-col items-center gap-2">
-              <BrandLink />
+              <BrandLink className="min-h-11" />
               <div className="text-[10px] font-black uppercase tracking-[0.24em] opacity-45 md:mt-1">Gensokyo Intelligence Network / Est. 1000</div>
             </div>
 
@@ -411,9 +414,30 @@ const Navbar: React.FC<NavbarProps> = ({
 
           <div className="border-t border-(--paper-border)/10 md:hidden">
             <div className="flex items-center justify-center gap-1 px-4 py-2">
-              <NavItem to="/events" label="展会" className="px-3 py-3 text-xs" />
-              <NavItem to="/lives" label="演出" className="px-3 py-3 text-xs" />
-              <NavItem to="/circles" label="社团" className="px-3 py-3 text-xs" />
+              <NavItem to="/events" label="展会" className="min-h-11 px-3 py-3 text-xs" />
+              <NavItem to="/lives" label="演出" className="min-h-11 px-3 py-3 text-xs" />
+              <NavItem to="/circles" label="社团" className="min-h-11 px-3 py-3 text-xs" />
+            </div>
+            <div className="border-t border-(--paper-border)/10 px-4 pb-2 pt-2">
+              <div className="mb-1 text-[11px] font-black uppercase tracking-[0.12em] text-(--paper-text-muted)">
+                地区切换
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {REGION_OPTIONS.map((option) => (
+                  <button
+                    key={`masthead-region-${option.code}`}
+                    type="button"
+                    onClick={() => onSetRegion(option.code)}
+                    className={`${mobileRegionButtonClass} ${
+                      region === option.code
+                        ? 'bg-(--paper-border) text-(--paper-surface)'
+                        : 'bg-(--paper-surface) text-(--paper-text) hover:bg-(--paper-hover)'
+                    } ${FOCUS_RING}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </header>
@@ -477,11 +501,34 @@ const Navbar: React.FC<NavbarProps> = ({
                 className="overflow-hidden border-t-4 border-(--paper-border) bg-(--paper-bg) md:hidden"
               >
                 <div className="flex flex-col space-y-6 px-6 py-8">
-                  <NavItem to="/events" label="展会名录" className="w-full border-b-2 border-black/5 py-2 text-2xl" />
-                  <NavItem to="/lives" label="演出快讯" className="w-full border-b-2 border-black/5 py-2 text-2xl" />
-                  <NavItem to="/circles" label="社团检索" className="w-full py-2 text-2xl" />
+                  <NavItem to="/events" label="展会名录" className="w-full min-h-11 border-b-2 border-black/5 py-2 text-2xl" />
+                  <NavItem to="/lives" label="演出快讯" className="w-full min-h-11 border-b-2 border-black/5 py-2 text-2xl" />
+                  <NavItem to="/circles" label="社团检索" className="w-full min-h-11 py-2 text-2xl" />
 
-                  <div className="flex flex-col gap-4 pt-8">
+                  <div className="flex flex-col gap-4 pt-4">
+                    <div className="text-xs font-black uppercase tracking-widest opacity-40 text-(--paper-text)">地区切换</div>
+                    <div className="flex flex-wrap gap-2">
+                      {REGION_OPTIONS.map((regionOption) => (
+                        <button
+                          key={regionOption.code}
+                          type="button"
+                          onClick={() => {
+                            onSetRegion(regionOption.code);
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className={`${mobileRegionButtonClass} ${
+                            region === regionOption.code
+                              ? 'bg-(--paper-border) text-(--paper-surface)'
+                              : 'bg-(--paper-surface) text-(--paper-text) hover:bg-(--paper-border) hover:text-(--paper-surface)'
+                          } ${FOCUS_RING}`}
+                        >
+                          {regionOption.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-4 pt-2">
                     <div className="text-xs font-black uppercase tracking-widest opacity-40 text-(--paper-text)">Language</div>
                     <div className="flex gap-2">
                       {['zh', 'ja', 'en'].map((langCode) => (
@@ -492,7 +539,7 @@ const Navbar: React.FC<NavbarProps> = ({
                             onSetLanguage(langCode as Language);
                             setIsMobileMenuOpen(false);
                           }}
-                          className={`border-2 border-(--paper-border) px-4 py-2 text-xs font-black uppercase transition-colors duration-200 ${
+                          className={`min-h-11 border-2 border-(--paper-border) px-4 py-2 text-xs font-black uppercase transition-colors duration-200 ${
                             language === langCode ? 'bg-(--paper-border) text-(--paper-surface)' : 'bg-(--paper-surface) text-(--paper-text) hover:bg-(--paper-border) hover:text-(--paper-surface)'
                           } ${FOCUS_RING}`}
                         >

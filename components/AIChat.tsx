@@ -3,6 +3,7 @@ import { MessageCircle, X, Send, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { sendMessageToGemini } from '../services/gemini';
 import { ChatMessage } from '../types';
+import { resolveLauncherAvoidance } from '../services/launcherAvoidance';
 
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white';
@@ -16,8 +17,10 @@ const AIChat: React.FC = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const launcherButtonRef = useRef<HTMLButtonElement>(null);
   const lastScrollYRef = useRef(0);
   const rafIdRef = useRef<number | null>(null);
+  const [launcherOffset, setLauncherOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const pathname = window.location.pathname;
   const isLandingRoute = pathname === '/';
@@ -82,8 +85,66 @@ const AIChat: React.FC = () => {
     };
   }, [isLandingRoute, isOpen]);
 
+  useEffect(() => {
+    if (!isLandingRoute || isOpen) {
+      setLauncherOffset((prev) => (prev.x === 0 && prev.y === 0 ? prev : { x: 0, y: 0 }));
+      return;
+    }
+
+    const targetId = 'landing-primary-cta';
+    let rafId: number | null = null;
+
+    const updateOffset = () => {
+      const launcherButton = launcherButtonRef.current;
+      const target = document.getElementById(targetId);
+      if (!launcherButton || !target) {
+        setLauncherOffset((prev) => (prev.x === 0 && prev.y === 0 ? prev : { x: 0, y: 0 }));
+        return;
+      }
+
+      const next = resolveLauncherAvoidance({
+        launcherRect: launcherButton.getBoundingClientRect(),
+        targetRect: target.getBoundingClientRect(),
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+      });
+      setLauncherOffset((prev) =>
+        prev.x === next.offsetX && prev.y === next.offsetY
+          ? prev
+          : { x: next.offsetX, y: next.offsetY },
+      );
+    };
+
+    const requestUpdate = () => {
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        updateOffset();
+      });
+    };
+
+    updateOffset();
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    window.addEventListener('resize', requestUpdate);
+
+    const mountNode = document.getElementById('main-content') ?? document.body;
+    const observer = new MutationObserver(requestUpdate);
+    observer.observe(mountNode, { childList: true, subtree: true });
+
+    return () => {
+      window.removeEventListener('scroll', requestUpdate);
+      window.removeEventListener('resize', requestUpdate);
+      observer.disconnect();
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
+  }, [isLandingRoute, isOpen]);
+
   const isLauncherVisible = showLauncher || isOpen;
   const launcherSizeClass = isLandingRoute ? 'h-11 w-11 sm:h-12 sm:w-12' : 'h-12 w-12';
+  const hiddenTranslateY = isLauncherVisible ? 0 : 14;
+  const translateX = launcherOffset.x;
+  const translateY = hiddenTranslateY - launcherOffset.y;
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -120,7 +181,7 @@ const AIChat: React.FC = () => {
     <div
       className={`pointer-events-none fixed right-[calc(env(safe-area-inset-right,0px)+16px)] ${mobileBottomClass} z-50 flex flex-col items-end sm:bottom-6 sm:right-6`}
       style={{
-        transform: isLauncherVisible ? 'translate3d(0, 0, 0)' : 'translate3d(0, 14px, 0)',
+        transform: `translate3d(${translateX}px, ${translateY}px, 0)`,
         opacity: isLauncherVisible ? 1 : 0.18,
         transition:
           'transform var(--aya-motion-fast, 180ms) cubic-bezier(0.16, 1, 0.3, 1), opacity var(--aya-motion-fast, 180ms) ease-out',
@@ -226,6 +287,7 @@ const AIChat: React.FC = () => {
       </AnimatePresence>
 
       <motion.button
+        ref={launcherButtonRef}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         aria-label={isOpen ? '关闭 AI 助手' : '打开 AI 助手'}
