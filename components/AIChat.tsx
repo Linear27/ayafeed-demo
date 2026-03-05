@@ -92,12 +92,13 @@ const AIChat: React.FC = () => {
     setInput('');
     setIsLoading(true);
 
+    const history = messages.map((message) => ({ role: message.role, text: message.text }));
     const newMessages = [...messages, { role: 'user', text: userText } as ChatMessage];
     setMessages(newMessages);
 
     try {
       const responseText = await sendMessageToGemini(
-        newMessages.map((message) => ({ role: message.role, text: message.text })),
+        history,
         userText,
       );
       setMessages((prev) => [...prev, { role: 'model', text: responseText }]);

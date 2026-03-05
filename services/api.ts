@@ -11,32 +11,43 @@ import {
   PublicCirclesListResponse,
   Circle
 } from '../types';
+import {
+  DEFAULT_BUSINESS_TIME_ZONE,
+  diffCalendarDays,
+  extractDateKey,
+  getBusinessDateKey,
+} from './date';
 
 const BASE_URL = '/v1/public';
+const EVENTS_FETCH_PAGE_SIZE = 100;
+const LIVES_FETCH_PAGE_SIZE = 100;
 const CIRCLES_FETCH_PAGE_SIZE = 100;
+const LIST_FETCH_MAX_PAGES = 100;
 const CIRCLES_FETCH_MAX_PAGES = 100;
 
 const eventsListCache = new Map<string, PublicEventListItem[]>();
 const livesListCache = new Map<string, PublicLiveListItem[]>();
 
-const buildEventsQuery = (params: { marketRegion?: string; page?: number }) => {
+const buildEventsQuery = (params: { marketRegion?: string; page?: number; pageSize?: number }) => {
   const query = new URLSearchParams();
   if (params.marketRegion) query.append('marketRegion', params.marketRegion);
   if (params.page) query.append('page', params.page.toString());
+  if (params.pageSize) query.append('pageSize', params.pageSize.toString());
   return query.toString();
 };
 
-const buildLivesQuery = (params: { page?: number }) => {
+const buildLivesQuery = (params: { page?: number; pageSize?: number }) => {
   const query = new URLSearchParams();
   if (params.page) query.append('page', params.page.toString());
+  if (params.pageSize) query.append('pageSize', params.pageSize.toString());
   return query.toString();
 };
 
-export const getCachedEvents = (params: { marketRegion?: string; page?: number } = {}): PublicEventListItem[] | null => {
+export const getCachedEvents = (params: { marketRegion?: string; page?: number; pageSize?: number } = {}): PublicEventListItem[] | null => {
   return eventsListCache.get(buildEventsQuery(params)) ?? null;
 };
 
-export const getCachedLives = (params: { page?: number } = {}): PublicLiveListItem[] | null => {
+export const getCachedLives = (params: { page?: number; pageSize?: number } = {}): PublicLiveListItem[] | null => {
   return livesListCache.get(buildLivesQuery(params)) ?? null;
 };
 
@@ -58,8 +69,20 @@ const fetchWithRetry = async (url: string, retries = 3, delay = 1000): Promise<R
   throw new Error(`Failed to fetch ${url} after ${retries} retries`);
 };
 
+const fetchEventsPage = async (params: {
+  marketRegion?: string;
+  page: number;
+  pageSize?: number;
+}): Promise<PublicEventsListResponse> => {
+  const query = buildEventsQuery(params);
+  const url = query ? `${BASE_URL}/events?${query}` : `${BASE_URL}/events`;
+  const response = await fetchWithRetry(url);
+  if (!response.ok) throw new Error(`Failed to fetch events: ${response.statusText}`);
+  return response.json();
+};
+
 export const fetchEvents = async (
-  params: { marketRegion?: string; page?: number } = {},
+  params: { marketRegion?: string; page?: number; pageSize?: number } = {},
   options: { forceRefresh?: boolean } = {}
 ): Promise<PublicEventListItem[]> => {
   try {
@@ -71,12 +94,36 @@ export const fetchEvents = async (
       if (cached) return cached;
     }
 
-    const url = query ? `${BASE_URL}/events?${query}` : `${BASE_URL}/events`;
-    const response = await fetchWithRetry(url);
-    if (!response.ok) throw new Error(`Failed to fetch events: ${response.statusText}`);
-    const data: PublicEventsListResponse = await response.json();
-    eventsListCache.set(cacheKey, data.items);
-    return data.items;
+    if (params.page) {
+      const data = await fetchEventsPage({
+        marketRegion: params.marketRegion,
+        page: params.page,
+        pageSize: params.pageSize,
+      });
+      eventsListCache.set(cacheKey, data.items);
+      return data.items;
+    }
+
+    const pageSize = params.pageSize ?? EVENTS_FETCH_PAGE_SIZE;
+    let page = 1;
+    let total = Number.POSITIVE_INFINITY;
+    const allItems: PublicEventListItem[] = [];
+
+    while (allItems.length < total && page <= LIST_FETCH_MAX_PAGES) {
+      const data = await fetchEventsPage({
+        marketRegion: params.marketRegion,
+        page,
+        pageSize,
+      });
+      total = data.pageInfo.total;
+      allItems.push(...data.items);
+      if (data.items.length === 0) break;
+      page += 1;
+    }
+
+    const merged = allItems.slice(0, Number.isFinite(total) ? total : allItems.length);
+    eventsListCache.set(cacheKey, merged);
+    return merged;
   } catch (error) {
     console.error("fetchEvents error:", error);
     throw error;
@@ -94,8 +141,19 @@ export const fetchEventBySlug = async (slug: string): Promise<PublicEventDetailR
   }
 };
 
+const fetchLivesPage = async (params: {
+  page: number;
+  pageSize?: number;
+}): Promise<PublicLivesListResponse> => {
+  const query = buildLivesQuery(params);
+  const url = query ? `${BASE_URL}/lives?${query}` : `${BASE_URL}/lives`;
+  const response = await fetchWithRetry(url);
+  if (!response.ok) throw new Error(`Failed to fetch lives: ${response.statusText}`);
+  return response.json();
+};
+
 export const fetchLives = async (
-  params: { page?: number } = {},
+  params: { page?: number; pageSize?: number } = {},
   options: { forceRefresh?: boolean } = {}
 ): Promise<PublicLiveListItem[]> => {
   try {
@@ -107,12 +165,34 @@ export const fetchLives = async (
       if (cached) return cached;
     }
 
-    const url = query ? `${BASE_URL}/lives?${query}` : `${BASE_URL}/lives`;
-    const response = await fetchWithRetry(url);
-    if (!response.ok) throw new Error(`Failed to fetch lives: ${response.statusText}`);
-    const data: PublicLivesListResponse = await response.json();
-    livesListCache.set(cacheKey, data.items);
-    return data.items;
+    if (params.page) {
+      const data = await fetchLivesPage({
+        page: params.page,
+        pageSize: params.pageSize,
+      });
+      livesListCache.set(cacheKey, data.items);
+      return data.items;
+    }
+
+    const pageSize = params.pageSize ?? LIVES_FETCH_PAGE_SIZE;
+    let page = 1;
+    let total = Number.POSITIVE_INFINITY;
+    const allItems: PublicLiveListItem[] = [];
+
+    while (allItems.length < total && page <= LIST_FETCH_MAX_PAGES) {
+      const data = await fetchLivesPage({
+        page,
+        pageSize,
+      });
+      total = data.pageInfo.total;
+      allItems.push(...data.items);
+      if (data.items.length === 0) break;
+      page += 1;
+    }
+
+    const merged = allItems.slice(0, Number.isFinite(total) ? total : allItems.length);
+    livesListCache.set(cacheKey, merged);
+    return merged;
   } catch (error) {
     console.error("fetchLives error:", error);
     throw error;
@@ -203,6 +283,7 @@ export const fetchCircleById = async (id: string): Promise<Circle> => {
     const response = await fetchWithRetry(`${BASE_URL}/circles/${id}`);
     if (!response.ok) throw new Error(`Failed to fetch circle ${id}: ${response.statusText}`);
     const data: PublicCircleDetailResponse = await response.json();
+    const todayDateKey = getBusinessDateKey(DEFAULT_BUSINESS_TIME_ZONE);
     
     // Map PublicCircleDetailResponse back to Circle for the view
     const c = data.circle;
@@ -226,7 +307,11 @@ export const fetchCircleById = async (id: string): Promise<Circle> => {
         eventName: h.event.title,
         date: h.event.startAt,
         spaceCode: h.boothCode || '',
-        status: new Date(h.event.endAt) > new Date() ? 'Upcoming' : 'Ended',
+        status: (() => {
+          const endDateKey = extractDateKey(h.event.endAt);
+          if (!endDateKey) return 'Ended';
+          return diffCalendarDays(todayDateKey, endDateKey) >= 0 ? 'Upcoming' : 'Ended';
+        })(),
         products: [] 
       })),
       gallery: c.gallery.map(g => g.imageUrl)

@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
     "aistudio:clean-temp": "node scripts/cleanup-aistudio-temp.mjs"
   },
   "dependencies": {

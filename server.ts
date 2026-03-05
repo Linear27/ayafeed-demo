@@ -8,6 +8,13 @@ import {
   PublicLiveListItem, 
   PublicCircleListItem
 } from "./types";
+import {
+  ChatRateLimitEntry,
+  checkChatRateLimit,
+  dedupeHistoryAgainstNewMessage,
+  resolveClientIp,
+  type GeminiChatMessage,
+} from "./services/chatGuards";
 
 const DEFAULT_SOURCE_URL = "https://vanishinghermit.com/kkzsk/";
 
@@ -31,11 +38,6 @@ type FlatEventDocument = {
   category: "Attendee" | "Circle";
 };
 
-type GeminiChatMessage = {
-  role: "user" | "model";
-  text: string;
-};
-
 const GEMINI_MODEL = "gemini-3-flash-preview";
 const GEMINI_ERROR_MESSAGE = "🙇‍♀️ My long-range lens is foggy! (API Error)";
 const GEMINI_MISSING_API_KEY_MESSAGE = "🙇‍♀️ 哎呀！我的远程镜头（API Key）还没准备好。请在环境变量中配置 GEMINI_API_KEY 后再试。";
@@ -45,11 +47,6 @@ const CHAT_MAX_MESSAGE_CHARS = 2000;
 const CHAT_MAX_HISTORY_TOTAL_CHARS = 12000;
 const CHAT_RATE_LIMIT_WINDOW_MS = 60_000;
 const CHAT_RATE_LIMIT_MAX_REQUESTS = 20;
-
-type ChatRateLimitEntry = {
-  count: number;
-  windowStartAt: number;
-};
 
 const chatRateLimit = new Map<string, ChatRateLimitEntry>();
 
@@ -64,40 +61,6 @@ const parsePage = (value: unknown): number => parsePositiveInt(value, 1);
 const parsePageSize = (value: unknown): number => {
   const size = parsePositiveInt(value, DEFAULT_PAGE_SIZE);
   return Math.min(MAX_PAGE_SIZE, Math.max(1, size));
-};
-
-const getClientIp = (req: express.Request): string => {
-  const forwarded = req.headers["x-forwarded-for"];
-  if (typeof forwarded === "string" && forwarded.trim()) {
-    return forwarded.split(",")[0].trim();
-  }
-  return req.ip || req.socket.remoteAddress || "unknown";
-};
-
-const cleanupStaleRateLimitEntries = (now: number) => {
-  if (chatRateLimit.size < 1024) return;
-  for (const [ip, entry] of chatRateLimit.entries()) {
-    if (now - entry.windowStartAt > CHAT_RATE_LIMIT_WINDOW_MS) {
-      chatRateLimit.delete(ip);
-    }
-  }
-};
-
-const isChatRateLimited = (ip: string, now = Date.now()): boolean => {
-  cleanupStaleRateLimitEntries(now);
-  const entry = chatRateLimit.get(ip);
-  if (!entry || now - entry.windowStartAt > CHAT_RATE_LIMIT_WINDOW_MS) {
-    chatRateLimit.set(ip, { count: 1, windowStartAt: now });
-    return false;
-  }
-
-  if (entry.count >= CHAT_RATE_LIMIT_MAX_REQUESTS) {
-    return true;
-  }
-
-  entry.count += 1;
-  chatRateLimit.set(ip, entry);
-  return false;
 };
 
 const buildSystemInstruction = () => `
@@ -327,6 +290,11 @@ const mapCircleToListItem = (c: any): PublicCircleListItem => {
 async function startServer() {
   const app = express();
   const PORT = 3000;
+  const trustProxyFlag = String(process.env.TRUST_PROXY ?? "").toLowerCase();
+  if (trustProxyFlag === "1" || trustProxyFlag === "true") {
+    app.set("trust proxy", true);
+  }
+
   app.use(express.json({ limit: "1mb" }));
 
   const router = express.Router();
@@ -542,8 +510,17 @@ async function startServer() {
   });
 
   router.post("/chat", async (req, res) => {
-    const clientIp = getClientIp(req);
-    if (isChatRateLimited(clientIp)) {
+    const clientIp = resolveClientIp(req);
+    const rateLimit = checkChatRateLimit(
+      chatRateLimit,
+      clientIp,
+      { windowMs: CHAT_RATE_LIMIT_WINDOW_MS, maxRequests: CHAT_RATE_LIMIT_MAX_REQUESTS },
+    );
+    res.setHeader("X-RateLimit-Limit", String(CHAT_RATE_LIMIT_MAX_REQUESTS));
+    res.setHeader("X-RateLimit-Remaining", String(rateLimit.remaining));
+    res.setHeader("X-RateLimit-Reset", String(rateLimit.resetAtEpochSeconds));
+    if (rateLimit.limited) {
+      res.setHeader("Retry-After", String(rateLimit.retryAfterSeconds));
       return res.status(429).json({ message: "请求过于频繁，请稍后再试。" });
     }
 
@@ -561,7 +538,10 @@ async function startServer() {
       return res.status(500).json({ message: GEMINI_MISSING_API_KEY_MESSAGE });
     }
 
-    const history = normalizeChatHistory(req.body?.history);
+    const history = dedupeHistoryAgainstNewMessage(
+      normalizeChatHistory(req.body?.history),
+      newMessage,
+    );
     const historyCharCount = history.reduce((sum, message) => sum + message.text.length, 0);
     if (historyCharCount > CHAT_MAX_HISTORY_TOTAL_CHARS) {
       return res.status(400).json({ message: "历史消息过长，请清空后重试。" });

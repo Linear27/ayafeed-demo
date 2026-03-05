@@ -6,6 +6,7 @@ import { fetchLives, getCachedLives } from '../services/api';
 import { PublicLiveListItem } from '../types';
 import { LiveCardSkeleton } from '../components/Skeleton';
 import { adaptLiveListItem } from '../services/adapters';
+import { DEFAULT_BUSINESS_TIME_ZONE, getBusinessDateKey } from '../services/date';
 
 const WORLD_REGIONS: Record<string, string> = {
   JAPAN: '日本国内',
@@ -63,7 +64,7 @@ const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion }) =
   }, []);
 
   const adaptedLives = useMemo(() => lives.map(adaptLiveListItem), [lives]);
-  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const todayDateKey = useMemo(() => getBusinessDateKey(DEFAULT_BUSINESS_TIME_ZONE), []);
 
   const filteredLives = useMemo(() => {
     return adaptedLives.filter(live => {
@@ -76,14 +77,14 @@ const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion }) =
                (live.title?.toLowerCase().includes(q) ?? false) || 
                (live.venue?.toLowerCase().includes(q) ?? false);
     }).sort((a, b) => {
-      const aPast = (a.date || '') < todayStr;
-      const bPast = (b.date || '') < todayStr;
+      const aPast = (a.date || '') < todayDateKey;
+      const bPast = (b.date || '') < todayDateKey;
       if (aPast !== bPast) return aPast ? 1 : -1; // Upcoming first
       return aPast
         ? (b.date || '').localeCompare(a.date || '') // Past newest first
         : (a.date || '').localeCompare(b.date || ''); // Upcoming nearest first
     });
-  }, [adaptedLives, searchTerm, activeRegion, todayStr]);
+  }, [adaptedLives, searchTerm, activeRegion, todayDateKey]);
 
   const getDisplayTitle = () => {
     const region = WORLD_REGIONS[activeRegion];

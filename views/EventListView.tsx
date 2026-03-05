@@ -7,6 +7,7 @@ import { fetchEvents, getCachedEvents } from '../services/api';
 import EventSlotCard from '../components/EventSlotCard';
 import EventFilters from '../components/EventFilters';
 import { EventCardSkeleton } from '../components/Skeleton';
+import { DEFAULT_BUSINESS_TIME_ZONE, getBusinessDateKey } from '../services/date';
 
 const WORLD_REGIONS = [
   { id: 'JAPAN', label: '日本国内' },
@@ -58,7 +59,7 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [isLoading, setIsLoading] = useState(() => getCachedEvents() === null);
 
-  const MOCK_TODAY = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const todayDateKey = useMemo(() => getBusinessDateKey(DEFAULT_BUSINESS_TIME_ZONE), []);
 
   const [hasAutoSwitched, setHasAutoSwitched] = useState(false);
 
@@ -98,18 +99,18 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
   // Auto-switch to PAST if UPCOMING is empty on initial load
   useEffect(() => {
     if (!isLoading && events.length > 0 && !hasAutoSwitched && timeFilter === 'UPCOMING') {
-      const upcomingCount = events.filter(event => {
-        const evRegion = event.marketRegion || 'JAPAN';
-        if (activeRegion !== 'GLOBAL' && evRegion !== activeRegion) return false;
-        const isPast = (event.startAt || '').split('T')[0] < MOCK_TODAY;
-        return !isPast;
-      }).length;
+        const upcomingCount = events.filter(event => {
+          const evRegion = event.marketRegion || 'JAPAN';
+          if (activeRegion !== 'GLOBAL' && evRegion !== activeRegion) return false;
+          const isPast = (event.startAt || '').split('T')[0] < todayDateKey;
+          return !isPast;
+        }).length;
 
       if (upcomingCount === 0) {
         const pastCount = events.filter(event => {
           const evRegion = event.marketRegion || 'JAPAN';
           if (activeRegion !== 'GLOBAL' && evRegion !== activeRegion) return false;
-          const isPast = (event.startAt || '').split('T')[0] < MOCK_TODAY;
+          const isPast = (event.startAt || '').split('T')[0] < todayDateKey;
           return isPast;
         }).length;
 
@@ -119,7 +120,25 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
         }
       }
     }
-  }, [isLoading, events, activeRegion, timeFilter, MOCK_TODAY, hasAutoSwitched]);
+  }, [isLoading, events, activeRegion, timeFilter, todayDateKey, hasAutoSwitched]);
+
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_PAGE);
+  }, [searchTerm, timeFilter, activeRegion, selectedLocalRegions, selectedGenres]);
+
+  const availableGenres = useMemo(() => {
+    const typeSet = new Set<string>();
+    for (const event of events) {
+      for (const genre of event.genres || []) {
+        const token = genre.trim();
+        if (token.length > 0) typeSet.add(token);
+      }
+    }
+    return {
+      ips: [] as string[],
+      types: Array.from(typeSet).sort((a, b) => a.localeCompare(b, 'zh-Hans-CN')),
+    };
+  }, [events]);
 
   const filteredRawEvents = useMemo(() => {
      return events.filter(event => {
@@ -135,14 +154,20 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
         );
         if (!matchSearch) return false;
         
-        const isPast = (event.startAt || '').split('T')[0] < MOCK_TODAY;
+        const isPast = (event.startAt || '').split('T')[0] < todayDateKey;
         if (timeFilter === 'UPCOMING' && isPast) return false;
         if (timeFilter === 'PAST' && !isPast) return false;
+
+        if (selectedGenres.length > 0) {
+          const genreSet = new Set((event.genres || []).map((genre) => genre.toLowerCase()));
+          const hasMatchedGenre = selectedGenres.some((genre) => genreSet.has(genre.toLowerCase()));
+          if (!hasMatchedGenre) return false;
+        }
         
         if (activeRegion !== 'GLOBAL' && selectedLocalRegions.length > 0 && !selectedLocalRegions.includes(getRegionGroup(activeRegion, event.location?.name || ''))) return false;
         return true;
      }).sort((a, b) => (a.startAt || '').localeCompare(b.startAt || ''));
-  }, [events, searchTerm, timeFilter, activeRegion, selectedLocalRegions, selectedGenres, MOCK_TODAY]);
+  }, [events, searchTerm, timeFilter, activeRegion, selectedLocalRegions, selectedGenres, todayDateKey]);
 
   const processedSlots = useMemo(() => {
     const slotsMap = filteredRawEvents.reduce((acc, event) => {
@@ -240,7 +265,7 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
             selectedRegions={selectedLocalRegions} setSelectedRegions={setSelectedLocalRegions}
             selectedGenres={selectedGenres} setSelectedGenres={setSelectedGenres}
             availableRegionGroups={activeRegion === 'GLOBAL' ? [] : Object.keys(REGION_GROUPS[activeRegion] || {})}
-            availableGenres={{ ips: [], types: [] }}
+            availableGenres={availableGenres}
             onClearAll={() => { setSelectedLocalRegions([]); setSelectedGenres([]); setSearchTerm(''); }}
          />
       </div>
@@ -250,12 +275,25 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
       ) : (
         <>
           {processedSlots.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-              {processedSlots.slice(0, visibleCount).map(slot => (
-                <div key={slot.key} className="relative">
-                  <EventSlotCard slot={slot} onSelect={onSelect} />
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                {processedSlots.slice(0, visibleCount).map(slot => (
+                  <div key={slot.key} className="relative">
+                    <EventSlotCard slot={slot} onSelect={onSelect} />
+                  </div>
+                ))}
+              </div>
+
+              {visibleCount < processedSlots.length ? (
+                <div className="text-center">
+                  <button
+                    onClick={() => setVisibleCount((prev) => prev + ITEMS_PER_PAGE)}
+                    className="border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-8 py-2 text-xs font-black uppercase tracking-widest text-[var(--paper-text)] shadow-[var(--paper-shadow-md)] transition-colors hover:bg-[var(--paper-hover)] active:bg-[var(--paper-active)]"
+                  >
+                    加载更多档期
+                  </button>
                 </div>
-              ))}
+              ) : null}
             </div>
           ) : (
             <div className="py-20 text-center border-2 border-dashed border-[var(--paper-border)]/20 rounded-xl bg-[var(--paper-surface)]/50">
