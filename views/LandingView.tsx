@@ -219,7 +219,6 @@ const LandingView: React.FC<{
                 items={featuredItems} 
                 region={region}
                 todayDateKey={todayDateKey}
-                stats={stats}
               />
             </div>
 
@@ -231,6 +230,8 @@ const LandingView: React.FC<{
 
               <IndexSidebar 
                 items={timelineItems} 
+                todayDateKey={todayDateKey}
+                stats={stats}
               />
             </div>
           </>

@@ -12,7 +12,7 @@ import {
   Building2,
   Users,
 } from 'lucide-react';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { PreferredRegion, TimelineItem } from '../types';
 import { diffCalendarDays } from '../services/date';
 import { rankHeroItems } from '../services/landingHero';
@@ -111,13 +111,7 @@ export const BentoHeader: React.FC<{
   items: TimelineItem[];
   region: PreferredRegion;
   todayDateKey: string;
-  stats: {
-    totalEvents: number;
-    todayCount: number;
-    thisWeekCount: number;
-    updateCount: number;
-  };
-}> = ({ items, region: _region, todayDateKey, stats }) => {
+}> = ({ items, region: _region, todayDateKey: _todayDateKey }) => {
   const rankedItems = rankHeroItems(items);
   const mainItem = rankedItems[0];
   const secondaryItems = rankedItems.slice(1, 3);
@@ -160,17 +154,13 @@ export const BentoHeader: React.FC<{
   }
 
   const mainIsFeatured = mainItem.type === 'event' && mainItem.featured === true;
-  const nextMajor = rankedItems.find((item) => item.id !== mainItem.id && !item.isToday);
-  const daysLeft = nextMajor
-    ? Math.max(0, diffCalendarDays(todayDateKey, nextMajor.date))
-    : null;
 
   const mainTarget = getDetailTarget(mainItem);
 
   return (
     <section className="mx-auto max-w-7xl" aria-labelledby="landing-feature-heading">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <article className="group relative min-h-[420px] overflow-hidden border-4 border-[var(--paper-border)] bg-[var(--paper-surface)] shadow-[6px_6px_0px_0px_var(--paper-border)] lg:col-span-8">
+        <article className="group relative min-h-[420px] overflow-hidden border-4 border-[var(--paper-border)] bg-[var(--paper-surface)] shadow-[6px_6px_0px_0px_var(--paper-border)] lg:col-span-12">
           <Tape className="left-1/2 top-0 w-32 -translate-x-1/2" rotate={1} />
           <div className="flex h-full flex-col md:flex-row">
             <div className="relative flex items-center justify-center overflow-hidden border-b-4 border-[var(--paper-border)] bg-[var(--paper-bg-secondary)] p-4 md:w-1/2 md:border-b-0 md:border-r-4">
@@ -225,55 +215,6 @@ export const BentoHeader: React.FC<{
             </div>
           </div>
         </article>
-
-        <aside className="flex flex-col gap-4 lg:col-span-4" aria-label="焦点补充信息">
-          {nextMajor && (
-            <Link
-              {...(getDetailTarget(nextMajor) as any)}
-              className={`group relative flex-1 overflow-hidden border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 text-[var(--paper-text)] shadow-[2px_2px_0px_0px_var(--paper-border)] transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[var(--paper-accent)] hover:shadow-[3px_3px_0px_0px_var(--paper-border)] ${FOCUS_RING}`}
-            >
-              <div className="pointer-events-none absolute -bottom-6 -right-6 opacity-5 transition-transform duration-200 group-hover:scale-110">
-                <Clock aria-hidden="true" size={124} />
-              </div>
-              <div className="relative z-10">
-                <div className="mb-2 text-xs font-black uppercase tracking-[0.16em] text-[var(--paper-accent)]">下个重点活动 / Next</div>
-                <div className="mb-1 text-4xl leading-none font-black tracking-tight text-[var(--paper-text)]">
-                  {daysLeft === 0 ? 'TODAY' : `${daysLeft} DAYS`}
-                </div>
-                <div className="line-clamp-1 text-sm font-bold text-[var(--paper-text-muted)]">距离 {nextMajor.title}</div>
-                <div className="mt-4 inline-flex items-center gap-1 text-xs font-black uppercase tracking-[0.12em] text-[var(--paper-accent)]">
-                  查看情报 <ArrowRight aria-hidden="true" size={14} />
-                </div>
-              </div>
-            </Link>
-          )}
-
-          <div className="flex-1 border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 shadow-[2px_2px_0px_0px_var(--paper-border)]">
-            <div className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--paper-text-muted)]">情报统计 / Stats</div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-xs font-bold uppercase text-[var(--paper-text-muted)]">已收录</div>
-                <div className="text-2xl font-black tabular-nums text-[var(--paper-text)]">{stats.totalEvents}</div>
-              </div>
-              <div>
-                <div className="text-xs font-bold uppercase text-[var(--paper-text-muted)]">本周活动</div>
-                <div className="text-2xl font-black text-[var(--paper-accent)] tabular-nums">{stats.thisWeekCount}</div>
-              </div>
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-xs font-bold uppercase text-[var(--paper-text-muted)]">今日进行中</div>
-                <div className="text-xl font-black tabular-nums text-[var(--paper-text)]">{stats.todayCount}</div>
-              </div>
-              <div>
-                <div className="text-xs font-bold uppercase text-[var(--paper-text-muted)]">7日新增</div>
-                <div className="text-xl font-black tabular-nums text-[var(--paper-text)]">{stats.updateCount}</div>
-              </div>
-            </div>
-            <p className="mt-3 text-[11px] text-[var(--paper-text-muted)]">统计口径：按活动开始日期计算近 7 天新增条目</p>
-          </div>
-
-        </aside>
 
         {secondaryItems.length > 0 && (
           <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2 lg:col-span-12">
@@ -360,7 +301,7 @@ export const ScrapbookTimeline: React.FC<{
     <div className="flex flex-col" id="timeline-root">
       <div className="relative mb-12 flex items-center gap-3">
         <Library aria-hidden="true" className="shrink-0 text-[var(--paper-accent)]" size={32} />
-        <h2 className="text-3xl font-black tracking-tight text-[var(--paper-text)] sm:text-4xl uppercase">幻想乡编年史</h2>
+        <h2 className="text-3xl font-black tracking-tight text-[var(--paper-text)] sm:text-4xl uppercase">幻想乡活动时间轴</h2>
         <div className="absolute -bottom-2 left-0 h-1 w-full bg-[var(--paper-border)]/5" aria-hidden="true"></div>
       </div>
 
@@ -429,7 +370,9 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
   index,
   anchorId,
 }) => {
+  const navigate = useNavigate();
   const isLive = item.type === 'live';
+  const isUpcoming = !item.isThisWeek;
   const detailTarget = getDetailTarget(item);
   const website = item.website ? normalizeWebsiteUrl(item.website) : null;
 
@@ -443,7 +386,20 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
       {index === 0 && <Tape className="-top-3 left-10" rotate={-5} />}
 
       <div
-        className={`relative border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 shadow-[3px_3px_0px_0px_var(--paper-border)]/20 transition-[box-shadow,border-color] duration-200 hover:border-[var(--paper-accent)] hover:shadow-[4px_4px_0px_0px_var(--paper-border)]/30 ${isLive ? 'bg-[var(--paper-accent)]/5' : ''}`}
+        role={isUpcoming ? 'link' : undefined}
+        tabIndex={isUpcoming ? 0 : undefined}
+        onClick={isUpcoming ? () => navigate(detailTarget as any) : undefined}
+        onKeyDown={
+          isUpcoming
+            ? (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  navigate(detailTarget as any);
+                }
+              }
+            : undefined
+        }
+        className={`relative border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 shadow-[3px_3px_0px_0px_var(--paper-border)]/20 transition-[box-shadow,border-color] duration-200 hover:border-[var(--paper-accent)] hover:shadow-[4px_4px_0px_0px_var(--paper-border)]/30 ${isLive ? 'bg-[var(--paper-accent)]/5' : ''} ${isUpcoming ? 'cursor-pointer' : ''}`}
       >
         <div className="flex flex-col gap-5 md:flex-row">
           <div className="relative flex h-44 w-full shrink-0 items-center justify-center overflow-hidden border-2 border-[var(--paper-border)] bg-[var(--paper-bg-secondary)] md:w-32">
@@ -506,6 +462,8 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
                   href={website}
                   target="_blank"
                   rel="noreferrer"
+                  onClick={(event) => event.stopPropagation()}
+                  onKeyDown={(event) => event.stopPropagation()}
                   className={`inline-flex items-center gap-1 text-[var(--paper-accent)] underline-offset-2 hover:underline ${FOCUS_RING}`}
                 >
                   <ExternalLink aria-hidden="true" size={14} /> 官方网站
@@ -517,14 +475,16 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
               {item.summary || '暂无详细摘要信息。'}
             </p>
 
-            <div className="mt-4">
-              <Link
-                {...(detailTarget as any)}
-                className={`inline-flex items-center gap-2 border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] transition-colors duration-200 hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)] ${FOCUS_RING}`}
-              >
-                查看详情 <ArrowRight aria-hidden="true" size={14} />
-              </Link>
-            </div>
+            {!isUpcoming && (
+              <div className="mt-4">
+                <Link
+                  {...(detailTarget as any)}
+                  className={`inline-flex items-center gap-2 border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] transition-colors duration-200 hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)] ${FOCUS_RING}`}
+                >
+                  查看详情 <ArrowRight aria-hidden="true" size={14} />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -537,8 +497,24 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
  */
 export const IndexSidebar: React.FC<{
   items: TimelineItem[];
-}> = ({ items }) => {
+  todayDateKey: string;
+  stats: {
+    totalEvents: number;
+    todayCount: number;
+    thisWeekCount: number;
+    updateCount: number;
+  };
+}> = ({ items, todayDateKey, stats }) => {
   const months = useMemo(() => buildMonthIndex(items), [items]);
+  const rankedItems = useMemo(() => rankHeroItems(items), [items]);
+  const mainItemId = rankedItems[0]?.id;
+  const nextMajor = useMemo(
+    () => rankedItems.find((item) => item.id !== mainItemId && !item.isToday),
+    [rankedItems, mainItemId],
+  );
+  const daysLeft = nextMajor
+    ? Math.max(0, diffCalendarDays(todayDateKey, nextMajor.date))
+    : null;
 
   const regionCounts = useMemo(() => {
     const counts = { JAPAN: 0, CN_MAINLAND: 0, OVERSEAS: 0 };
@@ -577,6 +553,59 @@ export const IndexSidebar: React.FC<{
             {months.length === 0 && <span className="text-sm text-[var(--paper-text-muted)] italic">无可用月份</span>}
           </div>
         </section>
+
+        <section>
+          <h3 className="mb-3 border-b border-[var(--paper-border)]/20 pb-1 text-sm font-black uppercase tracking-[0.12em] text-[var(--paper-text-muted)]">
+            情报统计 / Stats
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="text-xs font-bold uppercase text-[var(--paper-text-muted)]">已收录</div>
+              <div className="text-2xl font-black tabular-nums text-[var(--paper-text)]">{stats.totalEvents}</div>
+            </div>
+            <div>
+              <div className="text-xs font-bold uppercase text-[var(--paper-text-muted)]">本周活动</div>
+              <div className="text-2xl font-black text-[var(--paper-accent)] tabular-nums">{stats.thisWeekCount}</div>
+            </div>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-4">
+            <div>
+              <div className="text-xs font-bold uppercase text-[var(--paper-text-muted)]">今日进行中</div>
+              <div className="text-xl font-black tabular-nums text-[var(--paper-text)]">{stats.todayCount}</div>
+            </div>
+            <div>
+              <div className="text-xs font-bold uppercase text-[var(--paper-text-muted)]">7日新增</div>
+              <div className="text-xl font-black tabular-nums text-[var(--paper-text)]">{stats.updateCount}</div>
+            </div>
+          </div>
+          <p className="mt-3 text-[11px] text-[var(--paper-text-muted)]">统计口径：按活动开始日期计算近 7 天新增条目</p>
+        </section>
+
+        {nextMajor && (
+          <section>
+            <h3 className="mb-3 border-b border-[var(--paper-border)]/20 pb-1 text-sm font-black uppercase tracking-[0.12em] text-[var(--paper-text-muted)]">
+              下个重点活动 / Next
+            </h3>
+            <Link
+              {...(getDetailTarget(nextMajor) as any)}
+              className={`group relative block overflow-hidden border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 text-[var(--paper-text)] shadow-[2px_2px_0px_0px_var(--paper-border)] transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[var(--paper-accent)] hover:shadow-[3px_3px_0px_0px_var(--paper-border)] ${FOCUS_RING}`}
+            >
+              <div className="pointer-events-none absolute -bottom-6 -right-6 opacity-5 transition-transform duration-200 group-hover:scale-110">
+                <Clock aria-hidden="true" size={110} />
+              </div>
+              <div className="relative z-10">
+                <div className="mb-1 text-3xl leading-none font-black tracking-tight text-[var(--paper-text)]">
+                  {daysLeft === 0 ? 'TODAY' : `${daysLeft} DAYS`}
+                </div>
+                <div className="line-clamp-1 text-sm font-bold text-[var(--paper-text-muted)]">{nextMajor.title}</div>
+                <div className="mt-1 text-xs font-bold text-[var(--paper-text-muted)]">{nextMajor.date}</div>
+                <div className="mt-3 inline-flex items-center gap-1 text-xs font-black uppercase tracking-[0.12em] text-[var(--paper-accent)]">
+                  查看情报 <ArrowRight aria-hidden="true" size={14} />
+                </div>
+              </div>
+            </Link>
+          </section>
+        )}
 
         <section>
           <h3 className="mb-3 border-b border-[var(--paper-border)]/20 pb-1 text-sm font-black uppercase tracking-[0.12em] text-[var(--paper-text-muted)]">

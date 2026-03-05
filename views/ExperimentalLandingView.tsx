@@ -110,13 +110,6 @@ const ExperimentalLandingView: React.FC<{ theme: Theme }> = ({ theme }) => {
     return items;
   }, [events, lives, region]);
 
-  const stats = useMemo(() => ({
-    totalEvents: events.length + lives.length,
-    todayCount: timelineItems.filter(i => i.isToday).length,
-    thisWeekCount: timelineItems.filter(i => i.isThisWeek).length,
-    updateCount: 5
-  }), [events, lives, timelineItems]);
-
   const featuredItems = useMemo(() => {
     return rankHeroItems(timelineItems).slice(0, 5);
   }, [timelineItems]);
@@ -158,7 +151,6 @@ const ExperimentalLandingView: React.FC<{ theme: Theme }> = ({ theme }) => {
             items={featuredItems} 
             region={region}
             todayDateKey={MOCK_TODAY}
-            stats={stats}
           />
         </div>
 
