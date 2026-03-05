@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { PreferredRegion, PublicEventListItem, PublicLiveListItem, TimelineItem } from '../types';
 import { fetchEvents, fetchLives } from '../services/api';
 import { BentoHeader, ScrapbookTimeline, IndexSidebar, MobileQuickJumpBar } from '../components/LandingSections';
-import { EventCardSkeleton } from '../components/Skeleton';
+import { ScrapbookCardSkeleton } from '../components/Skeleton';
 import { Link } from '@tanstack/react-router';
 import { AlertTriangle, RefreshCcw, ArrowRight } from 'lucide-react';
 import {
@@ -160,7 +160,7 @@ const LandingView: React.FC<{
                   <div className="w-7 h-7 bg-[var(--paper-border)]/10 border border-[var(--paper-border)]/5 animate-pulse" />
                   <div className="h-9 w-44 bg-[var(--paper-border)]/10 border border-[var(--paper-border)]/5 animate-pulse" />
                 </div>
-                <EventCardSkeleton count={4} />
+                <ScrapbookCardSkeleton count={4} />
               </div>
 
               <div className="lg:col-span-4 pl-0 lg:pl-10 flex flex-col lg:border-l border-[var(--paper-border)]/20 border-dashed">

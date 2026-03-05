@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   MapPin,
   Calendar,
@@ -12,10 +12,12 @@ import {
   Building2,
   Users,
 } from 'lucide-react';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import { PreferredRegion, TimelineItem } from '../types';
 import { diffCalendarDays } from '../services/date';
 import { rankHeroItems } from '../services/landingHero';
+import { buildRegionDistribution } from '../services/landingRegions';
+import { getScrapbookCardInteractionPolicy } from '../services/scrapbookCardPolicy';
 
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper-bg)]';
@@ -104,6 +106,67 @@ const PosterFallback: React.FC<{ title: string; compact?: boolean }> = ({ title,
   </div>
 );
 
+const PosterImage: React.FC<{
+  src: string | null | undefined;
+  alt: string;
+  title: string;
+  className: string;
+  width: number;
+  height: number;
+  loading?: 'lazy' | 'eager';
+  decoding?: 'async' | 'auto' | 'sync';
+  fetchPriority?: 'high' | 'low' | 'auto';
+  compactFallback?: boolean;
+  backdropClassName?: string;
+}> = ({
+  src,
+  alt,
+  title,
+  className,
+  width,
+  height,
+  loading = 'lazy',
+  decoding = 'async',
+  fetchPriority,
+  compactFallback = false,
+  backdropClassName,
+}) => {
+  const [hasError, setHasError] = useState(false);
+
+  if (!src || hasError) {
+    return <PosterFallback title={title} compact={compactFallback} />;
+  }
+
+  const handleError = () => setHasError(true);
+
+  return (
+    <>
+      {backdropClassName ? (
+        <img
+          src={src}
+          alt=""
+          aria-hidden="true"
+          className={backdropClassName}
+          loading="lazy"
+          decoding="async"
+          onError={handleError}
+        />
+      ) : null}
+      <img
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        fetchPriority={fetchPriority}
+        loading={loading}
+        decoding={decoding}
+        onError={handleError}
+        className={className}
+      />
+    </>
+  );
+};
+
 /**
  * 1. Bento Header 组件 - 动态功能头版
  */
@@ -127,10 +190,10 @@ export const BentoHeader: React.FC<{
           <div className="relative z-10 max-w-3xl">
             <div className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-[var(--paper-text-muted)]">情报待更新</div>
             <h2 id="landing-feature-heading" className="text-3xl leading-tight font-black text-[var(--paper-text)] sm:text-4xl">
-              近期暂无可展示排期
+              号外：近期暂无头条情报
             </h2>
             <p className="mt-4 max-w-[46ch] text-sm leading-relaxed text-[var(--paper-text-muted)] italic">
-              当前频道没有未来日程条目。你可以先浏览现有名录，或向编辑部提交新的活动线索。
+              编辑部正在加紧取材中。你可以先浏览现有名录，或向编辑部提交新的活动线索。
             </p>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -164,17 +227,22 @@ export const BentoHeader: React.FC<{
           <Tape className="left-1/2 top-0 w-32 -translate-x-1/2" rotate={1} />
           <div className="flex h-full flex-col md:flex-row">
             <div className="relative flex items-center justify-center overflow-hidden border-b-4 border-[var(--paper-border)] bg-[var(--paper-bg-secondary)] p-4 md:w-1/2 md:border-b-0 md:border-r-4">
-              {mainItem.image ? (
-                <img
-                  src={mainItem.image}
-                  alt={mainItem.title}
-                  width={720}
-                  height={960}
-                  fetchPriority="high"
-                  className="max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+              <PosterImage
+                src={mainItem.image}
+                alt={mainItem.title}
+                title={mainItem.title}
+                width={720}
+                height={960}
+                fetchPriority="high"
+                loading="eager"
+                className="relative z-10 h-full w-full object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+                backdropClassName="absolute inset-0 h-full w-full scale-125 object-cover opacity-35 blur-2xl saturate-[0.7]"
+              />
+              {mainItem.image && (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,rgba(26,26,26,0.12)_1px,transparent_1px)] [background-size:9px_9px] opacity-20"
                 />
-              ) : (
-                <PosterFallback title={mainItem.title} />
               )}
               {mainItem.isToday && (
                 <div className="absolute left-4 top-4 z-30">
@@ -225,19 +293,15 @@ export const BentoHeader: React.FC<{
                 className={`group flex gap-4 border border-[var(--paper-border)] bg-[var(--paper-surface)] p-4 shadow-[2px_2px_0px_0px_var(--paper-border)] transition-[background-color,box-shadow,border-color] duration-200 hover:border-[var(--paper-accent)] hover:bg-[var(--paper-bg-secondary)]/50 hover:shadow-[3px_3px_0px_0px_var(--paper-border)] ${FOCUS_RING}`}
               >
                 <div className="flex h-24 w-20 shrink-0 items-center justify-center overflow-hidden border border-[var(--paper-border)] bg-[var(--paper-bg-secondary)]">
-                  {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      width={240}
-                      height={320}
-                      loading="lazy"
-                      decoding="async"
-                      className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <PosterFallback title={item.title} compact />
-                  )}
+                  <PosterImage
+                    src={item.image}
+                    alt={item.title}
+                    title={item.title}
+                    width={240}
+                    height={320}
+                    compactFallback
+                    className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                  />
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col justify-center">
                   <div className="mb-1 flex items-center gap-2">
@@ -370,11 +434,10 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
   index,
   anchorId,
 }) => {
-  const navigate = useNavigate();
   const isLive = item.type === 'live';
-  const isUpcoming = !item.isThisWeek;
   const detailTarget = getDetailTarget(item);
   const website = item.website ? normalizeWebsiteUrl(item.website) : null;
+  const interactionPolicy = getScrapbookCardInteractionPolicy(item);
 
   return (
     <article id={anchorId} className="group relative scroll-mt-28" aria-labelledby={`timeline-title-${item.id}`}>
@@ -386,36 +449,19 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
       {index === 0 && <Tape className="-top-3 left-10" rotate={-5} />}
 
       <div
-        role={isUpcoming ? 'link' : undefined}
-        tabIndex={isUpcoming ? 0 : undefined}
-        onClick={isUpcoming ? () => navigate(detailTarget as any) : undefined}
-        onKeyDown={
-          isUpcoming
-            ? (event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  navigate(detailTarget as any);
-                }
-              }
-            : undefined
-        }
-        className={`relative border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 shadow-[3px_3px_0px_0px_var(--paper-border)]/20 transition-[box-shadow,border-color] duration-200 hover:border-[var(--paper-accent)] hover:shadow-[4px_4px_0px_0px_var(--paper-border)]/30 ${isLive ? 'bg-[var(--paper-accent)]/5' : ''} ${isUpcoming ? 'cursor-pointer' : ''}`}
+        className={`relative border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 shadow-[3px_3px_0px_0px_var(--paper-border)]/20 transition-[box-shadow,border-color] duration-200 hover:border-[var(--paper-accent)] hover:shadow-[4px_4px_0px_0px_var(--paper-border)]/30 ${isLive ? 'bg-[var(--paper-accent)]/5' : ''}`}
       >
         <div className="flex flex-col gap-5 md:flex-row">
           <div className="relative flex h-44 w-full shrink-0 items-center justify-center overflow-hidden border-2 border-[var(--paper-border)] bg-[var(--paper-bg-secondary)] md:w-32">
-            {item.image ? (
-              <img
-                src={item.image}
-                className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
-                alt={item.title}
-                width={320}
-                height={440}
-                loading="lazy"
-                decoding="async"
-              />
-            ) : (
-              <PosterFallback title={item.title} compact />
-            )}
+            <PosterImage
+              src={item.image}
+              alt={item.title}
+              title={item.title}
+              width={320}
+              height={440}
+              compactFallback
+              className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+            />
             {item.isToday && <div className="pointer-events-none absolute inset-0 bg-[var(--paper-accent)]/10" aria-hidden="true"></div>}
           </div>
 
@@ -440,7 +486,16 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
               id={`timeline-title-${item.id}`}
               className={`mb-3 text-xl leading-tight font-black transition-colors duration-200 sm:text-2xl ${isLive ? 'text-[var(--paper-accent)]' : 'text-[var(--paper-text)]'} group-hover:text-[var(--paper-accent)]`}
             >
-              {item.title}
+              {interactionPolicy.primaryCta === 'title-link' ? (
+                <Link
+                  {...(detailTarget as any)}
+                  className={`inline underline-offset-2 transition-colors duration-200 hover:text-[var(--paper-accent)] hover:underline ${FOCUS_RING}`}
+                >
+                  {item.title}
+                </Link>
+              ) : (
+                item.title
+              )}
             </h4>
 
             <div className="mb-4 grid grid-cols-1 gap-x-6 gap-y-2 text-sm font-bold text-[var(--paper-text-muted)] sm:grid-cols-2">
@@ -462,8 +517,6 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
                   href={website}
                   target="_blank"
                   rel="noreferrer"
-                  onClick={(event) => event.stopPropagation()}
-                  onKeyDown={(event) => event.stopPropagation()}
                   className={`inline-flex items-center gap-1 text-[var(--paper-accent)] underline-offset-2 hover:underline ${FOCUS_RING}`}
                 >
                   <ExternalLink aria-hidden="true" size={14} /> 官方网站
@@ -475,16 +528,6 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
               {item.summary || '暂无详细摘要信息。'}
             </p>
 
-            {!isUpcoming && (
-              <div className="mt-4">
-                <Link
-                  {...(detailTarget as any)}
-                  className={`inline-flex items-center gap-2 border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] transition-colors duration-200 hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)] ${FOCUS_RING}`}
-                >
-                  查看详情 <ArrowRight aria-hidden="true" size={14} />
-                </Link>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -516,15 +559,7 @@ export const IndexSidebar: React.FC<{
     ? Math.max(0, diffCalendarDays(todayDateKey, nextMajor.date))
     : null;
 
-  const regionCounts = useMemo(() => {
-    const counts = { JAPAN: 0, CN_MAINLAND: 0, OVERSEAS: 0 };
-    items.forEach((item) => {
-      if (item.marketRegion === 'JAPAN') counts.JAPAN += 1;
-      else if (item.marketRegion === 'CN_MAINLAND') counts.CN_MAINLAND += 1;
-      else if (item.marketRegion === 'OVERSEAS') counts.OVERSEAS += 1;
-    });
-    return counts;
-  }, [items]);
+  const regionCounts = useMemo(() => buildRegionDistribution(items), [items]);
 
   return (
     <aside className="mt-8 flex flex-col border-dashed border-[var(--paper-border)]/20 lg:col-span-4 lg:mt-0 lg:border-l lg:pl-10" aria-label="检索与索引">
@@ -632,18 +667,18 @@ export const IndexSidebar: React.FC<{
             地区分布 (Region)
           </h3>
           <ul className="space-y-2 text-sm font-bold font-mono text-[var(--paper-text)]">
-            <li className="flex items-center justify-between">
-              <span>日本 (JAPAN)</span>
-              <span className="border border-[var(--paper-border)]/20 bg-[var(--paper-bg-secondary)] px-2 py-0.5 tabular-nums">{regionCounts.JAPAN}</span>
-            </li>
-            <li className="flex items-center justify-between">
-              <span>大陆 (CN_MAINLAND)</span>
-              <span className="border border-[var(--paper-border)]/20 bg-[var(--paper-bg-secondary)] px-2 py-0.5 tabular-nums">{regionCounts.CN_MAINLAND}</span>
-            </li>
-            <li className="flex items-center justify-between">
-              <span>海外 (OVERSEAS)</span>
-              <span className="border border-[var(--paper-border)]/20 bg-[var(--paper-bg-secondary)] px-2 py-0.5 tabular-nums">{regionCounts.OVERSEAS}</span>
-            </li>
+            {regionCounts.length > 0 ? (
+              regionCounts.map((row) => (
+                <li key={row.key} className="flex items-center justify-between">
+                  <span>{row.label}</span>
+                  <span className="border border-[var(--paper-border)]/20 bg-[var(--paper-bg-secondary)] px-2 py-0.5 tabular-nums">
+                    {row.count}
+                  </span>
+                </li>
+              ))
+            ) : (
+              <li className="text-[var(--paper-text-muted)] italic">暂无地区数据</li>
+            )}
           </ul>
         </section>
 

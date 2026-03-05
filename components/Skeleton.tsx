@@ -58,6 +58,37 @@ export const LiveCardSkeleton: React.FC<SkeletonProps> = ({ count = 4 }) => {
   );
 };
 
+export const ScrapbookCardSkeleton: React.FC<SkeletonProps> = ({ count = 4 }) => {
+  return (
+    <div className="space-y-10">
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className="relative border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 shadow-[3px_3px_0px_0px_var(--paper-border)]/20"
+        >
+          <div className="flex flex-col gap-5 md:flex-row">
+            <SkeletonPulse className="h-44 w-full shrink-0 md:w-32" />
+            <div className="flex-1 space-y-4">
+              <div className="flex flex-wrap gap-3">
+                <SkeletonPulse className="h-5 w-24" />
+                <SkeletonPulse className="h-5 w-32" />
+              </div>
+              <SkeletonPulse className="h-8 w-11/12" />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <SkeletonPulse className="h-4 w-full" />
+                <SkeletonPulse className="h-4 w-full" />
+                <SkeletonPulse className="h-4 w-full sm:col-span-2" />
+              </div>
+              <SkeletonPulse className="h-16 w-full" />
+              <SkeletonPulse className="h-9 w-32" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export const CircleCardSkeleton: React.FC<SkeletonProps> = ({ count = 8 }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
