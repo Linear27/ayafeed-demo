@@ -15,6 +15,7 @@ const CircleListView: React.FC<{ onSelect: (id: string) => void }> = ({ onSelect
   const [isLoading, setIsLoading] = useState(true);
   const [brokenBannerIds, setBrokenBannerIds] = useState<Set<string>>(new Set());
   const [brokenAvatarIds, setBrokenAvatarIds] = useState<Set<string>>(new Set());
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_BATCH);
   
   useEffect(() => {
     const loadCircles = async () => {
@@ -38,6 +39,10 @@ const CircleListView: React.FC<{ onSelect: (id: string) => void }> = ({ onSelect
     setBrokenAvatarIds(new Set());
   }, [circles]);
 
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_BATCH);
+  }, [filter, circles]);
+
   const filteredCircles = useMemo(() => {
     const q = filter.toLowerCase().trim();
     return adaptedCircles.filter(c => 
@@ -45,6 +50,12 @@ const CircleListView: React.FC<{ onSelect: (id: string) => void }> = ({ onSelect
       (c.penName?.toLowerCase().includes(q) ?? false)
     );
   }, [adaptedCircles, filter]);
+
+  const visibleCircles = useMemo(() => {
+    return filteredCircles.slice(0, visibleCount);
+  }, [filteredCircles, visibleCount]);
+
+  const hasMore = visibleCount < filteredCircles.length;
 
   return (
     <motion.div 
@@ -73,8 +84,9 @@ const CircleListView: React.FC<{ onSelect: (id: string) => void }> = ({ onSelect
        ) : (
          <>
            {filteredCircles.length > 0 ? (
-             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredCircles.slice(0, ITEMS_PER_BATCH).map((circle) => {
+             <div className="space-y-8">
+               <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+                {visibleCircles.map((circle) => {
                   const showBanner = Boolean(circle.banner) && !brokenBannerIds.has(circle.id);
                   const showAvatar = Boolean(circle.image) && !brokenAvatarIds.has(circle.id);
 
@@ -131,6 +143,18 @@ const CircleListView: React.FC<{ onSelect: (id: string) => void }> = ({ onSelect
                     </motion.div>
                   );
                 })}
+               </div>
+
+               {hasMore ? (
+                 <div className="text-center">
+                   <button
+                     onClick={() => setVisibleCount((prev) => prev + ITEMS_PER_BATCH)}
+                     className="border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-8 py-2 text-xs font-black uppercase tracking-widest text-[var(--paper-text)] shadow-[var(--paper-shadow-md)] transition-colors hover:bg-[var(--paper-hover)] active:bg-[var(--paper-active)]"
+                   >
+                     加载更多社团
+                   </button>
+                 </div>
+               ) : null}
              </div>
            ) : (
              <div className="py-20 text-center border-2 border-dashed border-[var(--paper-border)]/20 rounded-xl bg-[var(--paper-surface)]/50">

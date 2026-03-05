@@ -13,6 +13,8 @@ import {
 } from '../types';
 
 const BASE_URL = '/v1/public';
+const CIRCLES_FETCH_PAGE_SIZE = 100;
+const CIRCLES_FETCH_MAX_PAGES = 100;
 
 const eventsListCache = new Map<string, PublicEventListItem[]>();
 const livesListCache = new Map<string, PublicLiveListItem[]>();
@@ -128,16 +130,57 @@ export const fetchLiveBySlug = async (slug: string): Promise<PublicLiveDetailRes
   }
 };
 
-export const fetchCircles = async (params: { page?: number; eventId?: string } = {}): Promise<PublicCircleListItem[]> => {
+const fetchCirclesPage = async (params: {
+  page: number;
+  pageSize: number;
+  eventId?: string;
+}): Promise<PublicCirclesListResponse> => {
+  const query = new URLSearchParams();
+  query.append('page', params.page.toString());
+  query.append('pageSize', params.pageSize.toString());
+  if (params.eventId) query.append('eventId', params.eventId);
+
+  const response = await fetchWithRetry(`${BASE_URL}/circles?${query.toString()}`);
+  if (!response.ok) throw new Error(`Failed to fetch circles: ${response.statusText}`);
+  return response.json();
+};
+
+export const fetchCircles = async (params: {
+  page?: number;
+  pageSize?: number;
+  eventId?: string;
+} = {}): Promise<PublicCircleListItem[]> => {
   try {
-    const query = new URLSearchParams();
-    if (params.page) query.append('page', params.page.toString());
-    if (params.eventId) query.append('eventId', params.eventId);
-    
-    const response = await fetchWithRetry(`${BASE_URL}/circles?${query.toString()}`);
-    if (!response.ok) throw new Error(`Failed to fetch circles: ${response.statusText}`);
-    const data: PublicCirclesListResponse = await response.json();
-    return data.items;
+    const pageSize = params.pageSize ?? CIRCLES_FETCH_PAGE_SIZE;
+
+    if (params.page) {
+      const onePage = await fetchCirclesPage({
+        page: params.page,
+        pageSize,
+        eventId: params.eventId,
+      });
+      return onePage.items;
+    }
+
+    let page = 1;
+    let total = Number.POSITIVE_INFINITY;
+    const allItems: PublicCircleListItem[] = [];
+
+    while (allItems.length < total && page <= CIRCLES_FETCH_MAX_PAGES) {
+      const data = await fetchCirclesPage({
+        page,
+        pageSize,
+        eventId: params.eventId,
+      });
+
+      total = data.pageInfo.total;
+      allItems.push(...data.items);
+
+      if (data.items.length === 0) break;
+      page += 1;
+    }
+
+    return allItems.slice(0, Number.isFinite(total) ? total : allItems.length);
   } catch (error) {
     console.error("fetchCircles error:", error);
     throw error;

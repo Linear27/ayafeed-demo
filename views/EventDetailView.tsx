@@ -16,6 +16,10 @@ import EventInfoSection from '../components/event-detail/EventInfoSection';
 import EventAccessSection from '../components/event-detail/EventAccessSection';
 import { PublicCircleListItem, PublicEventDetailResponse } from '../types';
 import { adaptEventDetail, AdaptedEventNewsItem } from '../services/adapters';
+import {
+  buildEventCircleFilterContext,
+  filterEventCircles,
+} from '../services/eventCircles';
 
 type TabType = 'OVERVIEW' | 'CIRCLES' | 'INFO' | 'ACCESS';
 
@@ -27,7 +31,6 @@ const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [selectedFocus, setSelectedFocus] = useState<string[]>([]);
   
   const [page, setPage] = useState(1);
@@ -60,12 +63,42 @@ const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle
   }, [id]);
 
   const event = useMemo(() => rawEventData ? adaptEventDetail(rawEventData) : null, [rawEventData]);
-  
-  const circleMetadata = useMemo(() => {
-    return eventCircles.map(c => {
-      return { id: c.id, focus: 'REGULAR', featuredProduct: null };
-    });
-  }, [eventCircles]);
+
+  const circleFilterContext = useMemo(
+    () => buildEventCircleFilterContext(eventCircles, id),
+    [eventCircles, id],
+  );
+
+  const circleMetadata = useMemo(
+    () =>
+      eventCircles.map((circle) => {
+        const metadata = circleFilterContext.metadataById.get(circle.id);
+        return metadata ?? { id: circle.id, focus: 'REGULAR', featuredProduct: null, spaceBucket: null };
+      }),
+    [eventCircles, circleFilterContext.metadataById],
+  );
+
+  const filteredCircles = useMemo(
+    () =>
+      filterEventCircles(eventCircles, {
+        eventId: id,
+        query: searchQuery,
+        selectedFocus,
+        selectedLocations,
+        metadataById: circleFilterContext.metadataById,
+      }),
+    [eventCircles, id, searchQuery, selectedFocus, selectedLocations, circleFilterContext.metadataById],
+  );
+
+  useEffect(() => {
+    setPage(1);
+  }, [id, searchQuery, selectedFocus, selectedLocations]);
+
+  const displayedCircles = useMemo(
+    () => filteredCircles.slice(0, page * ITEMS_PER_PAGE),
+    [filteredCircles, page, ITEMS_PER_PAGE],
+  );
+  const hasMoreCircles = displayedCircles.length < filteredCircles.length;
 
   if (isLoading) return <div className="p-20 text-center font-bold">加载中...</div>;
   if (!event) return <div className="p-20 text-center font-bold">未找到展会信息</div>;
@@ -127,7 +160,23 @@ const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle
 
           {activeTab === 'CIRCLES' && (
             <motion.div key="circles" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-               <EventCirclesSection circles={eventCircles} circleMetadata={circleMetadata} searchQuery={searchQuery} setSearchQuery={setSearchQuery} showFilters={showFilters} setShowFilters={setShowFilters} selectedFocus={selectedFocus} setSelectedFocus={setSelectedFocus} selectedLocations={selectedLocations} setSelectedLocations={setSelectedLocations} availableLocations={[]} displayedCircles={eventCircles.slice(0, page * ITEMS_PER_PAGE)} hasMore={page * ITEMS_PER_PAGE < eventCircles.length} onLoadMore={() => setPage(p => p + 1)} onPreviewCircle={setPreviewCircle} eventId={id} />
+               <EventCirclesSection
+                 circleMetadata={circleMetadata}
+                 searchQuery={searchQuery}
+                 setSearchQuery={setSearchQuery}
+                 showFilters={showFilters}
+                 setShowFilters={setShowFilters}
+                 selectedFocus={selectedFocus}
+                 setSelectedFocus={setSelectedFocus}
+                 selectedLocations={selectedLocations}
+                 setSelectedLocations={setSelectedLocations}
+                 availableLocations={circleFilterContext.availableLocations}
+                 displayedCircles={displayedCircles}
+                 hasMore={hasMoreCircles}
+                 onLoadMore={() => setPage(p => p + 1)}
+                 onPreviewCircle={setPreviewCircle}
+                 eventId={id}
+               />
             </motion.div>
           )}
 

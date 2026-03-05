@@ -2,10 +2,9 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, SlidersHorizontal, Sparkles, Package, ShoppingBag, BookOpen, Layers } from 'lucide-react';
-import { PublicCircleListItem, Theme } from '../../types';
+import { PublicCircleListItem } from '../../types';
 
 interface EventCirclesSectionProps {
-  circles: PublicCircleListItem[];
   circleMetadata: any[];
   searchQuery: string;
   setSearchQuery: (q: string) => void;
@@ -24,7 +23,7 @@ interface EventCirclesSectionProps {
 }
 
 const EventCirclesSection: React.FC<EventCirclesSectionProps> = ({
-  circles, circleMetadata, searchQuery, setSearchQuery, showFilters, setShowFilters,
+  circleMetadata, searchQuery, setSearchQuery, showFilters, setShowFilters,
   selectedFocus, setSelectedFocus, selectedLocations, setSelectedLocations,
   availableLocations, displayedCircles, hasMore, onLoadMore, onPreviewCircle, eventId
 }) => {

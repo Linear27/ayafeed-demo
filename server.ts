@@ -39,6 +39,66 @@ type GeminiChatMessage = {
 const GEMINI_MODEL = "gemini-3-flash-preview";
 const GEMINI_ERROR_MESSAGE = "🙇‍♀️ My long-range lens is foggy! (API Error)";
 const GEMINI_MISSING_API_KEY_MESSAGE = "🙇‍♀️ 哎呀！我的远程镜头（API Key）还没准备好。请在环境变量中配置 GEMINI_API_KEY 后再试。";
+const DEFAULT_PAGE_SIZE = 20;
+const MAX_PAGE_SIZE = 100;
+const CHAT_MAX_MESSAGE_CHARS = 2000;
+const CHAT_MAX_HISTORY_TOTAL_CHARS = 12000;
+const CHAT_RATE_LIMIT_WINDOW_MS = 60_000;
+const CHAT_RATE_LIMIT_MAX_REQUESTS = 20;
+
+type ChatRateLimitEntry = {
+  count: number;
+  windowStartAt: number;
+};
+
+const chatRateLimit = new Map<string, ChatRateLimitEntry>();
+
+const parsePositiveInt = (value: unknown, fallback: number): number => {
+  const source = typeof value === "string" ? value : typeof value === "number" ? String(value) : "";
+  const parsed = Number.parseInt(source, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+const parsePage = (value: unknown): number => parsePositiveInt(value, 1);
+
+const parsePageSize = (value: unknown): number => {
+  const size = parsePositiveInt(value, DEFAULT_PAGE_SIZE);
+  return Math.min(MAX_PAGE_SIZE, Math.max(1, size));
+};
+
+const getClientIp = (req: express.Request): string => {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (typeof forwarded === "string" && forwarded.trim()) {
+    return forwarded.split(",")[0].trim();
+  }
+  return req.ip || req.socket.remoteAddress || "unknown";
+};
+
+const cleanupStaleRateLimitEntries = (now: number) => {
+  if (chatRateLimit.size < 1024) return;
+  for (const [ip, entry] of chatRateLimit.entries()) {
+    if (now - entry.windowStartAt > CHAT_RATE_LIMIT_WINDOW_MS) {
+      chatRateLimit.delete(ip);
+    }
+  }
+};
+
+const isChatRateLimited = (ip: string, now = Date.now()): boolean => {
+  cleanupStaleRateLimitEntries(now);
+  const entry = chatRateLimit.get(ip);
+  if (!entry || now - entry.windowStartAt > CHAT_RATE_LIMIT_WINDOW_MS) {
+    chatRateLimit.set(ip, { count: 1, windowStartAt: now });
+    return false;
+  }
+
+  if (entry.count >= CHAT_RATE_LIMIT_MAX_REQUESTS) {
+    return true;
+  }
+
+  entry.count += 1;
+  chatRateLimit.set(ip, entry);
+  return false;
+};
 
 const buildSystemInstruction = () => `
 You are "Aya Shameimaru" (射命丸文), the crow tengu newspaper reporter.
@@ -85,7 +145,12 @@ const normalizeChatHistory = (value: unknown): GeminiChatMessage[] => {
         typeof (item as GeminiChatMessage).text === "string"
       );
     })
-    .slice(-30);
+    .slice(-30)
+    .map((item) => ({
+      role: item.role,
+      text: item.text.trim().slice(0, CHAT_MAX_MESSAGE_CHARS),
+    }))
+    .filter((item) => item.text.length > 0);
 };
 
 const flattenEventDocs = (event: any): FlatEventDocument[] => {
@@ -268,8 +333,8 @@ async function startServer() {
 
   // --- Events ---
   router.get("/events", (req, res) => {
-    const page = parseInt(req.query.page as string) || 1;
-    const pageSize = parseInt(req.query.pageSize as string) || 20;
+    const page = parsePage(req.query.page);
+    const pageSize = parsePageSize(req.query.pageSize);
     const marketRegion = req.query.marketRegion as string;
     
     let filtered = EVENTS;
@@ -346,8 +411,8 @@ async function startServer() {
 
   // --- Lives ---
   router.get("/lives", (req, res) => {
-    const page = parseInt(req.query.page as string) || 1;
-    const pageSize = parseInt(req.query.pageSize as string) || 20;
+    const page = parsePage(req.query.page);
+    const pageSize = parsePageSize(req.query.pageSize);
     
     const sorted = [...LIVES].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
     const items = sorted.slice((page - 1) * pageSize, page * pageSize).map(mapLiveToListItem);
@@ -412,8 +477,8 @@ async function startServer() {
 
   // --- Circles ---
   router.get("/circles", (req, res) => {
-    const page = parseInt(req.query.page as string) || 1;
-    const pageSize = parseInt(req.query.pageSize as string) || 20;
+    const page = parsePage(req.query.page);
+    const pageSize = parsePageSize(req.query.pageSize);
     const eventId = req.query.eventId as string;
     
     let filteredCircles = CIRCLES;
@@ -477,10 +542,18 @@ async function startServer() {
   });
 
   router.post("/chat", async (req, res) => {
+    const clientIp = getClientIp(req);
+    if (isChatRateLimited(clientIp)) {
+      return res.status(429).json({ message: "请求过于频繁，请稍后再试。" });
+    }
+
     const rawMessage = req.body?.newMessage;
     const newMessage = typeof rawMessage === "string" ? rawMessage.trim() : "";
     if (!newMessage) {
       return res.status(400).json({ message: "消息不能为空。" });
+    }
+    if (newMessage.length > CHAT_MAX_MESSAGE_CHARS) {
+      return res.status(400).json({ message: `消息过长，请控制在 ${CHAT_MAX_MESSAGE_CHARS} 字以内。` });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
@@ -489,6 +562,10 @@ async function startServer() {
     }
 
     const history = normalizeChatHistory(req.body?.history);
+    const historyCharCount = history.reduce((sum, message) => sum + message.text.length, 0);
+    if (historyCharCount > CHAT_MAX_HISTORY_TOTAL_CHARS) {
+      return res.status(400).json({ message: "历史消息过长，请清空后重试。" });
+    }
 
     try {
       const { GoogleGenAI } = await import("@google/genai");
