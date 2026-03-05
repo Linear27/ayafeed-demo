@@ -70,6 +70,8 @@ export interface PublicEventListItem {
   poster: PublicPoster | null;
   displayLocale: string | null;
   fallbackUsed: boolean;
+  featured?: boolean;
+  featuredOrder?: number | null;
   counts: { touhouEvents: number };
   events: Array<{ id: string; slug: string; title: string }>;
   genres: string[];
@@ -434,5 +436,7 @@ export type TimelineItem = {
   organizer?: string | null;
   website?: string | null;
   status?: 'RECRUITING' | 'ARRANGING' | 'UPCOMING' | 'ONGOING' | 'ENDED';
+  featured?: boolean;
+  featuredOrder?: number | null;
   originalData: PublicEventListItem | PublicLiveListItem;
 };

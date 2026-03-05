@@ -15,6 +15,7 @@ import {
 import { Link } from '@tanstack/react-router';
 import { PreferredRegion, TimelineItem } from '../types';
 import { diffCalendarDays } from '../services/date';
+import { rankHeroItems } from '../services/landingHero';
 
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper-bg)]';
@@ -117,16 +118,9 @@ export const BentoHeader: React.FC<{
     updateCount: number;
   };
 }> = ({ items, region: _region, todayDateKey, stats }) => {
-  const todayItems = items.filter((i) => i.isToday);
-  const upcomingItems = items.filter((i) => !i.isToday);
-
-  const mainItem = todayItems.length > 0 ? todayItems[0] : upcomingItems[0];
-  const secondaryItems =
-    todayItems.length > 1
-      ? todayItems.slice(1, 3)
-      : mainItem === upcomingItems[0]
-        ? upcomingItems.slice(1, 3)
-        : upcomingItems.slice(0, 2);
+  const rankedItems = rankHeroItems(items);
+  const mainItem = rankedItems[0];
+  const secondaryItems = rankedItems.slice(1, 3);
 
   if (!mainItem) {
     return (
@@ -165,7 +159,8 @@ export const BentoHeader: React.FC<{
     );
   }
 
-  const nextMajor = upcomingItems[0];
+  const mainIsFeatured = mainItem.type === 'event' && mainItem.featured === true;
+  const nextMajor = rankedItems.find((item) => item.id !== mainItem.id && !item.isToday);
   const daysLeft = nextMajor
     ? Math.max(0, diffCalendarDays(todayDateKey, nextMajor.date))
     : null;
@@ -202,7 +197,7 @@ export const BentoHeader: React.FC<{
               <div>
                 <div className="mb-4 flex items-center gap-2">
                   <span className="bg-[var(--paper-accent)] px-2 py-0.5 text-xs font-black uppercase tracking-[0.16em] text-[var(--paper-surface)]">
-                    {mainItem.isToday ? '今日头条' : '近期焦点'}
+                    {mainIsFeatured ? '重点活动' : mainItem.isToday ? '今日头条' : '近期焦点'}
                   </span>
                   <span className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-[var(--paper-text-muted)]">
                     {mainItem.type} / {mainItem.id.slice(0, 6)}
@@ -278,17 +273,6 @@ export const BentoHeader: React.FC<{
             <p className="mt-3 text-[11px] text-[var(--paper-text-muted)]">统计口径：按活动开始日期计算近 7 天新增条目</p>
           </div>
 
-          <div className="border border-[var(--paper-border)]/30 bg-[var(--paper-bg-secondary)]/50 p-4">
-            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--paper-text-muted)]">相关入口 / Paths</div>
-            <div className="mt-2 flex flex-wrap gap-3 text-xs font-bold">
-              <Link to="/events" className={`text-[var(--paper-text-muted)] underline-offset-2 hover:text-[var(--paper-accent)] hover:underline ${FOCUS_RING}`}>
-                浏览展会名录
-              </Link>
-              <Link to="/feedback" className={`text-[var(--paper-text-muted)] underline-offset-2 hover:text-[var(--paper-accent)] hover:underline ${FOCUS_RING}`}>
-                提交活动情报
-              </Link>
-            </div>
-          </div>
         </aside>
 
         {secondaryItems.length > 0 && (
@@ -591,6 +575,26 @@ export const IndexSidebar: React.FC<{
               </button>
             ))}
             {months.length === 0 && <span className="text-sm text-[var(--paper-text-muted)] italic">无可用月份</span>}
+          </div>
+        </section>
+
+        <section>
+          <h3 className="mb-3 border-b border-[var(--paper-border)]/20 pb-1 text-sm font-black uppercase tracking-[0.12em] text-[var(--paper-text-muted)]">
+            相关入口 / Paths
+          </h3>
+          <div className="flex flex-wrap gap-3 text-xs font-bold">
+            <Link
+              to="/events"
+              className={`text-[var(--paper-text-muted)] underline-offset-2 transition-colors duration-200 hover:text-[var(--paper-accent)] hover:underline ${FOCUS_RING}`}
+            >
+              浏览展会名录
+            </Link>
+            <Link
+              to="/feedback"
+              className={`text-[var(--paper-text-muted)] underline-offset-2 transition-colors duration-200 hover:text-[var(--paper-accent)] hover:underline ${FOCUS_RING}`}
+            >
+              提交活动情报
+            </Link>
           </div>
         </section>
 

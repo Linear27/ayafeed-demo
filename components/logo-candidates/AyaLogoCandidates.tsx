@@ -346,10 +346,10 @@ const AyaLogoCandidates: React.FC = () => {
         {LOGO_CANDIDATES.map((candidate) => (
           <div 
             key={candidate.id} 
-            className="bg-[var(--paper-surface)] border-2 border-[var(--paper-border)] newspaper-shadow-sm p-6 flex flex-col group transition-all cursor-default text-[var(--paper-text)]"
+            className="bg-(--paper-surface) border-2 border-(--paper-border) newspaper-shadow-sm p-6 flex flex-col group transition-all cursor-default text-(--paper-text)"
           >
             {/* 1. Large Icon Preview */}
-            <div className="aspect-square bg-[var(--paper-bg)] border-b-2 border-[var(--paper-border)] -mx-6 -mt-6 mb-6 flex items-center justify-center p-12 relative overflow-hidden">
+            <div className="aspect-square bg-(--paper-bg) border-b-2 border-(--paper-border) -mx-6 -mt-6 mb-6 flex items-center justify-center p-12 relative overflow-hidden">
                <div className="absolute top-2 left-2 text-[8px] font-mono font-bold opacity-20 uppercase tracking-widest">Icon Preview</div>
                {renderAnimatedIcon(candidate.renderIcon({ size: 120 }), 'hero')}
             </div>
@@ -357,14 +357,14 @@ const AyaLogoCandidates: React.FC = () => {
             {/* 2. Lockup Preview */}
             <div className="mb-8">
                <div className="text-[8px] font-mono font-bold opacity-40 uppercase tracking-widest mb-3">Lockup (EN + ZH Suggestion)</div>
-               <div className="flex items-center gap-3 p-3 bg-[var(--paper-bg-secondary)] border border-[var(--paper-border)]/10">
+               <div className="flex items-center gap-3 p-3 bg-(--paper-bg-secondary) border border-(--paper-border)/10">
                   {renderAnimatedIcon(candidate.renderIcon({ size: 32 }), 'inline')}
                   <div className="flex flex-col leading-none">
                     <span className="text-lg font-black tracking-tighter" style={{ fontFamily: candidate.font.en }}>
                       AyaFeed
                     </span>
                     <span className="text-[10px] font-bold mt-0.5 opacity-60" style={{ fontFamily: candidate.font.zh }}>
-                      文文快讯
+                      文文。速报
                     </span>
                   </div>
                </div>
@@ -374,19 +374,19 @@ const AyaLogoCandidates: React.FC = () => {
             <div className="grid grid-cols-3 gap-2 mb-8">
                 <div className="flex flex-col items-center">
                   <div className="text-[7px] font-mono font-bold opacity-40 uppercase mb-2">24px</div>
-                  <div className="w-8 h-8 flex items-center justify-center bg-[var(--paper-bg-secondary)] border border-[var(--paper-border)]/10">
+                  <div className="w-8 h-8 flex items-center justify-center bg-(--paper-bg-secondary) border border-(--paper-border)/10">
                     {renderAnimatedIcon(candidate.renderIcon({ size: 24 }), 'mini')}
                   </div>
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="text-[7px] font-mono font-bold opacity-40 uppercase mb-2">16px</div>
-                  <div className="w-8 h-8 flex items-center justify-center bg-[var(--paper-bg-secondary)] border border-[var(--paper-border)]/10">
+                  <div className="w-8 h-8 flex items-center justify-center bg-(--paper-bg-secondary) border border-(--paper-border)/10">
                     {renderAnimatedIcon(candidate.renderIcon({ size: 16 }), 'mini')}
                   </div>
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="text-[7px] font-mono font-bold opacity-40 uppercase mb-2">B&W</div>
-                  <div className="w-8 h-8 flex items-center justify-center bg-[var(--paper-border)]">
+                  <div className="w-8 h-8 flex items-center justify-center bg-(--paper-border)">
                     {renderAnimatedIcon(candidate.renderIcon({ size: 20, color: 'var(--paper-surface)' }), 'mini')}
                   </div>
                 </div>
@@ -400,7 +400,7 @@ const AyaLogoCandidates: React.FC = () => {
                     <span className="text-[9px] uppercase opacity-60">{key}</span>
                     <div className="flex gap-0.5">
                        {[...Array(10)].map((_, i) => (
-                         <div key={i} className={`w-1.5 h-1.5 ${i < val ? 'bg-[var(--paper-accent)]' : 'bg-black/5'}`} />
+                         <div key={i} className={`w-1.5 h-1.5 ${i < val ? 'bg-(--paper-accent)' : 'bg-black/5'}`} />
                        ))}
                     </div>
                  </div>
@@ -411,21 +411,21 @@ const AyaLogoCandidates: React.FC = () => {
             <div className="flex-1 space-y-4">
                <div>
                   <h3 className="text-lg font-black leading-tight mb-1">{candidate.name}</h3>
-                  <p className="text-xs font-serif italic text-[var(--paper-text-muted)]">{candidate.concept}</p>
+                  <p className="text-xs font-serif italic text-(--paper-text-muted)">{candidate.concept}</p>
                </div>
                
                <div className="space-y-2">
                   <div className="flex items-start gap-2">
-                    <Layers size={12} className="mt-0.5 shrink-0 text-[var(--paper-text-muted)]" />
+                    <Layers size={12} className="mt-0.5 shrink-0 text-(--paper-text-muted)" />
                     <span className="text-[10px] leading-tight"><span className="font-bold">元素：</span>{candidate.elements}</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Stamp size={12} className="mt-0.5 shrink-0 text-[var(--paper-text-muted)]" />
+                    <Stamp size={12} className="mt-0.5 shrink-0 text-(--paper-text-muted)" />
                     <span className="text-[10px] leading-tight"><span className="font-bold">字体建议：</span>{candidate.font.en} / {candidate.font.zh}</span>
                   </div>
                   <div className="pt-2 border-t border-black/10">
-                    <div className="text-[9px] font-black uppercase text-[var(--paper-accent)] mb-1">Best For</div>
-                    <p className="text-[10px] text-[var(--paper-text-muted)]">{candidate.useCase}</p>
+                    <div className="text-[9px] font-black uppercase text-(--paper-accent) mb-1">Best For</div>
+                    <p className="text-[10px] text-(--paper-text-muted)">{candidate.useCase}</p>
                   </div>
                </div>
             </div>
@@ -488,7 +488,7 @@ const AyaLogoCandidates: React.FC = () => {
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {[
                     "是否接受‘The Messenger’作为唯一主标识，而将‘The Column’作为 UI 辅助标识？",
-                    "在 Lockup 组合中，中文‘文文快讯’的视觉权重是否需要进一步提升？",
+                    "在 Lockup 组合中，中文‘文文。速报’的视觉权重是否需要进一步提升？",
                     "红色的应用比例是否需要根据不同内容分级（如：突发 vs 常规）进行动态调整？",
                     "是否需要为 Top 3 方案开发一套专属的‘报纸纹理’背景应用规范？",
                     "在 16px 极端尺寸下，是否允许舍弃部分细节以换取更高的结构辨识度？"

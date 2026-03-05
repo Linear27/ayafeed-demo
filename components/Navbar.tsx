@@ -24,7 +24,7 @@ const REGION_OPTIONS: Array<{ code: PreferredRegion; label: string }> = [
 ];
 
 const FOCUS_RING =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper-bg)]';
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-(--paper-bg)';
 
 const LanguageBadgeIcon = ({ size = 14 }: { size?: number }) => (
   <svg
@@ -171,7 +171,7 @@ const Navbar: React.FC<NavbarProps> = ({
   }, [isLangMenuOpen, isRegionMenuOpen]);
 
   const getBrandName = () => {
-    if (language === 'zh') return '文文。快讯';
+    if (language === 'zh') return '文文。速报';
     if (language === 'ja') return '文々。速報';
     return 'AyaFeed';
   };
@@ -184,10 +184,10 @@ const Navbar: React.FC<NavbarProps> = ({
     return '幻想乡全域版';
   };
 
-  const navBg = isNewspaper ? 'bg-[var(--paper-bg)] border-[var(--paper-border)]' : 'bg-white/90 backdrop-blur-md border-slate-200';
-  const activeText = isNewspaper ? 'text-[var(--paper-accent)]' : 'text-indigo-600';
-  const inactiveText = isNewspaper ? 'text-[var(--paper-text)] hover:text-[var(--paper-accent)]' : 'text-slate-600 hover:text-indigo-600';
-  const underlineColor = isNewspaper ? 'bg-[var(--paper-accent)]' : 'bg-indigo-600';
+  const navBg = isNewspaper ? 'bg-(--paper-bg) border-(--paper-border)' : 'bg-white/90 backdrop-blur-md border-slate-200';
+  const activeText = isNewspaper ? 'text-(--paper-accent)' : 'text-indigo-600';
+  const inactiveText = isNewspaper ? 'text-(--paper-text) hover:text-(--paper-accent)' : 'text-slate-600 hover:text-indigo-600';
+  const underlineColor = isNewspaper ? 'bg-(--paper-accent)' : 'bg-indigo-600';
   const isDockVisible = headerState === 'scrolled';
   const isLandingRoute = location.pathname === '/';
 
@@ -263,9 +263,9 @@ const Navbar: React.FC<NavbarProps> = ({
           data-aya-masthead="true"
           data-aya-state={headerState}
           data-current-view={currentView}
-          className={`w-full border-b border-[var(--paper-border)] ${navBg}`}
+          className={`w-full border-b border-(--paper-border) ${navBg}`}
         >
-          <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4 md:py-6 text-[var(--paper-text)]">
+          <div className="mx-auto flex max-w-350 items-center justify-between px-6 py-4 md:py-6 text-(--paper-text)">
             <div className="hidden md:block md:flex-1" />
 
             <div className="flex flex-col items-center gap-2">
@@ -276,10 +276,10 @@ const Navbar: React.FC<NavbarProps> = ({
             <div className="hidden md:block md:flex-1" />
           </div>
 
-          <div className="hidden border-t border-[var(--paper-border)]/10 md:block">
-            <div className="mx-auto flex max-w-[1400px] items-center gap-3 px-6 py-2">
+          <div className="hidden border-t border-(--paper-border)/10 md:block">
+            <div className="mx-auto flex max-w-350 items-center gap-3 px-6 py-2">
               <div className="flex items-center md:w-56 lg:w-72">
-                <div className="hidden items-center gap-3 whitespace-nowrap text-xs font-bold uppercase tracking-[0.12em] text-[var(--paper-text-muted)] xl:flex">
+                <div className="hidden items-center gap-3 whitespace-nowrap text-xs font-bold uppercase tracking-[0.12em] text-(--paper-text-muted) xl:flex">
                   <span>
                     {new Date().toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', {
                       weekday: 'long',
@@ -288,20 +288,20 @@ const Navbar: React.FC<NavbarProps> = ({
                       day: 'numeric',
                     })}
                   </span>
-                  <span className="h-1 w-1 rounded-full bg-[var(--paper-text)]"></span>
+                  <span className="h-1 w-1 rounded-full bg-(--paper-text)"></span>
                   <span>今日情报 / Today's Intelligence</span>
                 </div>
               </div>
 
               <div className="flex flex-1 items-center justify-center md:flex">
                 <NavItem to="/events" label="展会名录" className="text-xs tracking-[0.13em]" />
-                <div className="mx-2 h-4 w-px bg-[var(--paper-border)]/20" aria-hidden="true"></div>
+                <div className="mx-2 h-4 w-px bg-(--paper-border)/20" aria-hidden="true"></div>
                 <NavItem to="/lives" label="演出快讯" className="text-xs tracking-[0.13em]" />
-                <div className="mx-2 h-4 w-px bg-[var(--paper-border)]/20" aria-hidden="true"></div>
+                <div className="mx-2 h-4 w-px bg-(--paper-border)/20" aria-hidden="true"></div>
                 <NavItem to="/circles" label="社团检索" className="text-xs tracking-[0.13em]" />
               </div>
 
-              <div className="flex items-center justify-end gap-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--paper-text-muted)] md:w-56 lg:w-72">
+              <div className="flex items-center justify-end gap-4 text-xs font-bold uppercase tracking-[0.12em] text-(--paper-text-muted) md:w-56 lg:w-72">
                 <div className="relative" ref={regionMenuRef}>
                   <button
                     type="button"
@@ -312,7 +312,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     aria-label="切换地区"
                     aria-haspopup="menu"
                     aria-expanded={isRegionMenuOpen}
-                    className={`flex items-center gap-1 whitespace-nowrap transition-colors duration-200 hover:text-[var(--paper-accent)] ${FOCUS_RING}`}
+                    className={`flex items-center gap-1 whitespace-nowrap transition-colors duration-200 hover:text-(--paper-accent) ${FOCUS_RING}`}
                   >
                     <Globe aria-hidden="true" size={12} />
                     <span className="hidden lg:inline">{getRegionLabel()}</span>
@@ -331,7 +331,7 @@ const Navbar: React.FC<NavbarProps> = ({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 5 }}
                         role="menu"
-                        className="absolute right-0 top-full z-50 mt-2 w-44 border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] text-[var(--paper-text)] shadow-[4px_4px_0px_0px_var(--paper-border)]"
+                        className="absolute right-0 top-full z-50 mt-2 w-44 border-2 border-(--paper-border) bg-(--paper-surface) text-(--paper-text) shadow-[4px_4px_0px_0px_var(--paper-border)]"
                       >
                         {REGION_OPTIONS.map((option) => (
                           <button
@@ -342,7 +342,7 @@ const Navbar: React.FC<NavbarProps> = ({
                               onSetRegion(option.code);
                               setIsRegionMenuOpen(false);
                             }}
-                            className={`flex w-full items-center justify-between border-b border-[var(--paper-border)] px-4 py-2 text-left text-xs font-black transition-colors duration-200 last:border-0 hover:bg-[var(--paper-accent)] hover:text-white ${
+                            className={`flex w-full items-center justify-between border-b border-(--paper-border) px-4 py-2 text-left text-xs font-black transition-colors duration-200 last:border-0 hover:bg-(--paper-accent) hover:text-white ${
                               region === option.code ? 'bg-black/5' : ''
                             } ${FOCUS_RING}`}
                           >
@@ -365,7 +365,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     aria-label="切换语言"
                     aria-haspopup="menu"
                     aria-expanded={isLangMenuOpen}
-                    className={`flex items-center gap-1 whitespace-nowrap transition-colors duration-200 hover:text-[var(--paper-accent)] ${FOCUS_RING}`}
+                    className={`flex items-center gap-1 whitespace-nowrap transition-colors duration-200 hover:text-(--paper-accent) ${FOCUS_RING}`}
                   >
                     <LanguageBadgeIcon size={12} />
                     <span className="hidden lg:inline">Language: {language.toUpperCase()}</span>
@@ -379,7 +379,7 @@ const Navbar: React.FC<NavbarProps> = ({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 5 }}
                         role="menu"
-                        className="absolute right-0 top-full z-50 mt-2 w-32 border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] text-[var(--paper-text)] shadow-[4px_4px_0px_0px_var(--paper-border)]"
+                        className="absolute right-0 top-full z-50 mt-2 w-32 border-2 border-(--paper-border) bg-(--paper-surface) text-(--paper-text) shadow-[4px_4px_0px_0px_var(--paper-border)]"
                       >
                         {[
                           { code: 'zh', label: '简体中文' },
@@ -394,7 +394,7 @@ const Navbar: React.FC<NavbarProps> = ({
                               onSetLanguage(langOption.code as Language);
                               setIsLangMenuOpen(false);
                             }}
-                            className={`w-full border-b border-[var(--paper-border)] px-4 py-2 text-left text-xs font-black transition-colors duration-200 last:border-0 hover:bg-[var(--paper-accent)] hover:text-white ${
+                            className={`w-full border-b border-(--paper-border) px-4 py-2 text-left text-xs font-black transition-colors duration-200 last:border-0 hover:bg-(--paper-accent) hover:text-white ${
                               language === langOption.code ? 'bg-black/5' : ''
                             } ${FOCUS_RING}`}
                           >
@@ -409,7 +409,7 @@ const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          <div className="border-t border-[var(--paper-border)]/10 md:hidden">
+          <div className="border-t border-(--paper-border)/10 md:hidden">
             <div className="flex items-center justify-center gap-1 px-4 py-2">
               <NavItem to="/events" label="展会" className="px-3 py-3 text-xs" />
               <NavItem to="/lives" label="演出" className="px-3 py-3 text-xs" />
@@ -422,7 +422,7 @@ const Navbar: React.FC<NavbarProps> = ({
           data-aya-dock="true"
           data-aya-state={headerState}
           aria-hidden={!isDockVisible}
-          className="fixed left-0 right-0 top-0 z-50 w-full border-b border-[var(--paper-border)] bg-[var(--aya-color-bg)] shadow-[var(--aya-shadow-1)] will-change-transform"
+          className="fixed left-0 right-0 top-0 z-50 w-full border-b border-(--paper-border) bg-(--aya-color-bg) shadow-(--aya-shadow-1) will-change-transform"
           style={{
             transform:
               headerState === 'scrolled'
@@ -433,14 +433,14 @@ const Navbar: React.FC<NavbarProps> = ({
             transition: 'transform var(--aya-motion-medium, 200ms) cubic-bezier(0.16, 1, 0.3, 1)',
           }}
         >
-          <div className="border-t border-[var(--paper-border)]/5 py-1">
-            <div className="mx-auto flex max-w-[1400px] items-center gap-3 px-6">
+          <div className="border-t border-(--paper-border)/5 py-1">
+            <div className="mx-auto flex max-w-350 items-center gap-3 px-6">
               <BrandLink compact showText={false} className="md:hidden" />
 
               <div className="hidden items-center md:flex md:w-56">
                 <BrandLink
                   compact
-                  textClassName="hidden xl:inline text-sm opacity-85 text-[var(--paper-text)]"
+                  textClassName="hidden xl:inline text-sm opacity-85 text-(--paper-text)"
                   className={`gap-2 transition-[opacity,transform] duration-150 ease-out ${
                     isDockVisible ? 'translate-x-0 opacity-100' : '-translate-x-2 opacity-0 pointer-events-none'
                   }`}
@@ -449,16 +449,16 @@ const Navbar: React.FC<NavbarProps> = ({
 
               <div className="hidden md:flex md:flex-1 md:items-center md:justify-center">
                 <NavItem to="/events" label="展会名录" />
-                <div className="mx-2 h-4 w-px bg-[var(--paper-border)]/20" aria-hidden="true"></div>
+                <div className="mx-2 h-4 w-px bg-(--paper-border)/20" aria-hidden="true"></div>
                 <NavItem to="/lives" label="演出快讯" />
-                <div className="mx-2 h-4 w-px bg-[var(--paper-border)]/20" aria-hidden="true"></div>
+                <div className="mx-2 h-4 w-px bg-(--paper-border)/20" aria-hidden="true"></div>
                 <NavItem to="/circles" label="社团检索" />
               </div>
 
               <div className="ml-auto flex items-center gap-3 md:ml-0 md:w-56 md:justify-end">
                 <button
                   type="button"
-                  className={`p-2.5 md:hidden text-[var(--paper-text)] ${FOCUS_RING}`}
+                  className={`p-2.5 md:hidden text-(--paper-text) ${FOCUS_RING}`}
                   aria-label={isMobileMenuOpen ? '关闭菜单' : '打开菜单'}
                   onClick={() => setIsMobileMenuOpen((prev) => !prev)}
                 >
@@ -474,7 +474,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden border-t-4 border-[var(--paper-border)] bg-[var(--paper-bg)] md:hidden"
+                className="overflow-hidden border-t-4 border-(--paper-border) bg-(--paper-bg) md:hidden"
               >
                 <div className="flex flex-col space-y-6 px-6 py-8">
                   <NavItem to="/events" label="展会名录" className="w-full border-b-2 border-black/5 py-2 text-2xl" />
@@ -482,7 +482,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   <NavItem to="/circles" label="社团检索" className="w-full py-2 text-2xl" />
 
                   <div className="flex flex-col gap-4 pt-8">
-                    <div className="text-xs font-black uppercase tracking-widest opacity-40 text-[var(--paper-text)]">Language</div>
+                    <div className="text-xs font-black uppercase tracking-widest opacity-40 text-(--paper-text)">Language</div>
                     <div className="flex gap-2">
                       {['zh', 'ja', 'en'].map((langCode) => (
                         <button
@@ -492,8 +492,8 @@ const Navbar: React.FC<NavbarProps> = ({
                             onSetLanguage(langCode as Language);
                             setIsMobileMenuOpen(false);
                           }}
-                          className={`border-2 border-[var(--paper-border)] px-4 py-2 text-xs font-black uppercase transition-colors duration-200 ${
-                            language === langCode ? 'bg-[var(--paper-border)] text-[var(--paper-surface)]' : 'bg-[var(--paper-surface)] text-[var(--paper-text)] hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)]'
+                          className={`border-2 border-(--paper-border) px-4 py-2 text-xs font-black uppercase transition-colors duration-200 ${
+                            language === langCode ? 'bg-(--paper-border) text-(--paper-surface)' : 'bg-(--paper-surface) text-(--paper-text) hover:bg-(--paper-border) hover:text-(--paper-surface)'
                           } ${FOCUS_RING}`}
                         >
                           {langCode}
@@ -512,15 +512,15 @@ const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <nav data-current-view={currentView} className={`sticky top-0 z-50 w-full border-b-2 transition-colors duration-300 ${navBg}`}>
-      <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-300 items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-6">
           <Link to="/" onClick={handleBrandClick} className={`flex items-center gap-3 ${FOCUS_RING}`} aria-label="返回首页">
             <motion.div whileHover={{ scale: 1.06 }} transition={{ type: 'spring', stiffness: 400, damping: 15 }}>
               <BrandLogo size="sm" />
             </motion.div>
             <div className="flex flex-col leading-none">
-              <span className="font-brand text-lg font-black tracking-tight text-[var(--paper-text)]">{getBrandName()}</span>
-              <span className="origin-left text-xs font-bold uppercase tracking-widest text-[var(--paper-text-muted)]">EST. 1000 G.S.T</span>
+              <span className="font-brand text-lg font-black tracking-tight text-(--paper-text)">{getBrandName()}</span>
+              <span className="origin-left text-xs font-bold uppercase tracking-widest text-(--paper-text-muted)">EST. 1000 G.S.T</span>
             </div>
           </Link>
 
@@ -541,7 +541,7 @@ const Navbar: React.FC<NavbarProps> = ({
               aria-expanded={isLangMenuOpen}
               aria-controls="language-menu"
               className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition-[background-color,border-color,color] duration-200 ${
-                isNewspaper ? 'border-[var(--paper-border)] bg-[var(--paper-surface)] text-[var(--paper-text)]' : 'border-slate-200 bg-white text-slate-600'
+                isNewspaper ? 'border-(--paper-border) bg-(--paper-surface) text-(--paper-text)' : 'border-slate-200 bg-white text-slate-600'
               } ${FOCUS_RING}`}
             >
               <LanguageBadgeIcon size={14} />
@@ -556,7 +556,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   exit={{ opacity: 0, y: 10 }}
                   id="language-menu"
                   role="menu"
-                  className="absolute right-0 top-full z-50 mt-2 w-32 border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] shadow-[4px_4px_0px_0px_var(--paper-border)]"
+                  className="absolute right-0 top-full z-50 mt-2 w-32 border-2 border-(--paper-border) bg-(--paper-surface) shadow-[4px_4px_0px_0px_var(--paper-border)]"
                 >
                   {[
                     { code: 'zh', label: '简体中文' },
@@ -571,7 +571,7 @@ const Navbar: React.FC<NavbarProps> = ({
                         onSetLanguage(langOption.code as Language);
                         setIsLangMenuOpen(false);
                       }}
-                      className={`w-full border-b border-[var(--paper-border)] px-4 py-2 text-left text-xs font-black transition-colors duration-200 last:border-0 hover:bg-[var(--paper-accent)] hover:text-white ${
+                      className={`w-full border-b border-(--paper-border) px-4 py-2 text-left text-xs font-black transition-colors duration-200 last:border-0 hover:bg-(--paper-accent) hover:text-white ${
                         language === langOption.code ? 'bg-black/5' : ''
                       } ${FOCUS_RING}`}
                     >
@@ -587,7 +587,7 @@ const Navbar: React.FC<NavbarProps> = ({
             type="button"
             onClick={() => setIsMobileMenuOpen((prev) => !prev)}
             aria-label={isMobileMenuOpen ? '关闭菜单' : '打开菜单'}
-            className={`p-2.5 transition-colors duration-200 md:hidden text-[var(--paper-text)] ${FOCUS_RING}`}
+            className={`p-2.5 transition-colors duration-200 md:hidden text-(--paper-text) ${FOCUS_RING}`}
           >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -600,13 +600,13 @@ const Navbar: React.FC<NavbarProps> = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className={`border-t-2 md:hidden ${isNewspaper ? 'border-[var(--paper-border)] bg-[var(--paper-bg)]' : 'border-slate-100 bg-white'}`}
+            className={`border-t-2 md:hidden ${isNewspaper ? 'border-(--paper-border) bg-(--paper-bg)' : 'border-slate-100 bg-white'}`}
           >
             <div className="flex flex-col space-y-4 px-4 py-6">
-              <NavItem to="/events" label="展会名录" className={`w-full border-b py-4 text-left ${isNewspaper ? 'border-[var(--paper-border)]/10' : 'border-slate-100'}`} />
-              <NavItem to="/events/exp" label="探索布局 (Beta)" className={`w-full border-b py-4 text-left ${isNewspaper ? 'border-[var(--paper-border)]/10' : 'border-slate-100'}`} />
-              <NavItem to="/lives" label="演出快讯" className={`w-full border-b py-4 text-left ${isNewspaper ? 'border-[var(--paper-border)]/10' : 'border-slate-100'}`} />
-              <NavItem to="/circles" label="社团检索" className={`w-full border-b py-4 text-left ${isNewspaper ? 'border-[var(--paper-border)]/10' : 'border-slate-100'}`} />
+              <NavItem to="/events" label="展会名录" className={`w-full border-b py-4 text-left ${isNewspaper ? 'border-(--paper-border)/10' : 'border-slate-100'}`} />
+              <NavItem to="/events/exp" label="探索布局 (Beta)" className={`w-full border-b py-4 text-left ${isNewspaper ? 'border-(--paper-border)/10' : 'border-slate-100'}`} />
+              <NavItem to="/lives" label="演出快讯" className={`w-full border-b py-4 text-left ${isNewspaper ? 'border-(--paper-border)/10' : 'border-slate-100'}`} />
+              <NavItem to="/circles" label="社团检索" className={`w-full border-b py-4 text-left ${isNewspaper ? 'border-(--paper-border)/10' : 'border-slate-100'}`} />
             </div>
           </motion.div>
         )}

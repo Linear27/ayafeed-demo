@@ -11,6 +11,7 @@ import { useNavigate, Link } from '@tanstack/react-router';
 import { PreferredRegion, Theme, TimelineItem } from '../types';
 import { fetchEvents, fetchLives } from '../services/api';
 import { BentoHeader, ScrapbookTimeline, Tape } from '../components/LandingSections';
+import { rankHeroItems } from '../services/landingHero';
 
 const MOCK_TODAY = "2026-03-01";
 
@@ -64,6 +65,8 @@ const ExperimentalLandingView: React.FC<{ theme: Theme }> = ({ theme }) => {
           boothCount: e.boothCount,
           organizer: e.organizer,
           website: (e as any).website || (e as any).websiteUrl || null,
+          featured: e.featured === true,
+          featuredOrder: typeof (e as any).featuredOrder === 'number' ? (e as any).featuredOrder : null,
           status,
           originalData: e
         });
@@ -115,9 +118,7 @@ const ExperimentalLandingView: React.FC<{ theme: Theme }> = ({ theme }) => {
   }), [events, lives, timelineItems]);
 
   const featuredItems = useMemo(() => {
-    const todayItems = timelineItems.filter(i => i.isToday);
-    if (todayItems.length > 0) return todayItems;
-    return timelineItems.slice(0, 5);
+    return rankHeroItems(timelineItems).slice(0, 5);
   }, [timelineItems]);
 
   if (isLoading) {

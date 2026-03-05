@@ -14,6 +14,7 @@ import {
   getBusinessDateKey,
   getRecentWindowCount,
 } from '../services/date';
+import { rankHeroItems } from '../services/landingHero';
 
 const LandingView: React.FC<{ 
   region: PreferredRegion;
@@ -73,6 +74,8 @@ const LandingView: React.FC<{
           boothCount: e.boothCount,
           organizer: e.organizer,
           website: (e as any).website || (e as any).websiteUrl || null,
+          featured: e.featured === true,
+          featuredOrder: typeof e.featuredOrder === 'number' ? e.featuredOrder : null,
           status,
           originalData: e
         });
@@ -137,11 +140,7 @@ const LandingView: React.FC<{
   }), [events, lives, timelineItems, updateCount]);
 
   const featuredItems = useMemo(() => {
-    const todayItems = timelineItems.filter(i => i.isToday);
-    if (todayItems.length > 0) {
-      return todayItems;
-    }
-    return timelineItems.slice(0, 5);
+    return rankHeroItems(timelineItems).slice(0, 5);
   }, [timelineItems]);
 
   return (
