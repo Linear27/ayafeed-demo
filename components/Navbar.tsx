@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Menu, X, Globe, ChevronDown, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from '@tanstack/react-router';
-import { ViewState, Theme, Language } from '../types';
+import { ViewState, Theme, Language, PreferredRegion } from '../types';
 import BrandLogo from './BrandLogo';
 
 interface NavbarProps {
@@ -10,13 +10,13 @@ interface NavbarProps {
   theme: Theme;
   language: Language;
   onSetLanguage: (lang: Language) => void;
-  region: string;
-  onSetRegion: (region: string) => void;
+  region: PreferredRegion;
+  onSetRegion: (region: PreferredRegion) => void;
 }
 
 type NewspaperHeaderState = 'top' | 'scrolled';
 
-const REGION_OPTIONS = [
+const REGION_OPTIONS: Array<{ code: PreferredRegion; label: string }> = [
   { code: 'GLOBAL', label: '全球版' },
   { code: 'JAPAN', label: '日本国内版' },
   { code: 'CN_MAINLAND', label: '中国大陆版' },
@@ -199,7 +199,8 @@ const Navbar: React.FC<NavbarProps> = ({
     if (!isLandingRoute) return;
 
     event.preventDefault();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
   };
 
   const NavItem = ({ to, label, className = '' }: { to: string; label: string; className?: string }) => (
@@ -288,7 +289,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     })}
                   </span>
                   <span className="h-1 w-1 rounded-full bg-[var(--paper-text)]"></span>
-                  <span>Today's Intelligence</span>
+                  <span>今日情报 / Today's Intelligence</span>
                 </div>
               </div>
 
@@ -410,9 +411,9 @@ const Navbar: React.FC<NavbarProps> = ({
 
           <div className="border-t border-[var(--paper-border)]/10 md:hidden">
             <div className="flex items-center justify-center gap-1 px-4 py-2">
-              <NavItem to="/events" label="展会" className="px-2 text-xs" />
-              <NavItem to="/lives" label="演出" className="px-2 text-xs" />
-              <NavItem to="/circles" label="社团" className="px-2 text-xs" />
+              <NavItem to="/events" label="展会" className="px-3 py-3 text-xs" />
+              <NavItem to="/lives" label="演出" className="px-3 py-3 text-xs" />
+              <NavItem to="/circles" label="社团" className="px-3 py-3 text-xs" />
             </div>
           </div>
         </header>
@@ -457,7 +458,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <div className="ml-auto flex items-center gap-3 md:ml-0 md:w-56 md:justify-end">
                 <button
                   type="button"
-                  className={`p-2 md:hidden text-[var(--paper-text)] ${FOCUS_RING}`}
+                  className={`p-2.5 md:hidden text-[var(--paper-text)] ${FOCUS_RING}`}
                   aria-label={isMobileMenuOpen ? '关闭菜单' : '打开菜单'}
                   onClick={() => setIsMobileMenuOpen((prev) => !prev)}
                 >
@@ -586,7 +587,7 @@ const Navbar: React.FC<NavbarProps> = ({
             type="button"
             onClick={() => setIsMobileMenuOpen((prev) => !prev)}
             aria-label={isMobileMenuOpen ? '关闭菜单' : '打开菜单'}
-            className={`p-2 transition-colors duration-200 md:hidden text-[var(--paper-text)] ${FOCUS_RING}`}
+            className={`p-2.5 transition-colors duration-200 md:hidden text-[var(--paper-text)] ${FOCUS_RING}`}
           >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>

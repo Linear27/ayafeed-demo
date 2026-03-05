@@ -1,8 +1,11 @@
 
+import { Suspense, lazy } from 'react';
 import { createRoute, useNavigate } from '@tanstack/react-router';
 import { Route as rootRoute } from '../__root';
-import EventDetailView from '@/views/EventDetailView';
 import { useAppContext } from '@/context/AppContext';
+import RouteLoadingFallback from '@/components/RouteLoadingFallback';
+
+const EventDetailView = lazy(() => import('@/views/EventDetailView'));
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -16,11 +19,13 @@ function EventDetail() {
   const navigate = useNavigate();
 
   return (
-    <EventDetailView 
-      id={eventId} 
-      onBack={() => navigate({ to: '/events' })} 
-      onSelectCircle={(id) => navigate({ to: '/circles/$circleId', params: { circleId: id } })}
-      theme={theme}
-    />
+    <Suspense fallback={<RouteLoadingFallback />}>
+      <EventDetailView
+        id={eventId}
+        onBack={() => navigate({ to: '/events' })}
+        onSelectCircle={(id) => navigate({ to: '/circles/$circleId', params: { circleId: id } })}
+        theme={theme}
+      />
+    </Suspense>
   );
 }

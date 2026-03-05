@@ -1,16 +1,19 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Theme, Language } from '@/types';
+import { Theme, Language, PreferredRegion } from '@/types';
 
 interface AppContextType {
   theme: Theme;
   language: Language;
   setLanguage: React.Dispatch<React.SetStateAction<Language>>;
-  region: string;
-  setRegion: React.Dispatch<React.SetStateAction<string>>;
+  region: PreferredRegion;
+  setRegion: React.Dispatch<React.SetStateAction<PreferredRegion>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
+const PREFERRED_REGION_SET: ReadonlySet<PreferredRegion> = new Set(['GLOBAL', 'JAPAN', 'CN_MAINLAND', 'OVERSEAS']);
+
+const isPreferredRegion = (value: string): value is PreferredRegion => PREFERRED_REGION_SET.has(value as PreferredRegion);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const theme: Theme = 'newspaper';
@@ -24,9 +27,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return 'en';
   });
 
-  const [region, setRegion] = useState<string>(() => {
+  const [region, setRegion] = useState<PreferredRegion>(() => {
     const saved = localStorage.getItem('aya_pref_region');
-    if (saved) return saved;
+    if (saved && isPreferredRegion(saved)) return saved;
     const bLang = navigator.language.toLowerCase();
     if (bLang === 'zh-cn') return 'CN_MAINLAND';
     if (bLang.startsWith('ja')) return 'JAPAN';

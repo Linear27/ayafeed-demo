@@ -1,6 +1,11 @@
+import { Suspense, lazy } from 'react';
 import { createRoute } from '@tanstack/react-router';
 import { Route as rootRoute } from './__root';
-import { FeedbackPlaceholder } from '@/views/StaticPages';
+import RouteLoadingFallback from '@/components/RouteLoadingFallback';
+
+const FeedbackPlaceholder = lazy(() =>
+  import('@/views/StaticPages').then((module) => ({ default: module.FeedbackPlaceholder })),
+);
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -9,5 +14,9 @@ export const Route = createRoute({
 });
 
 function FeedbackPage() {
-  return <FeedbackPlaceholder />;
+  return (
+    <Suspense fallback={<RouteLoadingFallback />}>
+      <FeedbackPlaceholder />
+    </Suspense>
+  );
 }

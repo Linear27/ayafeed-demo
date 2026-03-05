@@ -4,6 +4,7 @@ import {
   Calendar,
   ArrowRight,
   Library,
+  ImageOff,
   Radio,
   Clock,
   Bookmark,
@@ -12,7 +13,8 @@ import {
   Users,
 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
-import { TimelineItem } from '../types';
+import { PreferredRegion, TimelineItem } from '../types';
+import { diffCalendarDays } from '../services/date';
 
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper-bg)]';
@@ -33,7 +35,8 @@ const buildMonthIndex = (items: TimelineItem[]) => {
 const scrollToMonthAnchor = (monthKey: string) => {
   const element = document.getElementById(`month-${monthKey}`);
   if (element) {
-    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    element.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
   }
 };
 
@@ -83,19 +86,37 @@ const Stamp: React.FC<{ text: string; color?: string; rotate?: number; className
   </div>
 );
 
+const PosterFallback: React.FC<{ title: string; compact?: boolean }> = ({ title, compact = false }) => (
+  <div
+    role="img"
+    aria-label={`${title} 暂无海报`}
+    className={`flex h-full w-full flex-col items-center justify-center bg-[var(--paper-bg-secondary)] text-[var(--paper-text-muted)] ${
+      compact ? 'gap-1' : 'gap-2'
+    }`}
+  >
+    <ImageOff aria-hidden="true" size={compact ? 16 : 24} className="opacity-65" />
+    {!compact ? (
+      <span className="text-xs font-bold tracking-[0.12em] text-[var(--paper-text-muted)]/80">
+        暂无海报
+      </span>
+    ) : null}
+  </div>
+);
+
 /**
  * 1. Bento Header 组件 - 动态功能头版
  */
 export const BentoHeader: React.FC<{
   items: TimelineItem[];
-  region: string;
+  region: PreferredRegion;
+  todayDateKey: string;
   stats: {
     totalEvents: number;
     todayCount: number;
     thisWeekCount: number;
     updateCount: number;
   };
-}> = ({ items, region: _region, stats }) => {
+}> = ({ items, region: _region, todayDateKey, stats }) => {
   const todayItems = items.filter((i) => i.isToday);
   const upcomingItems = items.filter((i) => !i.isToday);
 
@@ -107,11 +128,46 @@ export const BentoHeader: React.FC<{
         ? upcomingItems.slice(1, 3)
         : upcomingItems.slice(0, 2);
 
-  if (!mainItem) return null;
+  if (!mainItem) {
+    return (
+      <section className="mx-auto max-w-7xl" aria-labelledby="landing-feature-heading">
+        <div className="relative overflow-hidden border-4 border-[var(--paper-border)] bg-[var(--paper-surface)] p-8 shadow-[6px_6px_0px_0px_var(--paper-border)] sm:p-10">
+          <Tape className="left-8 top-0 w-24" rotate={-3} />
+          <div className="absolute -right-8 -top-10 opacity-5" aria-hidden="true">
+            <Library size={180} />
+          </div>
+          <div className="relative z-10 max-w-3xl">
+            <div className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-[var(--paper-text-muted)]">情报待更新</div>
+            <h2 id="landing-feature-heading" className="text-3xl leading-tight font-black text-[var(--paper-text)] sm:text-4xl">
+              近期暂无可展示排期
+            </h2>
+            <p className="mt-4 max-w-[46ch] text-sm leading-relaxed text-[var(--paper-text-muted)] italic">
+              当前频道没有未来日程条目。你可以先浏览现有名录，或向编辑部提交新的活动线索。
+            </p>
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Link
+                to="/events"
+                className={`inline-flex items-center justify-center gap-2 border-2 border-[var(--paper-border)] bg-[var(--paper-border)] px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-[var(--paper-surface)] transition-colors duration-200 hover:bg-[var(--paper-accent)] ${FOCUS_RING}`}
+              >
+                浏览展会名录 <ArrowRight aria-hidden="true" size={16} />
+              </Link>
+              <Link
+                to="/feedback"
+                className={`inline-flex items-center justify-center gap-2 border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-[var(--paper-text)] transition-colors duration-200 hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)] ${FOCUS_RING}`}
+              >
+                提交活动情报 <ArrowRight aria-hidden="true" size={16} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const nextMajor = upcomingItems[0];
   const daysLeft = nextMajor
-    ? Math.ceil((new Date(nextMajor.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+    ? Math.max(0, diffCalendarDays(todayDateKey, nextMajor.date))
     : null;
 
   const mainTarget = getDetailTarget(mainItem);
@@ -123,14 +179,18 @@ export const BentoHeader: React.FC<{
           <Tape className="left-1/2 top-0 w-32 -translate-x-1/2" rotate={1} />
           <div className="flex h-full flex-col md:flex-row">
             <div className="relative flex items-center justify-center overflow-hidden border-b-4 border-[var(--paper-border)] bg-[var(--paper-bg-secondary)] p-4 md:w-1/2 md:border-b-0 md:border-r-4">
-              <img
-                src={mainItem.image || ''}
-                alt={mainItem.title}
-                width={720}
-                height={960}
-                fetchPriority="high"
-                className="max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.02]"
-              />
+              {mainItem.image ? (
+                <img
+                  src={mainItem.image}
+                  alt={mainItem.title}
+                  width={720}
+                  height={960}
+                  fetchPriority="high"
+                  className="max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+                />
+              ) : (
+                <PosterFallback title={mainItem.title} />
+              )}
               {mainItem.isToday && (
                 <div className="absolute left-4 top-4 z-30">
                   <Stamp text="TODAY" rotate={-10} className="bg-[var(--paper-surface)]/85 px-4 py-2 text-base" />
@@ -138,7 +198,7 @@ export const BentoHeader: React.FC<{
               )}
             </div>
 
-            <div className="flex flex-col justify-between bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')] p-7 md:w-1/2 md:p-8">
+            <div className="flex flex-col justify-between p-7 md:w-1/2 md:p-8" style={{ backgroundImage: 'var(--paper-fibers)' }}>
               <div>
                 <div className="mb-4 flex items-center gap-2">
                   <span className="bg-[var(--paper-accent)] px-2 py-0.5 text-xs font-black uppercase tracking-[0.16em] text-[var(--paper-surface)]">
@@ -181,7 +241,7 @@ export const BentoHeader: React.FC<{
                 <Clock aria-hidden="true" size={124} />
               </div>
               <div className="relative z-10">
-                <div className="mb-2 text-xs font-black uppercase tracking-[0.16em] text-[var(--paper-accent)]">Next Major Event</div>
+                <div className="mb-2 text-xs font-black uppercase tracking-[0.16em] text-[var(--paper-accent)]">下个重点活动 / Next</div>
                 <div className="mb-1 text-4xl leading-none font-black tracking-tight text-[var(--paper-text)]">
                   {daysLeft === 0 ? 'TODAY' : `${daysLeft} DAYS`}
                 </div>
@@ -194,7 +254,7 @@ export const BentoHeader: React.FC<{
           )}
 
           <div className="flex-1 border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 shadow-[2px_2px_0px_0px_var(--paper-border)]">
-            <div className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--paper-text-muted)]">AyaFeed Stats</div>
+            <div className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--paper-text-muted)]">情报统计 / Stats</div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <div className="text-xs font-bold uppercase text-[var(--paper-text-muted)]">已收录</div>
@@ -211,14 +271,15 @@ export const BentoHeader: React.FC<{
                 <div className="text-xl font-black tabular-nums text-[var(--paper-text)]">{stats.todayCount}</div>
               </div>
               <div>
-                <div className="text-xs font-bold uppercase text-[var(--paper-text-muted)]">近期更新</div>
+                <div className="text-xs font-bold uppercase text-[var(--paper-text-muted)]">7日新增</div>
                 <div className="text-xl font-black tabular-nums text-[var(--paper-text)]">{stats.updateCount}</div>
               </div>
             </div>
+            <p className="mt-3 text-[11px] text-[var(--paper-text-muted)]">统计口径：按活动开始日期计算近 7 天新增条目</p>
           </div>
 
           <div className="border border-[var(--paper-border)]/30 bg-[var(--paper-bg-secondary)]/50 p-4">
-            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--paper-text-muted)]">Related Paths</div>
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--paper-text-muted)]">相关入口 / Paths</div>
             <div className="mt-2 flex flex-wrap gap-3 text-xs font-bold">
               <Link to="/events" className={`text-[var(--paper-text-muted)] underline-offset-2 hover:text-[var(--paper-accent)] hover:underline ${FOCUS_RING}`}>
                 浏览展会名录
@@ -239,15 +300,19 @@ export const BentoHeader: React.FC<{
                 className={`group flex gap-4 border border-[var(--paper-border)] bg-[var(--paper-surface)] p-4 shadow-[2px_2px_0px_0px_var(--paper-border)] transition-[background-color,box-shadow,border-color] duration-200 hover:border-[var(--paper-accent)] hover:bg-[var(--paper-bg-secondary)]/50 hover:shadow-[3px_3px_0px_0px_var(--paper-border)] ${FOCUS_RING}`}
               >
                 <div className="flex h-24 w-20 shrink-0 items-center justify-center overflow-hidden border border-[var(--paper-border)] bg-[var(--paper-bg-secondary)]">
-                  <img
-                    src={item.image || ''}
-                    alt={item.title}
-                    width={240}
-                    height={320}
-                    loading="lazy"
-                    decoding="async"
-                    className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
-                  />
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      width={240}
+                      height={320}
+                      loading="lazy"
+                      decoding="async"
+                      className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <PosterFallback title={item.title} compact />
+                  )}
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col justify-center">
                   <div className="mb-1 flex items-center gap-2">
@@ -287,19 +352,19 @@ export const ScrapbookTimeline: React.FC<{
   const sections = [
     {
       id: 'today',
-      title: 'TODAY / 今日情报',
+      title: '今日情报 / TODAY',
       items: todayItems,
       icon: <Radio aria-hidden="true" size={22} className="text-red-600" />,
     },
     {
       id: 'this-week',
-      title: 'THIS WEEK / 本周焦点',
+      title: '本周焦点 / THIS WEEK',
       items: thisWeekItems,
       icon: <Calendar aria-hidden="true" size={22} className="text-black" />,
     },
     {
       id: 'upcoming',
-      title: 'UPCOMING / 即将到来',
+      title: '即将到来 / UPCOMING',
       items: upcomingItems,
       icon: <Clock aria-hidden="true" size={22} className="text-slate-500" />,
     },
@@ -329,7 +394,7 @@ export const ScrapbookTimeline: React.FC<{
                   <h3 className="text-2xl font-black tracking-tight sm:text-3xl uppercase">{section.title}</h3>
                 </div>
                 <div className="bg-[var(--paper-border)] px-2 py-1 text-xs font-black uppercase tracking-[0.12em] text-[var(--paper-surface)] tabular-nums">
-                  {section.items.length} ITEMS
+                  {section.items.length} 条目
                 </div>
               </div>
 
@@ -351,7 +416,7 @@ export const ScrapbookTimeline: React.FC<{
             <div className="absolute -right-10 -top-10 rotate-12 opacity-5" aria-hidden="true">
               <Library size={200} />
             </div>
-            <div className="mb-4 text-xs font-black uppercase tracking-[0.25em] text-[var(--paper-text-muted)]">ARCHIVE EMPTY</div>
+            <div className="mb-4 text-xs font-black uppercase tracking-[0.25em] text-[var(--paper-text-muted)]">暂无档期 / ARCHIVE EMPTY</div>
             <h3 className="mb-4 text-2xl font-black text-[var(--paper-text)]">暂无可展示的日程条目</h3>
             <p className="mx-auto max-w-[50ch] text-base leading-relaxed text-[var(--paper-text-muted)] italic">
               当前频道没有未来排期的活动条目。文文新闻编辑部正在加紧取材中，请稍后再来。
@@ -398,15 +463,19 @@ const ScrapbookCard: React.FC<{ item: TimelineItem; index: number; anchorId?: st
       >
         <div className="flex flex-col gap-5 md:flex-row">
           <div className="relative flex h-44 w-full shrink-0 items-center justify-center overflow-hidden border-2 border-[var(--paper-border)] bg-[var(--paper-bg-secondary)] md:w-32">
-            <img
-              src={item.image || ''}
-              className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
-              alt={item.title}
-              width={320}
-              height={440}
-              loading="lazy"
-              decoding="async"
-            />
+            {item.image ? (
+              <img
+                src={item.image}
+                className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                alt={item.title}
+                width={320}
+                height={440}
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <PosterFallback title={item.title} compact />
+            )}
             {item.isToday && <div className="pointer-events-none absolute inset-0 bg-[var(--paper-accent)]/10" aria-hidden="true"></div>}
           </div>
 
@@ -562,7 +631,7 @@ export const IndexSidebar: React.FC<{
           </div>
         </section>
 
-        <section className="relative mt-8 border-4 border-[var(--paper-border)] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] p-4">
+        <section className="relative mt-8 border-4 border-[var(--paper-border)] p-4" style={{ backgroundImage: 'var(--paper-cubes)' }}>
           <div className="absolute right-0 top-0 bg-[var(--paper-border)] px-1 text-[10px] font-bold uppercase text-[var(--paper-surface)]">AD</div>
           <h4 className="mb-2 text-lg font-black text-[var(--paper-text)]">社团入驻开放中</h4>
           <p className="mb-4 text-sm leading-relaxed text-[var(--paper-text-muted)] italic">
@@ -596,7 +665,7 @@ export const MobileQuickJumpBar: React.FC<{
             key={month.key}
             type="button"
             onClick={() => scrollToMonthAnchor(month.key)}
-            className={`shrink-0 whitespace-nowrap border border-[var(--paper-border)] bg-[var(--paper-surface)] px-3 py-1.5 text-xs font-bold transition-colors duration-200 hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)] ${FOCUS_RING}`}
+            className={`min-h-11 shrink-0 whitespace-nowrap border border-[var(--paper-border)] bg-[var(--paper-surface)] px-4 py-2 text-xs font-bold transition-colors duration-200 hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)] ${FOCUS_RING}`}
           >
             {month.label}
           </button>

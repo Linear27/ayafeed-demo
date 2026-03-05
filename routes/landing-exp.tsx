@@ -1,8 +1,11 @@
 
-import { createRoute, useNavigate } from '@tanstack/react-router';
+import { Suspense, lazy } from 'react';
+import { createRoute } from '@tanstack/react-router';
 import { Route as rootRoute } from './__root';
-import ExperimentalLandingView from '@/views/ExperimentalLandingView';
 import { useAppContext } from '@/context/AppContext';
+import RouteLoadingFallback from '@/components/RouteLoadingFallback';
+
+const ExperimentalLandingView = lazy(() => import('@/views/ExperimentalLandingView'));
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -12,11 +15,12 @@ export const Route = createRoute({
 
 function LandingExp() {
   const { theme } = useAppContext();
-  const navigate = useNavigate();
 
   return (
-    <ExperimentalLandingView 
-      theme={theme} 
-    />
+    <Suspense fallback={<RouteLoadingFallback />}>
+      <ExperimentalLandingView
+        theme={theme}
+      />
+    </Suspense>
   );
 }

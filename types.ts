@@ -1,6 +1,7 @@
 
 
 export type MarketRegion = "JAPAN" | "CN_MAINLAND" | "OVERSEAS";
+export type PreferredRegion = MarketRegion | "GLOBAL";
 
 export type PageInfo = {
   page: number;

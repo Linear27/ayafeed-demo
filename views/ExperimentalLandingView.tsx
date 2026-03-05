@@ -8,7 +8,7 @@ import {
   Users, Info, Tag, CheckCircle2, Zap, Sparkles
 } from 'lucide-react';
 import { useNavigate, Link } from '@tanstack/react-router';
-import { Theme, TimelineItem } from '../types';
+import { PreferredRegion, Theme, TimelineItem } from '../types';
 import { fetchEvents, fetchLives } from '../services/api';
 import { BentoHeader, ScrapbookTimeline, Tape } from '../components/LandingSections';
 
@@ -19,7 +19,7 @@ const ExperimentalLandingView: React.FC<{ theme: Theme }> = ({ theme }) => {
   const [events, setEvents] = useState<any[]>([]);
   const [lives, setLives] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [region, setRegion] = useState<string>('');
+  const [region, setRegion] = useState<PreferredRegion>('GLOBAL');
 
   useEffect(() => {
     const loadData = async () => {
@@ -98,7 +98,7 @@ const ExperimentalLandingView: React.FC<{ theme: Theme }> = ({ theme }) => {
 
     items.sort((a, b) => a.date.localeCompare(b.date));
 
-    if (region) {
+    if (region !== 'GLOBAL') {
       const regional = items.filter(i => i.marketRegion === region);
       const others = items.filter(i => i.marketRegion !== region);
       return [...regional, ...others];
@@ -156,6 +156,7 @@ const ExperimentalLandingView: React.FC<{ theme: Theme }> = ({ theme }) => {
           <BentoHeader 
             items={featuredItems} 
             region={region}
+            todayDateKey={MOCK_TODAY}
             stats={stats}
           />
         </div>
@@ -170,14 +171,14 @@ const ExperimentalLandingView: React.FC<{ theme: Theme }> = ({ theme }) => {
               <h3 className="text-xl font-black font-header uppercase mb-6 border-b-2 border-black pb-2">Region Filter</h3>
               <div className="grid grid-cols-1 gap-2">
                 {[
-                  { id: '', label: 'Global / 全球' },
+                  { id: 'GLOBAL', label: 'Global / 全球' },
                   { id: 'JAPAN', label: 'Japan / 日本国内' },
                   { id: 'CN_MAINLAND', label: 'China / 中国大陆' },
                   { id: 'OVERSEAS', label: 'Overseas / 海外地区' }
                 ].map(r => (
                   <button 
                     key={r.id}
-                    onClick={() => setRegion(r.id)}
+                    onClick={() => setRegion(r.id as PreferredRegion)}
                     className={`w-full text-left px-4 py-3 font-black text-xs uppercase tracking-widest transition-all flex justify-between items-center ${
                       region === r.id ? 'bg-black text-white' : 'hover:bg-slate-100'
                     }`}

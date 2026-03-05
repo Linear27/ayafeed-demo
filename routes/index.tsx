@@ -1,8 +1,11 @@
 
+import { Suspense, lazy } from 'react';
 import { createRoute } from '@tanstack/react-router';
 import { Route as rootRoute } from './__root';
-import LandingView from '@/views/LandingView';
 import { useAppContext } from '@/context/AppContext';
+import RouteLoadingFallback from '@/components/RouteLoadingFallback';
+
+const LandingView = lazy(() => import('@/views/LandingView'));
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -14,8 +17,10 @@ function Index() {
   const { region } = useAppContext();
 
   return (
-    <LandingView 
-      region={region}
-    />
+    <Suspense fallback={<RouteLoadingFallback />}>
+      <LandingView
+        region={region}
+      />
+    </Suspense>
   );
 }

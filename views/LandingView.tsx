@@ -1,17 +1,24 @@
 
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { PublicEventListItem, PublicLiveListItem, TimelineItem } from '../types';
+import { PreferredRegion, PublicEventListItem, PublicLiveListItem, TimelineItem } from '../types';
 import { fetchEvents, fetchLives } from '../services/api';
 import { BentoHeader, ScrapbookTimeline, IndexSidebar, MobileQuickJumpBar } from '../components/LandingSections';
 import { EventCardSkeleton } from '../components/Skeleton';
 import { Link } from '@tanstack/react-router';
 import { AlertTriangle, RefreshCcw, ArrowRight } from 'lucide-react';
+import {
+  DEFAULT_BUSINESS_TIME_ZONE,
+  diffCalendarDays,
+  extractDateKey,
+  getBusinessDateKey,
+  getRecentWindowCount,
+} from '../services/date';
 
 const LandingView: React.FC<{ 
-  region: string;
+  region: PreferredRegion;
 }> = ({ region }) => {
-  const MOCK_TODAY = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const todayDateKey = useMemo(() => getBusinessDateKey(DEFAULT_BUSINESS_TIME_ZONE), []);
   const [events, setEvents] = useState<PublicEventListItem[]>([]);
   const [lives, setLives] = useState<PublicLiveListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,18 +48,15 @@ const LandingView: React.FC<{
 
   const timelineItems = useMemo(() => {
     const items: TimelineItem[] = [];
-    
-    const now = new Date(MOCK_TODAY);
-    const endOfWeek = new Date(now);
-    endOfWeek.setDate(now.getDate() + 7);
 
     events.forEach(e => {
-      const dateStr = e.startAt.split('T')[0];
-      const date = new Date(dateStr);
-      if (dateStr >= MOCK_TODAY) {
-        // Simple status logic for demo
+      const dateStr = extractDateKey(e.startAt);
+      if (!dateStr) return;
+
+      const dayDelta = diffCalendarDays(todayDateKey, dateStr);
+      if (dayDelta >= 0) {
         let status: TimelineItem['status'] = 'UPCOMING';
-        if (dateStr === MOCK_TODAY) status = 'ONGOING';
+        if (dayDelta === 0) status = 'ONGOING';
         
         items.push({
           id: e.id,
@@ -62,8 +66,8 @@ const LandingView: React.FC<{
           location: e.location?.name || null,
           image: e.poster?.urls.original || null,
           slug: e.slug,
-          isToday: dateStr === MOCK_TODAY,
-          isThisWeek: date <= endOfWeek,
+          isToday: dayDelta === 0,
+          isThisWeek: dayDelta < 7,
           marketRegion: e.marketRegion,
           summary: e.summary,
           boothCount: e.boothCount,
@@ -76,11 +80,13 @@ const LandingView: React.FC<{
     });
 
     lives.forEach(l => {
-      const dateStr = l.startAt.split('T')[0];
-      const date = new Date(dateStr);
-      if (dateStr >= MOCK_TODAY) {
+      const dateStr = extractDateKey(l.startAt);
+      if (!dateStr) return;
+
+      const dayDelta = diffCalendarDays(todayDateKey, dateStr);
+      if (dayDelta >= 0) {
         let status: TimelineItem['status'] = 'UPCOMING';
-        if (dateStr === MOCK_TODAY) status = 'ONGOING';
+        if (dayDelta === 0) status = 'ONGOING';
 
         items.push({
           id: l.id,
@@ -90,8 +96,8 @@ const LandingView: React.FC<{
           location: l.location?.name || l.venue || null,
           image: l.poster?.urls.original || null,
           slug: l.slug,
-          isToday: dateStr === MOCK_TODAY,
-          isThisWeek: date <= endOfWeek,
+          isToday: dayDelta === 0,
+          isThisWeek: dayDelta < 7,
           marketRegion: l.marketRegion,
           summary: l.description,
           website: (l as any).website || null,
@@ -105,22 +111,30 @@ const LandingView: React.FC<{
     items.sort((a, b) => a.date.localeCompare(b.date));
 
     // Filter by region if set
-    if (region) {
+    if (region && region !== 'GLOBAL') {
       const regional = items.filter(i => i.marketRegion === region);
       const others = items.filter(i => i.marketRegion !== region);
       return [...regional, ...others];
     }
 
     return items;
-  }, [events, lives, MOCK_TODAY, region]);
+  }, [events, lives, todayDateKey, region]);
+
+  const updateCount = useMemo(() => {
+    const upcomingDateKeys = [
+      ...events.map((event) => extractDateKey(event.startAt)),
+      ...lives.map((live) => extractDateKey(live.startAt)),
+    ];
+    return getRecentWindowCount(upcomingDateKeys, todayDateKey, 7);
+  }, [events, lives, todayDateKey]);
 
   // 统计数据 (Social Proof)
   const stats = useMemo(() => ({
     totalEvents: events.length + lives.length,
     todayCount: timelineItems.filter(i => i.isToday).length,
     thisWeekCount: timelineItems.filter(i => i.isThisWeek).length,
-    updateCount: 5 // Mocked recent updates
-  }), [events, lives, timelineItems]);
+    updateCount
+  }), [events, lives, timelineItems, updateCount]);
 
   const featuredItems = useMemo(() => {
     const todayItems = timelineItems.filter(i => i.isToday);
@@ -205,6 +219,7 @@ const LandingView: React.FC<{
               <BentoHeader 
                 items={featuredItems} 
                 region={region}
+                todayDateKey={todayDateKey}
                 stats={stats}
               />
             </div>

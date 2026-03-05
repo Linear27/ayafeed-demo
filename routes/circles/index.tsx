@@ -1,8 +1,10 @@
 
+import { Suspense, lazy } from 'react';
 import { createRoute, useNavigate } from '@tanstack/react-router';
 import { Route as rootRoute } from '../__root';
-import CircleListView from '@/views/CircleListView';
-import { useAppContext } from '@/context/AppContext';
+import RouteLoadingFallback from '@/components/RouteLoadingFallback';
+
+const CircleListView = lazy(() => import('@/views/CircleListView'));
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -14,8 +16,10 @@ function CirclesIndex() {
   const navigate = useNavigate();
 
   return (
-    <CircleListView 
-      onSelect={(id) => navigate({ to: '/circles/$circleId', params: { circleId: id } })} 
-    />
+    <Suspense fallback={<RouteLoadingFallback />}>
+      <CircleListView
+        onSelect={(id) => navigate({ to: '/circles/$circleId', params: { circleId: id } })}
+      />
+    </Suspense>
   );
 }

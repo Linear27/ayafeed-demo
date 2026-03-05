@@ -1,6 +1,11 @@
+import { Suspense, lazy } from 'react';
 import { createRoute } from '@tanstack/react-router';
 import { Route as rootRoute } from './__root';
-import { PrivacyPlaceholder } from '@/views/StaticPages';
+import RouteLoadingFallback from '@/components/RouteLoadingFallback';
+
+const PrivacyPlaceholder = lazy(() =>
+  import('@/views/StaticPages').then((module) => ({ default: module.PrivacyPlaceholder })),
+);
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -9,5 +14,9 @@ export const Route = createRoute({
 });
 
 function PrivacyPage() {
-  return <PrivacyPlaceholder />;
+  return (
+    <Suspense fallback={<RouteLoadingFallback />}>
+      <PrivacyPlaceholder />
+    </Suspense>
+  );
 }

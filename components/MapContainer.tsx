@@ -1,38 +1,45 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
+import type { Map as MapLibreMap } from 'maplibre-gl';
 import { Map as MapIcon, HelpCircle } from 'lucide-react';
 
 const MapContainer: React.FC<{ lng: number; lat: number }> = ({ lng, lat }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<maplibregl.Map | null>(null);
+  const map = useRef<MapLibreMap | null>(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (map.current) return; // initialize map only once
-    if (!mapContainer.current) return;
+    if (map.current || !mapContainer.current) return; // initialize map only once
+    let isDisposed = false;
 
-    try {
-      map.current = new maplibregl.Map({
-        container: mapContainer.current,
-        style: 'https://tiles.openfreemap.org/styles/liberty',
-        center: [lng, lat],
-        zoom: 14,
-        attributionControl: false
-      });
+    const initMap = async () => {
+      try {
+        const { default: maplibregl } = await import('maplibre-gl');
+        if (isDisposed || !mapContainer.current || map.current) return;
 
-      map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
-      new maplibregl.Marker({ color: '#DC2626' }).setLngLat([lng, lat]).addTo(map.current); // Red marker for AyaFeed theme
-      
-      map.current.on('error', () => {
-         setError(true);
-      });
-    } catch (e) {
-      console.warn("Map initialization failed", e);
-      setError(true);
-    }
+        map.current = new maplibregl.Map({
+          container: mapContainer.current,
+          style: 'https://tiles.openfreemap.org/styles/liberty',
+          center: [lng, lat],
+          zoom: 14,
+          attributionControl: false
+        });
+
+        map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
+        new maplibregl.Marker({ color: '#DC2626' }).setLngLat([lng, lat]).addTo(map.current); // Red marker for AyaFeed theme
+
+        map.current.on('error', () => {
+          setError(true);
+        });
+      } catch (e) {
+        console.warn("Map initialization failed", e);
+        if (!isDisposed) setError(true);
+      }
+    };
+    initMap();
 
     return () => {
+      isDisposed = true;
       if (map.current) {
         try {
           map.current.remove();

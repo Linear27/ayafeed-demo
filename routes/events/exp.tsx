@@ -1,8 +1,11 @@
 
+import { Suspense, lazy } from 'react';
 import { createRoute, useNavigate } from '@tanstack/react-router';
 import { Route as rootRoute } from '../__root';
-import EventListExperienceView from '@/views/EventListExperienceView';
 import { useAppContext } from '@/context/AppContext';
+import RouteLoadingFallback from '@/components/RouteLoadingFallback';
+
+const EventListExperienceView = lazy(() => import('@/views/EventListExperienceView'));
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -15,12 +18,14 @@ function EventExp() {
   const navigate = useNavigate();
 
   return (
-    <EventListExperienceView 
-      onSelect={(id) => navigate({ to: '/events/$eventId', params: { eventId: id } })}
-      theme={theme}
-      onNavigate={(v) => {
-        if (v === 'EVENT_LIST') navigate({ to: '/events' });
-      }}
-    />
+    <Suspense fallback={<RouteLoadingFallback />}>
+      <EventListExperienceView
+        onSelect={(id) => navigate({ to: '/events/$eventId', params: { eventId: id } })}
+        theme={theme}
+        onNavigate={(v) => {
+          if (v === 'EVENT_LIST') navigate({ to: '/events' });
+        }}
+      />
+    </Suspense>
   );
 }

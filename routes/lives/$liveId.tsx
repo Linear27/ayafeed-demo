@@ -1,8 +1,11 @@
 
+import { Suspense, lazy } from 'react';
 import { createRoute, useNavigate } from '@tanstack/react-router';
 import { Route as rootRoute } from '../__root';
-import LiveDetailView from '@/views/LiveDetailView';
 import { useAppContext } from '@/context/AppContext';
+import RouteLoadingFallback from '@/components/RouteLoadingFallback';
+
+const LiveDetailView = lazy(() => import('@/views/LiveDetailView'));
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -16,10 +19,12 @@ function LiveDetail() {
   const navigate = useNavigate();
 
   return (
-    <LiveDetailView 
-      id={liveId} 
-      onBack={() => navigate({ to: '/lives' })} 
-      theme={theme}
-    />
+    <Suspense fallback={<RouteLoadingFallback />}>
+      <LiveDetailView
+        id={liveId}
+        onBack={() => navigate({ to: '/lives' })}
+        theme={theme}
+      />
+    </Suspense>
   );
 }
