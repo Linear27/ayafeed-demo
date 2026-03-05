@@ -106,7 +106,7 @@ const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion }) =
         </div>
 
         <div className="mb-10 sticky top-[68px] z-30 py-2 transition-all bg-[var(--paper-bg)]/95">
-           <div className="flex gap-3">
+           <div className="flex gap-[var(--space-sm)]">
               <div className="relative flex-1 group">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-[var(--paper-text)]" size={18} />
                   <input 
@@ -114,7 +114,7 @@ const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion }) =
                     name="live-search"
                     type="text" 
                     placeholder="搜索演出名称、场馆..."
-                    className="w-full pl-12 pr-12 py-3.5 text-sm font-bold focus:outline-none transition-all bg-[var(--paper-surface)] border-2 border-[var(--paper-border)] focus:ring-4 focus:ring-[var(--paper-accent)]/10 shadow-[4px_4px_0px_0px_var(--paper-border)] text-[var(--paper-text)] placeholder-[var(--paper-text-muted)]/50"
+                    className="w-full border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-12 py-3.5 text-sm font-bold text-[var(--paper-text)] placeholder-[var(--paper-text-muted)]/50 shadow-[var(--paper-shadow-md)] transition-all focus:outline-none focus:ring-4 focus:ring-[var(--paper-accent)]/10"
                     value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
                   />
               </div>
@@ -129,7 +129,7 @@ const LiveListView: React.FC<LiveListViewProps> = ({ onSelect, activeRegion }) =
                   <motion.div key={live.id} onClick={() => onSelect(live.id)} 
                     className="group flex flex-col md:flex-row cursor-pointer transition-all duration-300 overflow-hidden bg-[var(--paper-surface)] border-2 border-[var(--paper-border)] newspaper-shadow hover:newspaper-shadow-hover"
                   >
-                      <div className="md:w-24 flex md:flex-col items-center justify-center p-5 text-center shrink-0 bg-[var(--paper-border)] text-[var(--paper-surface)] border-r-2 border-[var(--paper-border)] border-dashed">
+                      <div className="flex shrink-0 items-center justify-center border-r-2 border-dashed border-[var(--paper-border)] bg-[var(--paper-border)] p-[var(--space-lg)] text-center text-[var(--paper-surface)] md:w-24 md:flex-col">
                           <div className="text-xs font-black uppercase mb-1">{live.date.split('-')[1]}月</div>
                           <div className="text-3xl font-black leading-none">{live.date.split('-')[2]}</div>
                       </div>

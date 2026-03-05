@@ -1,8 +1,6 @@
 
 import React from 'react';
 import { ChevronLeft, ExternalLink, Calendar, MapPin, Users } from 'lucide-react';
-import { PublicEventDetail, Theme } from '../../types';
-
 import { AdaptedEventDetail } from '../../services/adapters';
 
 interface EventDetailHeaderProps {
@@ -70,7 +68,7 @@ const EventDetailHeader: React.FC<EventDetailHeaderProps> = ({ event, circleCoun
                     <div className="text-xs font-black uppercase tracking-widest text-[var(--paper-text-muted)] mb-1">举办城市</div>
                     <div className="text-lg sm:text-xl font-black leading-tight flex flex-wrap items-center">
                       {event.location && (
-                        <div className="mr-3 px-2 py-1 flex items-center bg-[var(--paper-surface)] border-2 border-[var(--paper-border)] shadow-[2px_2px_0px_0px_var(--paper-border)]">
+                        <div className="mr-3 flex items-center border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-[var(--space-sm)] py-[var(--space-xs)] shadow-[var(--paper-shadow-sm)]">
                           <span className="text-base font-black tracking-[0.15em] text-[var(--paper-text)]">{event.location}</span>
                         </div>
                       )}
@@ -85,14 +83,17 @@ const EventDetailHeader: React.FC<EventDetailHeaderProps> = ({ event, circleCoun
 
               <div className="mt-auto flex flex-col sm:flex-row gap-4">
                 {event.website && (
-                  <a href={event.website} target="_blank" rel="noreferrer"
-                    className="px-8 py-4 bg-[var(--paper-border)] text-[var(--paper-surface)] font-black text-sm border-2 border-transparent text-center hover:bg-[var(--paper-surface)] hover:text-[var(--paper-text)] hover:border-[var(--paper-border)] transition-all shadow-[6px_6px_0px_0px_var(--paper-accent)] flex items-center justify-center active:translate-y-1 active:shadow-none uppercase tracking-widest"
+                  <a
+                    href={event.website}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center border-2 border-[var(--paper-border)] bg-[var(--paper-border)] px-[var(--space-xl)] py-[var(--space-md)] text-center text-sm font-black tracking-widest text-[var(--paper-surface)] uppercase shadow-[var(--paper-shadow-lg)] transition-all hover:bg-[var(--paper-hover)] hover:text-[var(--paper-text)] active:translate-y-1 active:bg-[var(--paper-active)] active:shadow-none"
                   >
                     <ExternalLink size={18} className="mr-2" /> 官方网站
                   </a>
                 )}
                 <button onClick={onSelectCirclesTab}
-                  className="px-8 py-4 bg-[var(--paper-surface)] text-[var(--paper-text)] font-black text-sm border-2 border-[var(--paper-border)] text-center hover:bg-[var(--paper-bg-secondary)]/30 transition-all flex items-center justify-center active:translate-y-1 uppercase tracking-widest"
+                  className="flex items-center justify-center border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-[var(--space-xl)] py-[var(--space-md)] text-center text-sm font-black tracking-widest text-[var(--paper-text)] uppercase transition-all hover:bg-[var(--paper-hover)] active:translate-y-1 active:bg-[var(--paper-active)]"
                 >
                   <Users size={18} className="mr-2" /> 检索社团 ({circleCount})
                 </button>

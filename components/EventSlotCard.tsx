@@ -25,9 +25,9 @@ const EventSlotCard: React.FC<EventSlotCardProps> = ({ slot, onSelect }) => {
       layout
       className="mb-6 transition-all duration-200 group relative bg-[var(--paper-surface)] border-2 border-[var(--paper-border)] newspaper-shadow hover:newspaper-shadow-hover"
     >
-        <div className="px-4 py-2 flex justify-between items-center border-b-2 border-dashed border-[var(--paper-border)]/20 bg-[var(--paper-bg-secondary)]/50">
+        <div className="flex items-center justify-between border-b-2 border-dashed border-[var(--paper-border)]/20 bg-[var(--paper-bg-secondary)]/50 px-[var(--space-md)] py-[var(--space-sm)]">
           <h3 className="font-black text-[var(--paper-text)] text-lg flex items-center font-header tracking-tight">
-             <span className="text-xs px-1 mr-2 font-mono self-center pt-0.5 bg-[var(--paper-accent)] text-[var(--paper-surface)]">DATE</span>
+             <span className="mr-[var(--space-sm)] self-center bg-[var(--paper-accent)] px-[var(--space-xs)] pt-0.5 font-mono text-xs text-[var(--paper-surface)]">DATE</span>
              {dateStr}
           </h3>
           <div className="flex items-center font-mono overflow-hidden">
@@ -39,11 +39,11 @@ const EventSlotCard: React.FC<EventSlotCardProps> = ({ slot, onSelect }) => {
         </div>
 
         <div 
-           className="p-4 cursor-pointer group/main flex gap-5 bg-[var(--paper-surface)]" 
+           className="group/main flex cursor-pointer gap-[var(--space-lg)] bg-[var(--paper-surface)] p-[var(--space-md)]" 
            onClick={() => onSelect(mainEvent.slug || mainEvent.id)}
         >
            <div className={`shrink-0 ${isLandscape ? 'w-32 sm:w-48' : 'w-24 sm:w-32'} relative`}>
-               <div className={`${isLandscape ? 'aspect-video' : 'aspect-[3/4]'} bg-[var(--paper-bg-secondary)] overflow-hidden relative shadow-sm border border-[var(--paper-border)]/20`}>
+               <div className={`${isLandscape ? 'aspect-video' : 'aspect-[3/4]'} relative overflow-hidden border border-[var(--paper-border)]/20 bg-[var(--paper-bg-secondary)] shadow-[var(--paper-shadow-sm)]`}>
                   {mainEvent.poster?.urls.original ? (
                       <img src={mainEvent.poster.urls.original} alt={mainEvent.title} className="w-full h-full object-cover transition-all duration-500" />
                   ) : (
@@ -61,7 +61,7 @@ const EventSlotCard: React.FC<EventSlotCardProps> = ({ slot, onSelect }) => {
                  </h4>
                  <div className="flex flex-wrap gap-1">
                     {mainEvent.genres?.slice(0, 4).map((g, i) => (
-                      <span key={i} className="text-[10px] font-bold px-1.5 py-0.5 uppercase text-[var(--paper-text-muted)] bg-[var(--paper-bg-secondary)]/30 border border-[var(--paper-border)]/10">
+                      <span key={i} className="border border-[var(--paper-border)]/10 bg-[var(--paper-bg-secondary)]/30 px-1.5 py-0.5 text-[10px] font-bold text-[var(--paper-text-muted)] uppercase">
                         {g}
                       </span>
                     ))}
@@ -72,11 +72,11 @@ const EventSlotCard: React.FC<EventSlotCardProps> = ({ slot, onSelect }) => {
                 {mainEvent.summary}
               </div>
 
-              <div className="mt-auto pt-2 border-t border-[var(--paper-border)]/10 flex justify-between items-center">
+              <div className="mt-auto flex items-center justify-between border-t border-[var(--paper-border)]/10 pt-[var(--space-sm)]">
                  <div className="text-xs font-bold text-[var(--paper-text-muted)]/60 font-mono">
                     ORG: {mainEvent.organizer || 'Unknown'}
                  </div>
-                 <div className="text-xs font-bold px-2 py-0.5 bg-[var(--paper-border)] text-[var(--paper-surface)]">
+                 <div className="bg-[var(--paper-border)] px-[var(--space-sm)] py-0.5 text-xs font-bold text-[var(--paper-surface)]">
                     {mainEvent.boothCount && mainEvent.boothCount > 0 ? `${mainEvent.boothCount} SP` : 'EVENT'}
                  </div>
               </div>
@@ -84,7 +84,7 @@ const EventSlotCard: React.FC<EventSlotCardProps> = ({ slot, onSelect }) => {
         </div>
 
         {otherEvents.length > 0 && (
-          <div className="p-4 space-y-2 bg-[var(--paper-bg-secondary)]/30 border-t-2 border-[var(--paper-border)]/10">
+          <div className="space-y-[var(--space-sm)] border-t-2 border-[var(--paper-border)]/10 bg-[var(--paper-bg-secondary)]/30 p-[var(--space-md)]">
              <div className="text-[10px] font-black uppercase tracking-wider mb-2 flex items-center text-[var(--paper-text-muted)]/60">
                 Concurrent Events
              </div>

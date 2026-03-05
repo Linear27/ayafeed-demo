@@ -152,11 +152,11 @@ const LandingView: React.FC<{
         <h1 className="sr-only">AyaFeed 落地页 - 幻想乡活动情报总览</h1>
         {isLoading ? (
           <div className="px-4 pt-8" aria-live="polite">
-            <div className="h-130 border-4 border-[var(--paper-border)] shadow-[8px_8px_0px_0px_var(--paper-border)] bg-[var(--paper-surface)]/60 animate-pulse" />
+            <div className="h-130 border-4 border-[var(--paper-border)] shadow-[var(--paper-shadow-lg)] bg-[var(--paper-surface)]/60 animate-pulse" />
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pt-16 border-t-2 border-[var(--paper-border)]">
+            <div className="grid grid-cols-1 gap-[var(--space-xl)] border-t-2 border-[var(--paper-border)] pt-[var(--space-xl)] lg:grid-cols-12">
               <div className="lg:col-span-8 flex flex-col">
-                <div className="flex items-center gap-3 mb-8 border-b-2 border-[var(--paper-border)] pb-2">
+                <div className="mb-8 flex items-center gap-[var(--space-sm)] border-b-2 border-[var(--paper-border)] pb-2">
                   <div className="w-7 h-7 bg-[var(--paper-border)]/10 border border-[var(--paper-border)]/5 animate-pulse" />
                   <div className="h-9 w-44 bg-[var(--paper-border)]/10 border border-[var(--paper-border)]/5 animate-pulse" />
                 </div>
@@ -164,12 +164,12 @@ const LandingView: React.FC<{
               </div>
 
               <div className="lg:col-span-4 pl-0 lg:pl-10 flex flex-col lg:border-l border-[var(--paper-border)]/20 border-dashed">
-                <div className="mb-8 bg-[var(--paper-border)] text-[var(--paper-surface)] p-3 transform -rotate-1">
+                <div className="mb-8 bg-[var(--paper-border)] p-[var(--space-sm)] text-[var(--paper-surface)] transform -rotate-1">
                   <div className="h-6 w-28 bg-[var(--paper-surface)]/20 rounded animate-pulse" />
                 </div>
                 <div className="space-y-8">
                   {Array.from({ length: 3 }).map((_, idx) => (
-                    <div key={idx} className="aspect-video border-2 border-[var(--paper-border)] shadow-[4px_4px_0px_0px_var(--paper-border)] bg-[var(--paper-border)]/5 animate-pulse" />
+                    <div key={idx} className="aspect-video border-2 border-[var(--paper-border)] bg-[var(--paper-border)]/5 shadow-[var(--paper-shadow-md)] animate-pulse" />
                   ))}
                 </div>
               </div>
@@ -193,17 +193,17 @@ const LandingView: React.FC<{
                     {error}
                   </p>
 
-                  <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                  <div className="mt-6 flex flex-col gap-[var(--space-sm)] sm:flex-row">
                     <button
                       onClick={loadData}
-                      className="inline-flex items-center justify-center gap-2 px-6 py-3 font-black text-xs sm:text-sm uppercase tracking-[0.22em] bg-[var(--paper-border)] text-[var(--paper-surface)] border-2 border-[var(--paper-border)] shadow-[4px_4px_0px_0px_var(--paper-border)] hover:bg-[var(--paper-accent)] transition-colors"
+                      className="inline-flex items-center justify-center gap-[var(--space-sm)] border-2 border-[var(--paper-border)] bg-[var(--paper-border)] px-[var(--space-lg)] py-[var(--space-sm)] text-xs font-black uppercase tracking-[0.22em] text-[var(--paper-surface)] shadow-[var(--paper-shadow-md)] transition-colors hover:bg-[var(--paper-accent)] active:bg-[var(--paper-active)] sm:text-sm"
                     >
                       <RefreshCcw size={18} /> 重新拉取
                     </button>
 
                     <Link
                       to="/events"
-                      className="inline-flex items-center justify-center gap-2 px-6 py-3 font-black text-xs sm:text-sm uppercase tracking-[0.22em] bg-[var(--paper-surface)] border-2 border-[var(--paper-border)] shadow-[4px_4px_0px_0px_var(--paper-border)] hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)] transition-colors"
+                      className="inline-flex items-center justify-center gap-[var(--space-sm)] border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-[var(--space-lg)] py-[var(--space-sm)] text-xs font-black uppercase tracking-[0.22em] shadow-[var(--paper-shadow-md)] transition-colors hover:bg-[var(--paper-hover)] active:bg-[var(--paper-active)] sm:text-sm"
                     >
                       打开展会名录 <ArrowRight size={18} />
                     </Link>
@@ -222,7 +222,7 @@ const LandingView: React.FC<{
               />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 pt-14 border-t-2 border-[var(--paper-border)]">
+            <div className="grid grid-cols-1 gap-[var(--space-xl)] border-t-2 border-[var(--paper-border)] px-4 pt-[var(--space-xl)] lg:grid-cols-12">
               <div className="lg:col-span-8">
                 <MobileQuickJumpBar items={timelineItems} />
                 <ScrapbookTimeline items={timelineItems} />

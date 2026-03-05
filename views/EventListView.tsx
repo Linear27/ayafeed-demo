@@ -213,7 +213,7 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
       </div>
 
       <div className="mb-12 sticky top-[68px] z-30 py-2 transition-all bg-[var(--paper-bg)]/95">
-         <div className="flex gap-3">
+         <div className="flex gap-[var(--space-sm)]">
             <div className="relative flex-1 group">
                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-[var(--paper-text)]" size={18} />
                 <input 
@@ -221,7 +221,7 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
                   name="event-search"
                   type="text" 
                   placeholder={activeRegion === 'GLOBAL' ? "搜索全球展会..." : `在 ${labels.title} 中检索...`}
-                  className="w-full pl-12 pr-12 py-3.5 text-sm font-bold focus:outline-none transition-all bg-[var(--paper-surface)] border-2 border-[var(--paper-border)] focus:ring-4 focus:ring-[var(--paper-accent)]/10 shadow-[4px_4px_0px_0px_var(--paper-border)] text-[var(--paper-text)] placeholder-[var(--paper-text-muted)]/50"
+                  className="w-full border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-12 py-3.5 text-sm font-bold text-[var(--paper-text)] placeholder-[var(--paper-text-muted)]/50 shadow-[var(--paper-shadow-md)] transition-all focus:outline-none focus:ring-4 focus:ring-[var(--paper-accent)]/10"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -229,7 +229,7 @@ const EventListView: React.FC<EventListViewProps> = ({ onSelect, userLanguage, a
             <button 
               onClick={() => setFiltersOpen(!filtersOpen)} 
               aria-label="打开筛选"
-              className="px-5 flex items-center justify-center font-bold text-sm border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] text-[var(--paper-text)] hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)] transition-colors"
+              className="flex items-center justify-center border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-[var(--space-lg)] text-sm font-bold text-[var(--paper-text)] transition-colors hover:bg-[var(--paper-hover)] active:bg-[var(--paper-active)]"
             >
                <SlidersHorizontal size={18} />
             </button>

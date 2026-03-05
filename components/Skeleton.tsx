@@ -44,9 +44,9 @@ export const LiveCardSkeleton: React.FC<SkeletonProps> = ({ count = 4 }) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="flex flex-col md:flex-row h-auto md:h-48 bg-[var(--paper-surface)] border-2 border-[var(--paper-border)] newspaper-shadow-sm">
+        <div key={i} className="flex h-auto flex-col border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] newspaper-shadow-sm md:h-48 md:flex-row">
           <SkeletonPulse className="h-12 md:w-28 md:h-full shrink-0" />
-          <div className="flex-1 p-5 space-y-4">
+          <div className="flex-1 space-y-4 p-[var(--space-md)]">
             <SkeletonPulse className="w-20 h-4" />
             <SkeletonPulse className="w-full h-8" />
             <SkeletonPulse className="w-1/2 h-4" />
@@ -64,17 +64,17 @@ export const ScrapbookCardSkeleton: React.FC<SkeletonProps> = ({ count = 4 }) =>
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="relative border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] p-5 shadow-[3px_3px_0px_0px_var(--paper-border)]/20"
+          className="relative border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] p-[var(--space-md)] shadow-[var(--paper-shadow-md)]"
         >
-          <div className="flex flex-col gap-5 md:flex-row">
+          <div className="flex flex-col gap-[var(--space-lg)] md:flex-row">
             <SkeletonPulse className="h-44 w-full shrink-0 md:w-32" />
             <div className="flex-1 space-y-4">
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-[var(--space-sm)]">
                 <SkeletonPulse className="h-5 w-24" />
                 <SkeletonPulse className="h-5 w-32" />
               </div>
               <SkeletonPulse className="h-8 w-11/12" />
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-[var(--space-sm)] sm:grid-cols-2">
                 <SkeletonPulse className="h-4 w-full" />
                 <SkeletonPulse className="h-4 w-full" />
                 <SkeletonPulse className="h-4 w-full sm:col-span-2" />

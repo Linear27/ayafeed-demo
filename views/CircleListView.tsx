@@ -63,7 +63,7 @@ const CircleListView: React.FC<{ onSelect: (id: string) => void }> = ({ onSelect
                 value={filter} 
                 onChange={(e) => setFilter(e.target.value)} 
                 placeholder="搜索社团名称..." 
-                className="w-full pl-10 pr-4 py-3 text-sm font-bold border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] shadow-[4px_4px_0px_0px_var(--paper-border)] text-[var(--paper-text)] placeholder-[var(--paper-text-muted)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--paper-accent)]/20" 
+                className="w-full border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-10 py-3 text-sm font-bold text-[var(--paper-text)] placeholder-[var(--paper-text-muted)]/50 shadow-[var(--paper-shadow-md)] focus:outline-none focus:ring-2 focus:ring-[var(--paper-accent)]/20" 
               />
           </div>
        </div>
@@ -126,7 +126,7 @@ const CircleListView: React.FC<{ onSelect: (id: string) => void }> = ({ onSelect
                           <div className="w-20 h-20 bg-[var(--paper-bg-secondary)] border-4 border-[var(--paper-surface)] shadow-sm" />
                         )}
                         <h3 className="font-bold truncate mt-2 font-header text-[var(--paper-text)]">{circle.name}</h3>
-                        <div className="text-xs text-[var(--paper-text-muted)] mb-3"><PenTool size={12} className="inline mr-1"/> {circle.penName}</div>
+                        <div className="mb-[var(--space-sm)] text-xs text-[var(--paper-text-muted)]"><PenTool size={12} className="mr-1 inline"/> {circle.penName}</div>
                       </div>
                     </motion.div>
                   );

@@ -156,17 +156,17 @@ const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-10 bg-black/90"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-[var(--paper-border)]/90 p-4 sm:p-10"
             onClick={() => setShowFloorMapModal(false)}
           >
-            <button className="absolute top-6 right-6 text-white hover:text-red-500 transition-colors z-[110]">
+            <button className="absolute right-6 top-6 z-[110] text-[var(--paper-surface)] transition-colors hover:text-[var(--paper-accent)]">
               <X size={40} />
             </button>
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative max-w-5xl w-full max-h-full overflow-auto bg-white border-4 border-black p-2"
+              className="relative max-h-full w-full max-w-5xl overflow-auto border-4 border-[var(--paper-border)] bg-[var(--paper-surface)] p-[var(--space-sm)]"
               onClick={e => e.stopPropagation()}
             >
               <img 
@@ -174,7 +174,7 @@ const EventDetailView: React.FC<{ id: string, onBack: () => void, onSelectCircle
                 className="w-full h-auto" 
                 alt={`Floor Map ${activeFloorMapIndex + 1}`} 
               />
-              <div className="absolute bottom-4 left-4 bg-black text-white px-4 py-2 font-black uppercase tracking-widest text-sm">
+              <div className="absolute bottom-4 left-4 bg-[var(--paper-border)] px-[var(--space-md)] py-[var(--space-sm)] text-sm font-black tracking-widest text-[var(--paper-surface)] uppercase">
                 平面图 {activeFloorMapIndex + 1}
               </div>
             </motion.div>

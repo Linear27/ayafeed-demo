@@ -35,21 +35,21 @@ const EventFilters: React.FC<EventFiltersProps> = ({
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          className="overflow-hidden mt-4 bg-[#F3F1E6] border-2 border-black p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+          className="mt-[var(--space-md)] overflow-hidden border-2 border-[var(--paper-border)] bg-[var(--paper-bg-secondary)] p-[var(--space-lg)] shadow-[var(--paper-shadow-md)]"
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 gap-[var(--space-xl)] md:grid-cols-3">
             {/* Time Filter */}
             <div>
-              <h4 className="text-[10px] font-black uppercase tracking-widest mb-4 flex items-center text-black">
-                <Calendar size={12} className="mr-2" /> 时段筛选
+              <h4 className="mb-[var(--space-md)] flex items-center text-[10px] font-black tracking-widest text-[var(--paper-text)] uppercase">
+                <Calendar size={12} className="mr-[var(--space-sm)]" /> 时段筛选
               </h4>
-              <div className="flex gap-2">
+              <div className="flex gap-[var(--space-sm)]">
                 <button 
                   onClick={() => setTimeFilter('UPCOMING')}
                   className={`px-4 py-2 text-xs font-bold transition-all border ${
                     timeFilter === 'UPCOMING' 
-                    ? 'bg-red-600 text-white border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-                    : 'bg-white border-slate-300'
+                    ? 'border-[var(--paper-border)] bg-[var(--paper-accent)] text-[var(--paper-surface)] shadow-[var(--paper-shadow-sm)]'
+                    : 'border-[var(--paper-border)] bg-[var(--paper-surface)] text-[var(--paper-muted)] hover:bg-[var(--paper-hover)]'
                   }`}
                 >
                   即将到来
@@ -58,8 +58,8 @@ const EventFilters: React.FC<EventFiltersProps> = ({
                   onClick={() => setTimeFilter('PAST')}
                   className={`px-4 py-2 text-xs font-bold transition-all border ${
                     timeFilter === 'PAST' 
-                    ? 'bg-slate-900 text-white border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-                    : 'bg-white border-slate-300'
+                    ? 'border-[var(--paper-border)] bg-[var(--paper-border)] text-[var(--paper-surface)] shadow-[var(--paper-shadow-sm)]'
+                    : 'border-[var(--paper-border)] bg-[var(--paper-surface)] text-[var(--paper-muted)] hover:bg-[var(--paper-hover)]'
                   }`}
                 >
                   <History size={12} className="inline mr-1" /> 过往存根
@@ -69,18 +69,18 @@ const EventFilters: React.FC<EventFiltersProps> = ({
 
             {/* Region Filter */}
             <div>
-              <h4 className="text-[10px] font-black uppercase tracking-widest mb-4 flex items-center text-black">
-                <MapPin size={12} className="mr-2" /> 举办地区
+              <h4 className="mb-[var(--space-md)] flex items-center text-[10px] font-black tracking-widest text-[var(--paper-text)] uppercase">
+                <MapPin size={12} className="mr-[var(--space-sm)]" /> 举办地区
               </h4>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-[var(--space-sm)]">
                 {availableRegionGroups.map(region => (
                   <button 
                     key={region}
                     onClick={() => toggleSelection(region, selectedRegions, setSelectedRegions)}
                     className={`px-3 py-1.5 text-[10px] font-bold transition-all border ${
                       selectedRegions.includes(region)
-                      ? 'bg-black text-white border-black'
-                      : 'bg-white border-slate-300 text-slate-600'
+                      ? 'border-[var(--paper-border)] bg-[var(--paper-border)] text-[var(--paper-surface)]'
+                      : 'border-[var(--paper-border)] bg-[var(--paper-surface)] text-[var(--paper-muted)] hover:bg-[var(--paper-hover)]'
                     }`}
                   >
                     {region}
@@ -91,8 +91,8 @@ const EventFilters: React.FC<EventFiltersProps> = ({
 
             {/* Genre Filter */}
             <div>
-              <h4 className="text-[10px] font-black uppercase tracking-widest mb-4 flex items-center text-black">
-                <Tag size={12} className="mr-2" /> 题材与类别
+              <h4 className="mb-[var(--space-md)] flex items-center text-[10px] font-black tracking-widest text-[var(--paper-text)] uppercase">
+                <Tag size={12} className="mr-[var(--space-sm)]" /> 题材与类别
               </h4>
               <div className="space-y-4">
                 <div className="flex flex-wrap gap-1.5">
@@ -102,8 +102,8 @@ const EventFilters: React.FC<EventFiltersProps> = ({
                       onClick={() => toggleSelection(genre, selectedGenres, setSelectedGenres)}
                       className={`px-2 py-1 text-[9px] font-bold border ${
                         selectedGenres.includes(genre)
-                        ? 'bg-red-600 text-white border-black'
-                        : 'bg-white border-slate-300'
+                        ? 'border-[var(--paper-border)] bg-[var(--paper-accent)] text-[var(--paper-surface)]'
+                        : 'border-[var(--paper-border)] bg-[var(--paper-surface)] text-[var(--paper-muted)] hover:bg-[var(--paper-hover)]'
                       }`}
                     >
                       {genre}
@@ -117,8 +117,8 @@ const EventFilters: React.FC<EventFiltersProps> = ({
                       onClick={() => toggleSelection(genre, selectedGenres, setSelectedGenres)}
                       className={`px-2 py-1 text-[9px] font-bold border ${
                         selectedGenres.includes(genre)
-                        ? 'bg-black text-white border-black'
-                        : 'bg-white border-slate-300'
+                        ? 'border-[var(--paper-border)] bg-[var(--paper-border)] text-[var(--paper-surface)]'
+                        : 'border-[var(--paper-border)] bg-[var(--paper-surface)] text-[var(--paper-muted)] hover:bg-[var(--paper-hover)]'
                       }`}
                     >
                       {genre}
@@ -129,13 +129,13 @@ const EventFilters: React.FC<EventFiltersProps> = ({
             </div>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-slate-200 flex justify-between items-center">
-             <p className="text-[10px] font-bold italic text-slate-500 font-serif">
+          <div className="mt-[var(--space-xl)] flex items-center justify-between border-t border-[var(--paper-border)]/20 pt-[var(--space-lg)]">
+             <p className="text-[10px] font-bold font-serif italic text-[var(--paper-muted)]">
                * 筛选结果将由文文新闻办公室实时核准。
              </p>
              <button 
               onClick={onClearAll}
-              className="text-[10px] font-black uppercase tracking-widest border-b-2 pb-0.5 transition-colors text-black border-black hover:text-red-600 hover:border-red-600"
+              className="border-b-2 border-[var(--paper-border)] pb-0.5 text-[10px] font-black tracking-widest text-[var(--paper-text)] uppercase transition-colors hover:border-[var(--paper-accent)] hover:text-[var(--paper-accent)]"
              >
                 重置所有条件
              </button>

@@ -35,10 +35,34 @@ const EventCirclesSection: React.FC<EventCirclesSectionProps> = ({
 
   const getFocusBadge = (focus: string) => {
     switch (focus) {
-      case 'NEW': return { label: '新作/新刊', icon: Sparkles, color: 'bg-red-600', textColor: 'text-white' };
-      case 'SET': return { label: '活动套装', icon: Package, color: 'bg-indigo-600', textColor: 'text-white' };
-      case 'GOODS': return { label: '周边主打', icon: ShoppingBag, color: 'bg-amber-500', textColor: 'text-white' };
-      default: return { label: '既刊/展示', icon: BookOpen, color: 'bg-slate-600', textColor: 'text-white' };
+      case 'NEW':
+        return {
+          label: '新作/新刊',
+          icon: Sparkles,
+          color: 'bg-[var(--paper-accent)]',
+          textColor: 'text-[var(--paper-surface)]',
+        };
+      case 'SET':
+        return {
+          label: '活动套装',
+          icon: Package,
+          color: 'bg-[var(--paper-border)]',
+          textColor: 'text-[var(--paper-surface)]',
+        };
+      case 'GOODS':
+        return {
+          label: '周边主打',
+          icon: ShoppingBag,
+          color: 'bg-[var(--paper-live-bg)]',
+          textColor: 'text-[var(--paper-live-text)]',
+        };
+      default:
+        return {
+          label: '既刊/展示',
+          icon: BookOpen,
+          color: 'bg-[var(--paper-muted)]',
+          textColor: 'text-[var(--paper-surface)]',
+        };
     }
   };
 
@@ -168,7 +192,10 @@ const EventCirclesSection: React.FC<EventCirclesSectionProps> = ({
       
       {hasMore && (
         <div className="mt-8 text-center pb-8">
-          <button onClick={onLoadMore} className="px-8 py-3 bg-[var(--paper-surface)] border-2 border-[var(--paper-border)] font-black text-[var(--paper-text)] text-xs uppercase tracking-widest hover:bg-[var(--paper-border)] hover:text-[var(--paper-surface)] transition-all shadow-[4px_4px_0px_0px_var(--paper-border)] active:shadow-none active:translate-y-1">
+          <button
+            onClick={onLoadMore}
+            className="border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-[var(--space-xl)] py-[var(--space-sm)] text-xs font-black tracking-widest text-[var(--paper-text)] uppercase shadow-[var(--paper-shadow-md)] transition-all hover:bg-[var(--paper-hover)] active:translate-y-1 active:bg-[var(--paper-active)] active:shadow-none"
+          >
             加载更多
           </button>
         </div>

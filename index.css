@@ -7,14 +7,31 @@
 
 :root {
   color-scheme: light;
-  /* Default Paper Theme (Archive Paper) */
+  /* Color Tokens */
   --paper-bg: #F4F1EA;
-  --paper-bg-secondary: #EBE7DE;
+  --paper-hover: #EEE9DF;
+  --paper-active: #E5DECF;
   --paper-surface: #F9F7F2;
+  --paper-bg-secondary: #EBE7DE;
   --paper-border: #1A1A1A;
   --paper-text: #1A1A1A;
-  --paper-text-muted: #57534E;
+  --paper-muted: #57534E;
+  --paper-text-muted: var(--paper-muted);
   --paper-accent: #DC2626;
+  --paper-live-bg: #FACC15;
+  --paper-live-text: var(--paper-text);
+
+  /* Spacing Tokens (4px baseline) */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Elevation Tokens */
+  --paper-shadow-sm: 2px 2px 0 0 var(--paper-border);
+  --paper-shadow-md: 4px 4px 0 0 var(--paper-border);
+  --paper-shadow-lg: 8px 8px 0 0 var(--paper-border);
 
   --aya-color-bg: var(--paper-bg);
   --aya-color-surface: var(--paper-surface);
@@ -25,8 +42,8 @@
   --aya-header-height-compact: 46px;
   --aya-motion-fast: 180ms;
   --aya-motion-medium: 200ms;
-  --aya-shadow-1: 0 0 5px 1px rgba(0, 0, 0, 0.28);
-  --aya-shadow-2: 3px 3px 0 rgba(0, 0, 0, 0.18);
+  --aya-shadow-1: var(--paper-shadow-sm);
+  --aya-shadow-2: var(--paper-shadow-md);
 
   /* Texture */
   --paper-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
@@ -110,11 +127,27 @@ button {
 
 /* Newspaper UI Utilities */
 .newspaper-shadow {
-  box-shadow: 6px 6px 0px 0px var(--paper-border);
+  box-shadow: var(--paper-shadow-lg);
 }
 
 .newspaper-shadow-sm {
-  box-shadow: 3px 3px 0px 0px var(--paper-border);
+  box-shadow: var(--paper-shadow-sm);
+}
+
+.newspaper-shadow-hover {
+  box-shadow: var(--paper-shadow-lg);
+}
+
+.paper-shadow-sm {
+  box-shadow: var(--paper-shadow-sm);
+}
+
+.paper-shadow-md {
+  box-shadow: var(--paper-shadow-md);
+}
+
+.paper-shadow-lg {
+  box-shadow: var(--paper-shadow-lg);
 }
 
 .stamp {
