@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Menu, X, Globe, ChevronDown, Check } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Check, ChevronDown, Globe, Menu, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useLocation } from '@tanstack/react-router';
-import { ViewState, Theme, Language, PreferredRegion } from '../types';
-import BrandLogo from './BrandLogo';
+import { Language, PreferredRegion, Theme, ViewState } from '../types';
+import { getHeaderMotionState, type HeaderMotionState } from '../services/headerMotion';
+import BrandLockup from './BrandLockup';
 
 interface NavbarProps {
   currentView: ViewState;
@@ -14,38 +15,32 @@ interface NavbarProps {
   onSetRegion: (region: PreferredRegion) => void;
 }
 
-type NewspaperHeaderState = 'top' | 'scrolled';
-
 const REGION_OPTIONS: Array<{ code: PreferredRegion; label: string }> = [
-  { code: 'GLOBAL', label: '全球版' },
+  { code: 'GLOBAL', label: '全站版' },
   { code: 'JAPAN', label: '日本国内版' },
   { code: 'CN_MAINLAND', label: '中国大陆版' },
-  { code: 'OVERSEAS', label: '海外分社版' },
+  { code: 'OVERSEAS', label: '海外版' },
 ];
 
-const FOCUS_RING =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-(--paper-bg)';
+const LANGUAGE_OPTIONS: Array<{ code: Language; label: string }> = [
+  { code: 'zh', label: '中文' },
+  { code: 'ja', label: '日本語' },
+  { code: 'en', label: 'English' },
+];
 
-const LanguageBadgeIcon = ({ size = 14 }: { size?: number }) => (
-  <svg
-    aria-hidden="true"
-    width={size}
-    height={size}
-    viewBox="0 0 16 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="shrink-0"
-  >
-    <rect x="1" y="2" width="14" height="12" rx="2" stroke="currentColor" strokeWidth="1.2" />
-    <path d="M8 2.6V13.4" stroke="currentColor" strokeWidth="1" />
-    <text x="4.5" y="10.6" textAnchor="middle" fontSize="6" fontWeight="700" fill="currentColor">
-      A
-    </text>
-    <text x="11.5" y="10.6" textAnchor="middle" fontSize="5.5" fontWeight="700" fill="currentColor">
-      文
-    </text>
-  </svg>
-);
+const NAV_ITEMS = [
+  { kind: 'route', label: '展会', to: '/events', match: '/events' },
+  { kind: 'route', label: '演出', to: '/lives', match: '/lives' },
+  { kind: 'route', label: '社团', to: '/circles', match: '/circles' },
+] as const;
+
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FDFBF7]';
+
+const HEADER_COMPRESS_START = 48;
+const HEADER_DOCK_START = 168;
+const MASTHEAD_FALLBACK_BOTTOM = 320;
+const HEADER_PROGRESS_EPSILON = 0.008;
 
 const Navbar: React.FC<NavbarProps> = ({
   currentView,
@@ -56,609 +51,490 @@ const Navbar: React.FC<NavbarProps> = ({
   onSetRegion,
 }) => {
   const location = useLocation();
+  const pathname = location.pathname;
+  const isNewspaper = theme === 'newspaper';
+  const isLanding = currentView === 'LANDING' || pathname === '/';
+
+  const [headerMotion, setHeaderMotion] = useState<HeaderMotionState>(() =>
+    isLanding ? { phase: 'masthead', progress: 0 } : { phase: 'docked', progress: 1 },
+  );
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isRegionMenuOpen, setIsRegionMenuOpen] = useState(false);
-  const [headerState, setHeaderState] = useState<NewspaperHeaderState>('top');
 
   const mastheadRef = useRef<HTMLElement | null>(null);
-  const langMenuRef = useRef<HTMLDivElement | null>(null);
-  const regionMenuRef = useRef<HTMLDivElement | null>(null);
-  const headerStateRef = useRef<NewspaperHeaderState>('top');
-  const isDockPhaseRef = useRef(false);
   const rafIdRef = useRef<number | null>(null);
 
-  const isNewspaper = theme === 'newspaper';
+  const isDockVisible = !isLanding || headerMotion.phase !== 'masthead';
 
   useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setIsLanguageMenuOpen(false);
+    setIsRegionMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const resetState = isLanding
+      ? { phase: 'masthead', progress: 0 }
+      : { phase: 'docked', progress: 1 };
+
     if (!isNewspaper) {
-      headerStateRef.current = 'top';
-      isDockPhaseRef.current = false;
-      setHeaderState('top');
+      setHeaderMotion(resetState);
       return;
     }
 
-    const SHOW_DOCK_WHEN_MASTHEAD_BOTTOM_LE = -24;
-    const HIDE_DOCK_WHEN_MASTHEAD_BOTTOM_GE = 72;
-    const TOP_SNAP_SCROLL_Y = 20;
+    if (!isLanding) {
+      setHeaderMotion({ phase: 'docked', progress: 1 });
+      return;
+    }
 
-    const setNextState = (nextState: NewspaperHeaderState) => {
-      if (nextState === headerStateRef.current) return;
-      headerStateRef.current = nextState;
-      setHeaderState(nextState);
-    };
+    const updateHeaderMotion = () => {
+      const nextState = getHeaderMotionState({
+        isLanding,
+        scrollY: window.scrollY,
+        mastheadBottom: mastheadRef.current?.getBoundingClientRect().bottom ?? MASTHEAD_FALLBACK_BOTTOM,
+        compressStart: HEADER_COMPRESS_START,
+        dockStart: HEADER_DOCK_START,
+      });
 
-    const updateHeaderState = () => {
-      const masthead = mastheadRef.current;
-      if (!masthead) return;
+      setHeaderMotion((currentState) => {
+        if (
+          currentState.phase === nextState.phase &&
+          Math.abs(currentState.progress - nextState.progress) < HEADER_PROGRESS_EPSILON
+        ) {
+          return currentState;
+        }
 
-      const scrollY = window.scrollY;
-      const mastheadBottom = masthead.getBoundingClientRect().bottom;
-      let nextDockPhase = isDockPhaseRef.current;
-
-      if (!nextDockPhase && mastheadBottom <= SHOW_DOCK_WHEN_MASTHEAD_BOTTOM_LE) {
-        nextDockPhase = true;
-      } else if (nextDockPhase && mastheadBottom >= HIDE_DOCK_WHEN_MASTHEAD_BOTTOM_GE) {
-        nextDockPhase = false;
-      }
-
-      isDockPhaseRef.current = nextDockPhase;
-
-      if (!nextDockPhase || scrollY <= TOP_SNAP_SCROLL_Y) {
-        setNextState('top');
-        return;
-      }
-      setNextState('scrolled');
-    };
-
-    const requestUpdate = () => {
-      if (rafIdRef.current !== null) return;
-      rafIdRef.current = window.requestAnimationFrame(() => {
-        rafIdRef.current = null;
-        updateHeaderState();
+        return nextState;
       });
     };
 
-    updateHeaderState();
+    const requestUpdate = () => {
+      if (rafIdRef.current !== null) {
+        return;
+      }
+
+      rafIdRef.current = window.requestAnimationFrame(() => {
+        rafIdRef.current = null;
+        updateHeaderMotion();
+      });
+    };
+
+    updateHeaderMotion();
     window.addEventListener('scroll', requestUpdate, { passive: true });
     window.addEventListener('resize', requestUpdate);
 
     return () => {
       window.removeEventListener('scroll', requestUpdate);
       window.removeEventListener('resize', requestUpdate);
+
       if (rafIdRef.current !== null) {
         window.cancelAnimationFrame(rafIdRef.current);
         rafIdRef.current = null;
       }
     };
-  }, [isNewspaper]);
+  }, [isLanding, isNewspaper]);
 
   useEffect(() => {
-    if (headerState === 'top' && isMobileMenuOpen) {
-      setIsMobileMenuOpen(false);
-    }
-  }, [headerState, isMobileMenuOpen]);
-
-  useEffect(() => {
-    if (!isLangMenuOpen && !isRegionMenuOpen) return;
-
-    const handleDocumentMouseDown = (event: MouseEvent) => {
-      const target = event.target as Node;
-
-      if (langMenuRef.current && !langMenuRef.current.contains(target)) {
-        setIsLangMenuOpen(false);
-      }
-
-      if (regionMenuRef.current && !regionMenuRef.current.contains(target)) {
-        setIsRegionMenuOpen(false);
-      }
-    };
-
-    const handleDocumentKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsLangMenuOpen(false);
-        setIsRegionMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleDocumentMouseDown);
-    document.addEventListener('keydown', handleDocumentKeyDown);
-
-    return () => {
-      document.removeEventListener('mousedown', handleDocumentMouseDown);
-      document.removeEventListener('keydown', handleDocumentKeyDown);
-    };
-  }, [isLangMenuOpen, isRegionMenuOpen]);
-
-  const getBrandName = () => {
-    if (language === 'zh') return '文文。速报';
-    if (language === 'ja') return '文々。速報';
-    return 'AyaFeed';
-  };
-
-  const getRegionLabel = () => {
-    if (region === 'GLOBAL') return '全球版';
-    if (region === 'JAPAN') return '日本国内版';
-    if (region === 'CN_MAINLAND') return '中国大陆版';
-    if (region === 'OVERSEAS') return '海外分社版';
-    return '幻想乡全域版';
-  };
-
-  const mobileRegionButtonClass =
-    'min-h-11 shrink-0 border border-(--paper-border) px-3 py-2 text-xs font-black uppercase tracking-[0.1em] transition-colors duration-200';
-
-  const navBg = isNewspaper ? 'bg-(--paper-bg) border-(--paper-border)' : 'bg-white/90 backdrop-blur-md border-slate-200';
-  const activeText = isNewspaper ? 'text-(--paper-accent)' : 'text-indigo-600';
-  const inactiveText = isNewspaper ? 'text-(--paper-text) hover:text-(--paper-accent)' : 'text-slate-600 hover:text-indigo-600';
-  const underlineColor = isNewspaper ? 'bg-(--paper-accent)' : 'bg-indigo-600';
-  const isDockVisible = headerState === 'scrolled';
-  const isLandingRoute = location.pathname === '/';
-
-  const handleBrandClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     setIsMobileMenuOpen(false);
-    setIsLangMenuOpen(false);
+    setIsLanguageMenuOpen(false);
     setIsRegionMenuOpen(false);
+  }, [isDockVisible]);
 
-    if (!isLandingRoute) return;
+  const currentRegionLabel = useMemo(
+    () => REGION_OPTIONS.find((item) => item.code === region)?.label ?? '全站版',
+    [region],
+  );
 
-    event.preventDefault();
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
+  const currentLanguageLabel = useMemo(
+    () => LANGUAGE_OPTIONS.find((item) => item.code === language)?.label ?? '中文',
+    [language],
+  );
+
+  const controlClassName =
+    'inline-flex min-h-11 items-center gap-2 border border-[var(--paper-border)]/15 bg-[var(--paper-surface)] px-3 text-sm font-bold text-[var(--paper-text)] transition-[background-color,border-color,color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[var(--paper-hover)]';
+
+  const dropdownMotionTransition = {
+    duration: 0.24,
+    ease: [0.16, 1, 0.3, 1] as const,
   };
 
-  const NavItem = ({ to, label, className = '' }: { to: string; label: string; className?: string }) => (
+  const dropdownPanelClassName =
+    'absolute right-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-[2px] border border-[var(--paper-border)]/12 bg-[linear-gradient(180deg,var(--paper-surface)_0%,var(--paper-bg)_100%)] shadow-[0_16px_32px_-24px_rgba(26,26,26,0.38)]';
+
+  const renderNavLinks = (compact = false) =>
+    NAV_ITEMS.map((item) => {
+      const isActive = pathname === item.to || pathname.startsWith(`${item.match}/`);
+      const linkClassName = `inline-flex min-h-11 items-center ${compact ? 'px-2.5 text-sm' : 'px-3 text-[15px]'} font-bold tracking-[0.01em] transition-colors ${
+        isActive
+          ? 'text-[var(--paper-accent)]'
+          : 'text-[var(--paper-text)] hover:text-[var(--paper-accent)]'
+      } ${FOCUS_RING}`;
+
+      return (
+        <Link key={item.label} to={item.to} className={linkClassName}>
+          {item.label}
+        </Link>
+      );
+    });
+
+  const renderRegionOptions = () =>
+    REGION_OPTIONS.map((item) => (
+      <button
+        key={item.code}
+        type="button"
+        onClick={() => {
+          onSetRegion(item.code);
+          setIsRegionMenuOpen(false);
+        }}
+        className={`flex min-h-11 w-full items-center justify-between px-3.5 text-left text-sm font-bold tracking-[0.01em] text-[var(--paper-text)] transition-[background-color,color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[var(--paper-surface)] hover:translate-x-[1px] ${FOCUS_RING}`}
+      >
+        <span>{item.label}</span>
+        {item.code === region ? <Check size={16} aria-hidden="true" /> : null}
+      </button>
+    ));
+
+  const renderLanguageOptions = () =>
+    LANGUAGE_OPTIONS.map((item) => (
+      <button
+        key={item.code}
+        type="button"
+        onClick={() => {
+          onSetLanguage(item.code);
+          setIsLanguageMenuOpen(false);
+        }}
+        className={`flex min-h-11 w-full items-center justify-between px-3.5 text-left text-sm font-bold tracking-[0.01em] text-[var(--paper-text)] transition-[background-color,color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[var(--paper-surface)] hover:translate-x-[1px] ${FOCUS_RING}`}
+      >
+        <span>{item.label}</span>
+        {item.code === language ? <Check size={16} aria-hidden="true" /> : null}
+      </button>
+    ));
+
+  const renderDesktopFeedbackCta = ({ compact = false, fullWidth = false } = {}) => (
     <Link
-      to={to}
-      onClick={() => setIsMobileMenuOpen(false)}
-      className={`relative px-4 py-2 text-sm font-bold tracking-wide transition-colors duration-200 group ${className} ${FOCUS_RING}`}
-      activeProps={{ className: activeText }}
-      inactiveProps={{ className: inactiveText }}
+      to="/feedback"
+      className={`inline-flex ${compact ? 'min-h-10 px-3 text-xs' : 'min-h-11 px-4 text-sm'} ${fullWidth ? 'w-full' : ''} items-center justify-center border-2 border-[var(--paper-border)] bg-[var(--paper-border)] font-black text-[var(--paper-surface)] transition-colors hover:bg-[var(--paper-accent)] ${FOCUS_RING}`}
     >
-      {({ isActive }) => (
-        <>
-          {label}
-          {!className.includes('w-full') && (
-            <span
-              aria-hidden="true"
-              className={`absolute bottom-1 left-4 right-4 h-0.5 origin-left transform ${underlineColor} transition-transform duration-200 ${
-                isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
-              }`}
-            ></span>
-          )}
-        </>
-      )}
+      提交活动情报
     </Link>
   );
 
-  const BrandLink = ({
+  const renderDesktopRegionControl = ({
     compact = false,
-    showText = true,
-    textClassName = '',
-    className = '',
+    showSwitchLabel = false,
+    menuVisible,
   }: {
     compact?: boolean;
-    showText?: boolean;
-    textClassName?: string;
-    className?: string;
+    showSwitchLabel?: boolean;
+    menuVisible: boolean;
   }) => (
-    <Link
-      to="/"
-      onClick={handleBrandClick}
-      className={`flex items-center gap-2 select-none ${className} ${FOCUS_RING}`}
-      aria-label="返回首页"
-    >
-      <BrandLogo size={compact ? 'xs' : 'lg'} className={compact ? '' : 'hidden md:block'} />
-      {showText ? (
-        <span
-          className={`font-brand ${compact ? 'text-sm md:text-base' : 'text-3xl md:text-6xl'} font-black uppercase leading-none tracking-tight ${textClassName}`}
-        >
-          {getBrandName()}
-        </span>
-      ) : null}
-    </Link>
+    <div className="relative">
+      <button
+        type="button"
+        aria-label="地区切换"
+        aria-expanded={menuVisible}
+        aria-haspopup="menu"
+        onClick={() => {
+          setIsRegionMenuOpen((open) => !open);
+          setIsLanguageMenuOpen(false);
+        }}
+        className={`${controlClassName} ${compact ? 'min-h-10 px-3 text-xs tracking-[0.05em]' : 'tracking-[0.03em]'} ${menuVisible ? 'border-[var(--paper-border)]/25 bg-[var(--paper-bg)]' : ''} ${FOCUS_RING}`}
+      >
+        {showSwitchLabel ? <span className="text-[10px] uppercase tracking-[0.14em] text-[var(--paper-text-muted)]">地区切换</span> : null}
+        <span>{currentRegionLabel}</span>
+        <ChevronDown
+          size={compact ? 14 : 15}
+          aria-hidden="true"
+          className={`transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${menuVisible ? 'rotate-180' : ''}`}
+        />
+      </button>
+      <AnimatePresence>
+        {menuVisible ? (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.985 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.992 }}
+            transition={dropdownMotionTransition}
+            className={`${dropdownPanelClassName} min-w-56 p-1.5`}
+          >
+            {renderRegionOptions()}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
   );
 
-  if (isNewspaper) {
-    return (
-      <>
+  const renderDesktopLanguageControl = ({
+    compact = false,
+    menuVisible,
+  }: {
+    compact?: boolean;
+    menuVisible: boolean;
+  }) => (
+    <div className="relative">
+      <button
+        type="button"
+        aria-label="语言切换"
+        aria-expanded={menuVisible}
+        aria-haspopup="menu"
+        onClick={() => {
+          setIsLanguageMenuOpen((open) => !open);
+          setIsRegionMenuOpen(false);
+        }}
+        className={`${controlClassName} ${compact ? 'min-h-10 px-3 text-xs tracking-[0.05em]' : 'tracking-[0.03em]'} ${menuVisible ? 'border-[var(--paper-border)]/25 bg-[var(--paper-bg)]' : ''} ${FOCUS_RING}`}
+      >
+        <Globe size={compact ? 14 : 15} aria-hidden="true" />
+        <span>{currentLanguageLabel}</span>
+        <ChevronDown
+          size={compact ? 14 : 15}
+          aria-hidden="true"
+          className={`transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${menuVisible ? 'rotate-180' : ''}`}
+        />
+      </button>
+      <AnimatePresence>
+        {menuVisible ? (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.985 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.992 }}
+            transition={dropdownMotionTransition}
+            className={`${dropdownPanelClassName} min-w-44 p-1.5`}
+          >
+            {renderLanguageOptions()}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
+  );
+
+  const mastheadPaddingTop = 24 - headerMotion.progress * 10;
+  const mastheadPaddingBottom = 24 - headerMotion.progress * 8;
+  const mastheadBrandStyle = {
+    transform: `translate3d(${(-220 * headerMotion.progress).toFixed(1)}px, ${(-18 * headerMotion.progress).toFixed(1)}px, 0) scale(${(1 - headerMotion.progress * 0.18).toFixed(3)})`,
+    transformOrigin: 'center center' as const,
+  };
+  const mastheadMetaStyle = {
+    opacity: Math.max(0, 1 - headerMotion.progress * 1.12),
+    transform: `translate3d(${(-18 * headerMotion.progress).toFixed(1)}px, ${(-12 * headerMotion.progress).toFixed(1)}px, 0) scale(${(1 - headerMotion.progress * 0.04).toFixed(3)})`,
+    transformOrigin: 'left center' as const,
+  };
+  const mastheadControlsStyle = {
+    opacity: Math.max(0.88, 1 - headerMotion.progress * 0.08),
+    transform: `translate3d(${(18 * headerMotion.progress).toFixed(1)}px, ${(-10 * headerMotion.progress).toFixed(1)}px, 0) scale(${(1 - headerMotion.progress * 0.05).toFixed(3)})`,
+    transformOrigin: 'right center' as const,
+  };
+  const mastheadNavStyle = {
+    opacity: Math.max(0.9, 1 - headerMotion.progress * 0.06),
+    transform: `translate3d(0, ${(-18 * headerMotion.progress).toFixed(1)}px, 0) scale(${(1 - headerMotion.progress * 0.03).toFixed(3)})`,
+    transformOrigin: 'center top' as const,
+  };
+  const dockShellStyle = isLanding
+    ? {
+        opacity: headerMotion.progress,
+        transform: `translate3d(0, ${((1 - headerMotion.progress) * -10).toFixed(1)}px, 0) scale(${(0.985 + headerMotion.progress * 0.015).toFixed(3)})`,
+        transformOrigin: 'center top' as const,
+      }
+    : undefined;
+
+  return (
+    <>
+      {isLanding ? (
         <header
           ref={mastheadRef}
           data-aya-masthead="true"
-          data-aya-state={headerState}
-          data-current-view={currentView}
-          className={`w-full border-b border-(--paper-border) ${navBg}`}
+          data-aya-state={headerMotion.phase}
+          className="w-full border-b border-[var(--paper-border)]/12 bg-[var(--paper-surface)]"
         >
-          <div className="mx-auto flex max-w-350 items-center justify-between px-6 py-4 md:py-6 text-(--paper-text)">
-            <div className="hidden md:block md:flex-1" />
+          <div className="hidden lg:block">
+            <div
+              className="mx-auto max-w-7xl px-6"
+              style={{
+                paddingTop: `${mastheadPaddingTop}px`,
+                paddingBottom: `${mastheadPaddingBottom}px`,
+              }}
+            >
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-6">
+                <div
+                  className="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.18em] text-[var(--paper-text-muted)]"
+                  style={mastheadMetaStyle}
+                >
+                  <span>第 13042 期</span>
+                  <span className="opacity-35">/</span>
+                  <span>Gensokyo Intelligence Network</span>
+                </div>
 
-            <div className="flex flex-col items-center gap-2">
-              <BrandLink className="min-h-11" />
-              <div className="text-[10px] font-black uppercase tracking-[0.24em] opacity-45 md:mt-1">Gensokyo Intelligence Network / Est. 1000</div>
-            </div>
+                <Link to="/" className={`mx-auto inline-flex items-center ${FOCUS_RING}`}>
+                  <div style={mastheadBrandStyle}>
+                    <BrandLockup />
+                  </div>
+                </Link>
 
-            <div className="hidden md:block md:flex-1" />
-          </div>
+                <div className="flex items-center justify-end gap-3" style={mastheadControlsStyle}>
+                  {renderDesktopRegionControl({
+                    showSwitchLabel: true,
+                    menuVisible: !isDockVisible && isRegionMenuOpen,
+                  })}
 
-          <div className="hidden border-t border-(--paper-border)/10 md:block">
-            <div className="mx-auto flex max-w-350 items-center gap-3 px-6 py-2">
-              <div className="flex items-center md:w-56 lg:w-72">
-                <div className="hidden items-center gap-3 whitespace-nowrap text-xs font-bold uppercase tracking-[0.12em] text-(--paper-text-muted) xl:flex">
-                  <span>
-                    {new Date().toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </span>
-                  <span className="h-1 w-1 rounded-full bg-(--paper-text)"></span>
-                  <span>今日情报 / Today's Intelligence</span>
+                  {renderDesktopLanguageControl({
+                    menuVisible: !isDockVisible && isLanguageMenuOpen,
+                  })}
+
+                  {renderDesktopFeedbackCta()}
                 </div>
               </div>
 
-              <div className="flex flex-1 items-center justify-center md:flex">
-                <NavItem to="/events" label="展会名录" className="text-xs tracking-[0.13em]" />
-                <div className="mx-2 h-4 w-px bg-(--paper-border)/20" aria-hidden="true"></div>
-                <NavItem to="/lives" label="演出快讯" className="text-xs tracking-[0.13em]" />
-                <div className="mx-2 h-4 w-px bg-(--paper-border)/20" aria-hidden="true"></div>
-                <NavItem to="/circles" label="社团检索" className="text-xs tracking-[0.13em]" />
-              </div>
-
-              <div className="flex items-center justify-end gap-4 text-xs font-bold uppercase tracking-[0.12em] text-(--paper-text-muted) md:w-56 lg:w-72">
-                <div className="relative" ref={regionMenuRef}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsLangMenuOpen(false);
-                      setIsRegionMenuOpen((prev) => !prev);
-                    }}
-                    aria-label="切换地区"
-                    aria-haspopup="menu"
-                    aria-expanded={isRegionMenuOpen}
-                    className={`flex items-center gap-1 whitespace-nowrap transition-colors duration-200 hover:text-(--paper-accent) ${FOCUS_RING}`}
-                  >
-                    <Globe aria-hidden="true" size={12} />
-                    <span className="hidden lg:inline">{getRegionLabel()}</span>
-                    <span className="lg:hidden">区域</span>
-                    <ChevronDown
-                      aria-hidden="true"
-                      size={11}
-                      className={`transition-transform duration-150 ${isRegionMenuOpen ? 'rotate-180' : ''}`}
-                    />
-                  </button>
-
-                  <AnimatePresence>
-                    {isRegionMenuOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 5 }}
-                        role="menu"
-                        className="absolute right-0 top-full z-50 mt-2 w-44 border-2 border-(--paper-border) bg-(--paper-surface) text-(--paper-text) shadow-[4px_4px_0px_0px_var(--paper-border)]"
-                      >
-                        {REGION_OPTIONS.map((option) => (
-                          <button
-                            key={option.code}
-                            type="button"
-                            role="menuitem"
-                            onClick={() => {
-                              onSetRegion(option.code);
-                              setIsRegionMenuOpen(false);
-                            }}
-                            className={`flex w-full items-center justify-between border-b border-(--paper-border) px-4 py-2 text-left text-xs font-black transition-colors duration-200 last:border-0 hover:bg-(--paper-accent) hover:text-white ${
-                              region === option.code ? 'bg-black/5' : ''
-                            } ${FOCUS_RING}`}
-                          >
-                            <span>{option.label}</span>
-                            {region === option.code ? <Check aria-hidden="true" size={11} /> : null}
-                          </button>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                <div className="relative" ref={langMenuRef}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsRegionMenuOpen(false);
-                      setIsLangMenuOpen((prev) => !prev);
-                    }}
-                    aria-label="切换语言"
-                    aria-haspopup="menu"
-                    aria-expanded={isLangMenuOpen}
-                    className={`flex items-center gap-1 whitespace-nowrap transition-colors duration-200 hover:text-(--paper-accent) ${FOCUS_RING}`}
-                  >
-                    <LanguageBadgeIcon size={12} />
-                    <span className="hidden lg:inline">Language: {language.toUpperCase()}</span>
-                    <span className="lg:hidden">{language.toUpperCase()}</span>
-                  </button>
-
-                  <AnimatePresence>
-                    {isLangMenuOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 5 }}
-                        role="menu"
-                        className="absolute right-0 top-full z-50 mt-2 w-32 border-2 border-(--paper-border) bg-(--paper-surface) text-(--paper-text) shadow-[4px_4px_0px_0px_var(--paper-border)]"
-                      >
-                        {[
-                          { code: 'zh', label: '简体中文' },
-                          { code: 'ja', label: '日本語' },
-                          { code: 'en', label: 'English' },
-                        ].map((langOption) => (
-                          <button
-                            key={langOption.code}
-                            type="button"
-                            role="menuitem"
-                            onClick={() => {
-                              onSetLanguage(langOption.code as Language);
-                              setIsLangMenuOpen(false);
-                            }}
-                            className={`w-full border-b border-(--paper-border) px-4 py-2 text-left text-xs font-black transition-colors duration-200 last:border-0 hover:bg-(--paper-accent) hover:text-white ${
-                              language === langOption.code ? 'bg-black/5' : ''
-                            } ${FOCUS_RING}`}
-                          >
-                            {langOption.label}
-                          </button>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+              <div className="border-t border-[var(--paper-border)]/10" style={mastheadNavStyle}>
+                <div className="mx-auto flex max-w-4xl items-center justify-center gap-2 px-4 py-2.5">
+                  {renderNavLinks()}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-(--paper-border)/10 md:hidden">
-            <div className="flex items-center justify-center gap-1 px-4 py-2">
-              <NavItem to="/events" label="展会" className="min-h-11 px-3 py-3 text-xs" />
-              <NavItem to="/lives" label="演出" className="min-h-11 px-3 py-3 text-xs" />
-              <NavItem to="/circles" label="社团" className="min-h-11 px-3 py-3 text-xs" />
-            </div>
-            <div className="border-t border-(--paper-border)/10 px-4 pb-2 pt-2">
-              <div className="mb-1 text-[11px] font-black uppercase tracking-[0.12em] text-(--paper-text-muted)">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-4 lg:hidden">
+            <Link to="/" className={`inline-flex items-center ${FOCUS_RING}`}>
+              <BrandLockup compact />
+            </Link>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-label="地区切换"
+                onClick={() => {
+                  setIsRegionMenuOpen((open) => !open);
+                  setIsLanguageMenuOpen(false);
+                }}
+                className={`${controlClassName} px-3 ${FOCUS_RING}`}
+              >
                 地区切换
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {REGION_OPTIONS.map((option) => (
-                  <button
-                    key={`masthead-region-${option.code}`}
-                    type="button"
-                    onClick={() => onSetRegion(option.code)}
-                    className={`${mobileRegionButtonClass} ${
-                      region === option.code
-                        ? 'bg-(--paper-border) text-(--paper-surface)'
-                        : 'bg-(--paper-surface) text-(--paper-text) hover:bg-(--paper-hover)'
-                    } ${FOCUS_RING}`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
+              </button>
+              <button
+                type="button"
+                aria-label={isMobileMenuOpen ? '关闭菜单' : '打开菜单'}
+                onClick={() => setIsMobileMenuOpen((open) => !open)}
+                className={`inline-flex min-h-11 items-center justify-center border border-[var(--paper-border)]/15 bg-[var(--paper-surface)] px-3 text-[var(--paper-text)] transition-colors hover:bg-[var(--paper-hover)] ${FOCUS_RING}`}
+              >
+                {isMobileMenuOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
+              </button>
             </div>
           </div>
         </header>
+      ) : null}
 
-        <nav
+      {isDockVisible ? (
+        <div
           data-aya-dock="true"
-          data-aya-state={headerState}
-          aria-hidden={!isDockVisible}
-          className="fixed left-0 right-0 top-0 z-50 w-full border-b border-(--paper-border) bg-(--aya-color-bg) shadow-(--aya-shadow-1) will-change-transform"
-          style={{
-            transform:
-              headerState === 'scrolled'
-                ? 'translate3d(0, 0, 0)'
-                : 'translate3d(0, calc(var(--aya-header-height-compact, 46px) * -1 - 12px), 0)',
-            visibility: headerState === 'top' ? 'hidden' : 'visible',
-            pointerEvents: isDockVisible ? 'auto' : 'none',
-            transition: 'transform var(--aya-motion-medium, 200ms) cubic-bezier(0.16, 1, 0.3, 1)',
-          }}
+          data-aya-state={headerMotion.phase}
+          className="sticky top-0 z-40 border-b border-[var(--paper-border)]/12 bg-[var(--paper-surface)] shadow-[var(--paper-shadow-sm)]"
         >
-          <div className="border-t border-(--paper-border)/5 py-1">
-            <div className="mx-auto flex max-w-350 items-center gap-3 px-6">
-              <BrandLink compact showText={false} className="md:hidden" />
+          <div className="hidden lg:block">
+            <div className="mx-auto max-w-7xl px-4 py-2.5" style={dockShellStyle}>
+              <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4">
+                <Link to="/" className={`inline-flex items-center ${FOCUS_RING}`}>
+                  <BrandLockup compact />
+                </Link>
 
-              <div className="hidden items-center md:flex md:w-56">
-                <BrandLink
-                  compact
-                  textClassName="hidden xl:inline text-sm opacity-85 text-(--paper-text)"
-                  className={`gap-2 transition-[opacity,transform] duration-150 ease-out ${
-                    isDockVisible ? 'translate-x-0 opacity-100' : '-translate-x-2 opacity-0 pointer-events-none'
-                  }`}
-                />
-              </div>
+                <nav className="flex items-center justify-center gap-1">{renderNavLinks(true)}</nav>
 
-              <div className="hidden md:flex md:flex-1 md:items-center md:justify-center">
-                <NavItem to="/events" label="展会名录" />
-                <div className="mx-2 h-4 w-px bg-(--paper-border)/20" aria-hidden="true"></div>
-                <NavItem to="/lives" label="演出快讯" />
-                <div className="mx-2 h-4 w-px bg-(--paper-border)/20" aria-hidden="true"></div>
-                <NavItem to="/circles" label="社团检索" />
-              </div>
+                <div className="flex items-center gap-2">
+                  {renderDesktopRegionControl({
+                    compact: true,
+                    menuVisible: isDockVisible && isRegionMenuOpen,
+                  })}
 
-              <div className="ml-auto flex items-center gap-3 md:ml-0 md:w-56 md:justify-end">
-                <button
-                  type="button"
-                  className={`p-2.5 md:hidden text-(--paper-text) ${FOCUS_RING}`}
-                  aria-label={isMobileMenuOpen ? '关闭菜单' : '打开菜单'}
-                  onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-                >
-                  {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
-              </div>
-            </div>
-          </div>
+                  {renderDesktopLanguageControl({
+                    compact: true,
+                    menuVisible: isDockVisible && isLanguageMenuOpen,
+                  })}
 
-          <AnimatePresence>
-            {isMobileMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden border-t-4 border-(--paper-border) bg-(--paper-bg) md:hidden"
-              >
-                <div className="flex flex-col space-y-6 px-6 py-8">
-                  <NavItem to="/events" label="展会名录" className="w-full min-h-11 border-b-2 border-black/5 py-2 text-2xl" />
-                  <NavItem to="/lives" label="演出快讯" className="w-full min-h-11 border-b-2 border-black/5 py-2 text-2xl" />
-                  <NavItem to="/circles" label="社团检索" className="w-full min-h-11 py-2 text-2xl" />
-
-                  <div className="flex flex-col gap-4 pt-4">
-                    <div className="text-xs font-black uppercase tracking-widest opacity-40 text-(--paper-text)">地区切换</div>
-                    <div className="flex flex-wrap gap-2">
-                      {REGION_OPTIONS.map((regionOption) => (
-                        <button
-                          key={regionOption.code}
-                          type="button"
-                          onClick={() => {
-                            onSetRegion(regionOption.code);
-                            setIsMobileMenuOpen(false);
-                          }}
-                          className={`${mobileRegionButtonClass} ${
-                            region === regionOption.code
-                              ? 'bg-(--paper-border) text-(--paper-surface)'
-                              : 'bg-(--paper-surface) text-(--paper-text) hover:bg-(--paper-border) hover:text-(--paper-surface)'
-                          } ${FOCUS_RING}`}
-                        >
-                          {regionOption.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-4 pt-2">
-                    <div className="text-xs font-black uppercase tracking-widest opacity-40 text-(--paper-text)">Language</div>
-                    <div className="flex gap-2">
-                      {['zh', 'ja', 'en'].map((langCode) => (
-                        <button
-                          key={langCode}
-                          type="button"
-                          onClick={() => {
-                            onSetLanguage(langCode as Language);
-                            setIsMobileMenuOpen(false);
-                          }}
-                          className={`min-h-11 border-2 border-(--paper-border) px-4 py-2 text-xs font-black uppercase transition-colors duration-200 ${
-                            language === langCode ? 'bg-(--paper-border) text-(--paper-surface)' : 'bg-(--paper-surface) text-(--paper-text) hover:bg-(--paper-border) hover:text-(--paper-surface)'
-                          } ${FOCUS_RING}`}
-                        >
-                          {langCode}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  {renderDesktopFeedbackCta({ compact: true })}
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </nav>
-      </>
-    );
-  }
-
-  return (
-    <nav data-current-view={currentView} className={`sticky top-0 z-50 w-full border-b-2 transition-colors duration-300 ${navBg}`}>
-      <div className="mx-auto flex h-16 max-w-300 items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-6">
-          <Link to="/" onClick={handleBrandClick} className={`flex items-center gap-3 ${FOCUS_RING}`} aria-label="返回首页">
-            <motion.div whileHover={{ scale: 1.06 }} transition={{ type: 'spring', stiffness: 400, damping: 15 }}>
-              <BrandLogo size="sm" />
-            </motion.div>
-            <div className="flex flex-col leading-none">
-              <span className="font-brand text-lg font-black tracking-tight text-(--paper-text)">{getBrandName()}</span>
-              <span className="origin-left text-xs font-bold uppercase tracking-widest text-(--paper-text-muted)">EST. 1000 G.S.T</span>
+              </div>
             </div>
-          </Link>
-
-          <div className="hidden items-center space-x-1 md:flex">
-            <NavItem to="/events" label="展会" />
-            <NavItem to="/lives" label="演出" />
-            <NavItem to="/circles" label="社团" />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 md:gap-4">
-          <div className="relative" ref={langMenuRef}>
-            <button
-              type="button"
-              onClick={() => setIsLangMenuOpen((prev) => !prev)}
-              aria-label="语言切换"
-              aria-haspopup="menu"
-              aria-expanded={isLangMenuOpen}
-              aria-controls="language-menu"
-              className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition-[background-color,border-color,color] duration-200 ${
-                isNewspaper ? 'border-(--paper-border) bg-(--paper-surface) text-(--paper-text)' : 'border-slate-200 bg-white text-slate-600'
-              } ${FOCUS_RING}`}
-            >
-              <LanguageBadgeIcon size={14} />
-              <span className="hidden uppercase sm:inline">{language}</span>
-            </button>
-
-            <AnimatePresence>
-              {isLangMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  id="language-menu"
-                  role="menu"
-                  className="absolute right-0 top-full z-50 mt-2 w-32 border-2 border-(--paper-border) bg-(--paper-surface) shadow-[4px_4px_0px_0px_var(--paper-border)]"
-                >
-                  {[
-                    { code: 'zh', label: '简体中文' },
-                    { code: 'ja', label: '日本語' },
-                    { code: 'en', label: 'English' },
-                  ].map((langOption) => (
-                    <button
-                      key={langOption.code}
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        onSetLanguage(langOption.code as Language);
-                        setIsLangMenuOpen(false);
-                      }}
-                      className={`w-full border-b border-(--paper-border) px-4 py-2 text-left text-xs font-black transition-colors duration-200 last:border-0 hover:bg-(--paper-accent) hover:text-white ${
-                        language === langOption.code ? 'bg-black/5' : ''
-                      } ${FOCUS_RING}`}
-                    >
-                      {langOption.label}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-            aria-label={isMobileMenuOpen ? '关闭菜单' : '打开菜单'}
-            className={`p-2.5 transition-colors duration-200 md:hidden text-(--paper-text) ${FOCUS_RING}`}
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 lg:hidden">
+            <Link to="/" className={`inline-flex items-center ${FOCUS_RING}`}>
+              <BrandLockup compact />
+            </Link>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-label="地区切换"
+                onClick={() => {
+                  setIsRegionMenuOpen((open) => !open);
+                  setIsLanguageMenuOpen(false);
+                }}
+                className={`${controlClassName} px-3 ${FOCUS_RING}`}
+              >
+                地区切换
+              </button>
+              <button
+                type="button"
+                aria-label={isMobileMenuOpen ? '关闭菜单' : '打开菜单'}
+                onClick={() => setIsMobileMenuOpen((open) => !open)}
+                className={`inline-flex min-h-11 items-center justify-center border border-[var(--paper-border)]/15 bg-[var(--paper-surface)] px-3 text-[var(--paper-text)] transition-colors hover:bg-[var(--paper-hover)] ${FOCUS_RING}`}
+              >
+                {isMobileMenuOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : null}
 
       <AnimatePresence>
-        {isMobileMenuOpen && (
+        {isRegionMenuOpen && !isMobileMenuOpen ? (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className={`border-t-2 md:hidden ${isNewspaper ? 'border-(--paper-border) bg-(--paper-bg)' : 'border-slate-100 bg-white'}`}
+            className="border-b border-[var(--paper-border)]/12 bg-[var(--paper-bg)] lg:hidden"
           >
-            <div className="flex flex-col space-y-4 px-4 py-6">
-              <NavItem to="/events" label="展会名录" className={`w-full border-b py-4 text-left ${isNewspaper ? 'border-(--paper-border)/10' : 'border-slate-100'}`} />
-              <NavItem to="/events/exp" label="探索布局 (Beta)" className={`w-full border-b py-4 text-left ${isNewspaper ? 'border-(--paper-border)/10' : 'border-slate-100'}`} />
-              <NavItem to="/lives" label="演出快讯" className={`w-full border-b py-4 text-left ${isNewspaper ? 'border-(--paper-border)/10' : 'border-slate-100'}`} />
-              <NavItem to="/circles" label="社团检索" className={`w-full border-b py-4 text-left ${isNewspaper ? 'border-(--paper-border)/10' : 'border-slate-100'}`} />
+            <div className="mx-auto max-w-7xl px-4 py-3">
+              <div className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--paper-text-muted)]">地区切换</div>
+              <div className="grid gap-2 sm:grid-cols-2">{renderRegionOptions()}</div>
             </div>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
-    </nav>
+
+      <AnimatePresence>
+        {isMobileMenuOpen ? (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="border-b border-[var(--paper-border)]/12 bg-[var(--paper-surface)] lg:hidden"
+          >
+            <div className="mx-auto max-w-7xl space-y-5 px-4 py-4">
+              <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--paper-text-muted)]">
+                第 13042 期 / Gensokyo Intelligence Network
+              </div>
+
+              <nav className="grid gap-2">
+                {NAV_ITEMS.map((item) => {
+                  const linkClassName = `inline-flex min-h-11 items-center border border-[var(--paper-border)]/12 bg-[var(--paper-bg)] px-3 text-sm font-bold text-[var(--paper-text)] transition-colors hover:bg-[var(--paper-hover)] ${FOCUS_RING}`;
+
+                  return (
+                    <Link key={item.label} to={item.to} className={linkClassName}>
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              <div>
+                <div className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--paper-text-muted)]">语言</div>
+                <div className="grid gap-2">{renderLanguageOptions()}</div>
+              </div>
+
+              {renderDesktopFeedbackCta({ fullWidth: true })}
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </>
   );
 };
 

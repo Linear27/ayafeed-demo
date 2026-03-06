@@ -1,12 +1,17 @@
-
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { PreferredRegion, PublicEventListItem, PublicLiveListItem, TimelineItem } from '../types';
-import { fetchEvents, fetchLives } from '../services/api';
-import { BentoHeader, ScrapbookTimeline, IndexSidebar, MobileQuickJumpBar } from '../components/LandingSections';
-import { ScrapbookCardSkeleton } from '../components/Skeleton';
+import { AlertTriangle, ArrowRight, RefreshCcw } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
-import { AlertTriangle, RefreshCcw, ArrowRight } from 'lucide-react';
+import {
+  LandingCommandBar,
+  LandingFocusGrid,
+  LandingHero,
+  LandingMonthlyHighlights,
+  LandingRoleEntry,
+  LandingTimelinePreview,
+  LandingUpdates,
+} from '../components/landing';
+import { fetchEvents, fetchLives } from '../services/api';
 import {
   DEFAULT_BUSINESS_TIME_ZONE,
   diffCalendarDays,
@@ -14,9 +19,10 @@ import {
   getBusinessDateKey,
   getRecentWindowCount,
 } from '../services/date';
-import { rankHeroItems } from '../services/landingHero';
+import { buildLandingHomepageModel } from '../services/landingHomepage';
+import { PreferredRegion, PublicEventListItem, PublicLiveListItem, TimelineItem } from '../types';
 
-const LandingView: React.FC<{ 
+const LandingView: React.FC<{
   region: PreferredRegion;
 }> = ({ region }) => {
   const todayDateKey = useMemo(() => getBusinessDateKey(DEFAULT_BUSINESS_TIME_ZONE), []);
@@ -28,16 +34,14 @@ const LandingView: React.FC<{
   const loadData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+
     try {
-      const [eventsData, livesData] = await Promise.all([
-        fetchEvents(), 
-        fetchLives()
-      ]);
+      const [eventsData, livesData] = await Promise.all([fetchEvents(), fetchLives()]);
       setEvents(eventsData);
       setLives(livesData);
     } catch (err) {
-      console.error("Failed to load landing data:", err);
-      setError('加载失败，请稍后重试');
+      console.error('Failed to load landing data:', err);
+      setError('首页数据暂时无法同步，请稍后再试。');
     } finally {
       setIsLoading(false);
     }
@@ -50,78 +54,70 @@ const LandingView: React.FC<{
   const timelineItems = useMemo(() => {
     const items: TimelineItem[] = [];
 
-    events.forEach(e => {
-      const dateStr = extractDateKey(e.startAt);
+    events.forEach((event) => {
+      const dateStr = extractDateKey(event.startAt);
       if (!dateStr) return;
 
       const dayDelta = diffCalendarDays(todayDateKey, dateStr);
-      if (dayDelta >= 0) {
-        let status: TimelineItem['status'] = 'UPCOMING';
-        if (dayDelta === 0) status = 'ONGOING';
-        
-        items.push({
-          id: e.id,
-          type: 'event',
-          date: dateStr,
-          title: e.title,
-          location: e.location?.name || null,
-          image: e.poster?.urls.original || null,
-          slug: e.slug,
-          isToday: dayDelta === 0,
-          isThisWeek: dayDelta < 7,
-          marketRegion: e.marketRegion,
-          summary: e.summary,
-          boothCount: e.boothCount,
-          organizer: e.organizer,
-          website: (e as any).website || (e as any).websiteUrl || null,
-          featured: e.featured === true,
-          featuredOrder: typeof e.featuredOrder === 'number' ? e.featuredOrder : null,
-          status,
-          originalData: e
-        });
-      }
+      if (dayDelta < 0) return;
+
+      items.push({
+        id: event.id,
+        type: 'event',
+        date: dateStr,
+        title: event.title,
+        location: event.location?.name ?? null,
+        image: event.poster?.urls.original ?? null,
+        slug: event.slug,
+        isToday: dayDelta === 0,
+        isThisWeek: dayDelta < 7,
+        marketRegion: event.marketRegion,
+        summary: event.summary,
+        boothCount: event.boothCount,
+        organizer: event.organizer,
+        website: (event as any).website ?? (event as any).websiteUrl ?? null,
+        featured: event.featured === true,
+        featuredOrder: typeof event.featuredOrder === 'number' ? event.featuredOrder : null,
+        status: dayDelta === 0 ? 'ONGOING' : 'UPCOMING',
+        originalData: event,
+      });
     });
 
-    lives.forEach(l => {
-      const dateStr = extractDateKey(l.startAt);
+    lives.forEach((live) => {
+      const dateStr = extractDateKey(live.startAt);
       if (!dateStr) return;
 
       const dayDelta = diffCalendarDays(todayDateKey, dateStr);
-      if (dayDelta >= 0) {
-        let status: TimelineItem['status'] = 'UPCOMING';
-        if (dayDelta === 0) status = 'ONGOING';
+      if (dayDelta < 0) return;
 
-        items.push({
-          id: l.id,
-          type: 'live',
-          date: dateStr,
-          title: l.title,
-          location: l.location?.name || l.venue || null,
-          image: l.poster?.urls.original || null,
-          slug: l.slug,
-          isToday: dayDelta === 0,
-          isThisWeek: dayDelta < 7,
-          marketRegion: l.marketRegion,
-          summary: l.description,
-          website: (l as any).website || null,
-          status,
-          originalData: l
-        });
-      }
+      items.push({
+        id: live.id,
+        type: 'live',
+        date: dateStr,
+        title: live.title,
+        location: live.location?.name ?? live.venue ?? null,
+        image: live.poster?.urls.original ?? null,
+        slug: live.slug,
+        isToday: dayDelta === 0,
+        isThisWeek: dayDelta < 7,
+        marketRegion: live.marketRegion,
+        summary: live.description,
+        website: (live as any).website ?? null,
+        status: dayDelta === 0 ? 'ONGOING' : 'UPCOMING',
+        originalData: live,
+      });
     });
 
-    // Sort chronologically
-    items.sort((a, b) => a.date.localeCompare(b.date));
+    items.sort((left, right) => left.date.localeCompare(right.date));
 
-    // Filter by region if set
-    if (region && region !== 'GLOBAL') {
-      const regional = items.filter(i => i.marketRegion === region);
-      const others = items.filter(i => i.marketRegion !== region);
-      return [...regional, ...others];
+    if (region !== 'GLOBAL') {
+      const preferredItems = items.filter((item) => item.marketRegion === region);
+      const remainingItems = items.filter((item) => item.marketRegion !== region);
+      return [...preferredItems, ...remainingItems];
     }
 
     return items;
-  }, [events, lives, todayDateKey, region]);
+  }, [events, lives, region, todayDateKey]);
 
   const updateCount = useMemo(() => {
     const upcomingDateKeys = [
@@ -131,110 +127,75 @@ const LandingView: React.FC<{
     return getRecentWindowCount(upcomingDateKeys, todayDateKey, 7);
   }, [events, lives, todayDateKey]);
 
-  // 统计数据 (Social Proof)
-  const stats = useMemo(() => ({
-    totalEvents: events.length + lives.length,
-    todayCount: timelineItems.filter(i => i.isToday).length,
-    thisWeekCount: timelineItems.filter(i => i.isThisWeek).length,
-    updateCount
-  }), [events, lives, timelineItems, updateCount]);
+  const stats = useMemo(
+    () => ({
+      totalEvents: events.length + lives.length,
+      todayCount: timelineItems.filter((item) => item.isToday).length,
+      thisWeekCount: timelineItems.filter((item) => item.isThisWeek).length,
+      updateCount,
+    }),
+    [events.length, lives.length, timelineItems, updateCount],
+  );
 
-  const featuredItems = useMemo(() => {
-    return rankHeroItems(timelineItems).slice(0, 5);
-  }, [timelineItems]);
+  const homepageModel = useMemo(
+    () => buildLandingHomepageModel(timelineItems, todayDateKey),
+    [timelineItems, todayDateKey],
+  );
 
   return (
-    <motion.div 
-      className="w-full pb-20"
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-    >
-       <div className="max-w-300 mx-auto">
+    <motion.div className="w-full overflow-x-hidden pb-16" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <div className="mx-auto max-w-7xl px-4 py-6 lg:py-8">
         <h1 className="sr-only">AyaFeed 落地页 - 幻想乡活动情报总览</h1>
+
         {isLoading ? (
-          <div className="px-4 pt-8" aria-live="polite">
-            <div className="h-130 border-4 border-[var(--paper-border)] shadow-[var(--paper-shadow-lg)] bg-[var(--paper-surface)]/60 animate-pulse" />
-
-            <div className="grid grid-cols-1 gap-[var(--space-xl)] border-t-2 border-[var(--paper-border)] pt-[var(--space-xl)] lg:grid-cols-12">
-              <div className="lg:col-span-8 flex flex-col">
-                <div className="mb-8 flex items-center gap-[var(--space-sm)] border-b-2 border-[var(--paper-border)] pb-2">
-                  <div className="w-7 h-7 bg-[var(--paper-border)]/10 border border-[var(--paper-border)]/5 animate-pulse" />
-                  <div className="h-9 w-44 bg-[var(--paper-border)]/10 border border-[var(--paper-border)]/5 animate-pulse" />
-                </div>
-                <ScrapbookCardSkeleton count={4} />
-              </div>
-
-              <div className="lg:col-span-4 pl-0 lg:pl-10 flex flex-col lg:border-l border-[var(--paper-border)]/20 border-dashed">
-                <div className="mb-8 bg-[var(--paper-border)] p-[var(--space-sm)] text-[var(--paper-surface)] transform -rotate-1">
-                  <div className="h-6 w-28 bg-[var(--paper-surface)]/20 rounded animate-pulse" />
-                </div>
-                <div className="space-y-8">
-                  {Array.from({ length: 3 }).map((_, idx) => (
-                    <div key={idx} className="aspect-video border-2 border-[var(--paper-border)] bg-[var(--paper-border)]/5 shadow-[var(--paper-shadow-md)] animate-pulse" />
-                  ))}
-                </div>
-              </div>
+          <div className="space-y-6" aria-busy="true" aria-live="polite">
+            <div className="h-80 animate-pulse border-2 border-[var(--paper-border)]/15 bg-[var(--paper-surface)]"></div>
+            <div className="h-20 animate-pulse border-2 border-[var(--paper-border)]/15 bg-[var(--paper-surface)]"></div>
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="h-64 animate-pulse border-2 border-[var(--paper-border)]/15 bg-[var(--paper-surface)]"></div>
+              <div className="h-64 animate-pulse border-2 border-[var(--paper-border)]/15 bg-[var(--paper-surface)]"></div>
             </div>
           </div>
         ) : error ? (
-          <div className="px-4 py-16" role="alert" aria-live="polite">
-            <div className="border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] newspaper-shadow p-6 sm:p-8">
-              <div className="flex flex-col sm:flex-row items-start gap-6">
-                <div className="w-14 h-14 shrink-0 bg-[var(--paper-accent)]/10 border-2 border-[var(--paper-accent)]/20 flex items-center justify-center text-[var(--paper-accent)]">
-                  <AlertTriangle size={28} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-black uppercase tracking-[0.22em] text-[var(--paper-text-muted)]">
-                    TRANSMISSION ERROR
-                  </div>
-                  <h2 className="mt-2 text-2xl sm:text-3xl font-black font-header text-[var(--paper-text)]">
-                    频道暂时失联
-                  </h2>
-                  <p className="mt-2 text-sm text-[var(--paper-text-muted)] font-serif italic">
-                    {error}
-                  </p>
+          <div className="border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] p-6 paper-shadow-md" role="alert" aria-live="polite">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center border-2 border-[var(--paper-accent)]/20 bg-[var(--paper-accent)]/10 text-[var(--paper-accent)]">
+                <AlertTriangle size={28} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-black uppercase tracking-[0.22em] text-[var(--paper-text-muted)]">Transmission Error</div>
+                <h2 className="mt-2 text-2xl font-black text-[var(--paper-text)] sm:text-3xl">首页频道暂时失联</h2>
+                <p className="mt-2 text-sm leading-7 text-[var(--paper-muted)]">{error}</p>
 
-                  <div className="mt-6 flex flex-col gap-[var(--space-sm)] sm:flex-row">
-                    <button
-                      onClick={loadData}
-                      className="inline-flex items-center justify-center gap-[var(--space-sm)] border-2 border-[var(--paper-border)] bg-[var(--paper-border)] px-[var(--space-lg)] py-[var(--space-sm)] text-xs font-black uppercase tracking-[0.22em] text-[var(--paper-surface)] shadow-[var(--paper-shadow-md)] transition-colors hover:bg-[var(--paper-accent)] active:bg-[var(--paper-active)] sm:text-sm"
-                    >
-                      <RefreshCcw size={18} /> 重新拉取
-                    </button>
-
-                    <Link
-                      to="/events"
-                      className="inline-flex items-center justify-center gap-[var(--space-sm)] border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-[var(--space-lg)] py-[var(--space-sm)] text-xs font-black uppercase tracking-[0.22em] shadow-[var(--paper-shadow-md)] transition-colors hover:bg-[var(--paper-hover)] active:bg-[var(--paper-active)] sm:text-sm"
-                    >
-                      打开展会名录 <ArrowRight size={18} />
-                    </Link>
-                  </div>
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <button
+                    onClick={loadData}
+                    className="inline-flex min-h-11 items-center justify-center gap-2 border-2 border-[var(--paper-border)] bg-[var(--paper-border)] px-4 py-2 text-sm font-black text-[var(--paper-surface)] transition-colors hover:bg-[var(--paper-accent)]"
+                  >
+                    <RefreshCcw size={18} />
+                    重新拉取
+                  </button>
+                  <Link
+                    to="/events"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 border-2 border-[var(--paper-border)] bg-[var(--paper-surface)] px-4 py-2 text-sm font-bold text-[var(--paper-text)] transition-colors hover:bg-[var(--paper-hover)]"
+                  >
+                    打开展会名录
+                    <ArrowRight size={18} />
+                  </Link>
                 </div>
               </div>
             </div>
           </div>
         ) : (
-          <>
-            <div className="pt-8 px-4">
-              <BentoHeader 
-                items={featuredItems} 
-                region={region}
-                todayDateKey={todayDateKey}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-[var(--space-xl)] border-t-2 border-[var(--paper-border)] px-4 pt-[var(--space-xl)] lg:grid-cols-12">
-              <div className="lg:col-span-8">
-                <MobileQuickJumpBar items={timelineItems} />
-                <ScrapbookTimeline items={timelineItems} />
-              </div>
-
-              <IndexSidebar 
-                items={timelineItems} 
-                todayDateKey={todayDateKey}
-                stats={stats}
-              />
-            </div>
-          </>
+          <div className="space-y-6">
+            <LandingHero hero={homepageModel.hero} updates={homepageModel.updates} region={region} />
+            <LandingCommandBar region={region} />
+            <LandingFocusGrid focusItems={homepageModel.focusItems} stats={stats} quickRail={homepageModel.quickRail} />
+            <LandingMonthlyHighlights items={homepageModel.monthlyHighlights} />
+            <LandingUpdates items={homepageModel.updates} />
+            <LandingTimelinePreview items={homepageModel.timelinePreview} />
+            <LandingRoleEntry />
+          </div>
         )}
       </div>
     </motion.div>

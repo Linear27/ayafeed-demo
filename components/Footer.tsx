@@ -1,100 +1,88 @@
 import React from 'react';
-import { Github, Twitter, Mail } from 'lucide-react';
+import { Github, Mail, Twitter } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
-import BrandLogo from './BrandLogo';
+import BrandLockup from './BrandLockup';
 
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FDFBF7]';
 
 const Footer: React.FC = () => {
-  const footerBg = 'bg-[#FDFBF7]';
-  const textColor = 'text-slate-900';
-  const headerColor = 'text-black font-header';
-  const hoverColor = 'hover:text-red-700 hover:underline';
+  const itemClassName = `text-sm text-[var(--paper-muted)] transition-colors hover:text-[var(--paper-accent)] ${FOCUS_RING}`;
 
   return (
-    <footer className={`${footerBg} relative z-10 pb-8 pt-8 transition-colors duration-300`}>
-      <div className="mx-auto max-w-300 px-4">
-        <div className="mb-16 flex items-center gap-4 opacity-40" aria-hidden="true">
-          <div className="h-0.5 flex-1 bg-black"></div>
-          <div className="whitespace-nowrap font-mono text-xs font-black uppercase tracking-[0.24em]">Archive Boundary / 完</div>
-          <div className="h-0.5 flex-1 bg-black"></div>
+    <footer className="relative z-10 border-t-2 border-[var(--paper-border)] bg-[#FDFBF7] pb-8 pt-10">
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="mb-8 flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.18em] text-[var(--paper-text-muted)] opacity-80">
+          <div className="h-px flex-1 bg-[var(--paper-border)]/20"></div>
+          <div>Archive Boundary / Footer Desk</div>
+          <div className="h-px flex-1 bg-[var(--paper-border)]/20"></div>
         </div>
 
-        <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-3">
-          <div>
-            <Link to="/" className={`mb-4 flex items-center gap-3 ${FOCUS_RING}`} aria-label="返回首页">
-              <BrandLogo size="md" />
-              <span className={`font-brand text-xl font-black tracking-tight ${headerColor}`}>文文。速报</span>
+        <div className="grid gap-8 border-b border-dashed border-[var(--paper-border)]/20 pb-8 lg:grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(0,1fr))]">
+          <div id="footer-about" className="space-y-4">
+            <Link to="/" className={`inline-flex ${FOCUS_RING}`}>
+              <BrandLockup compact />
             </Link>
-            <p className={`mb-4 text-sm leading-relaxed ${textColor}`}>
-              为您带来幻想乡到外界的最快独家新闻。天狗信赖，人类喜爱。
+            <p className="max-w-sm text-sm leading-7 text-[var(--paper-muted)]">
+              AyaFeed 聚焦东方同人展、演出与社团公开情报，用首页快速入口把近期重点信息更清楚地呈现出来。
             </p>
+            <div className="text-xs font-bold text-[var(--paper-text-muted)]">最近更新时间：以站内公开数据同步为准</div>
           </div>
 
           <div>
-            <h4 className={`mb-4 text-xs font-bold uppercase tracking-wider ${headerColor}`}>信息中心</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link to="/" className={`${textColor} ${hoverColor} ${FOCUS_RING}`}>
-                  关于我们
-                </Link>
-              </li>
-              <li>
-                <Link to="/showcase" className={`${textColor} ${hoverColor} ${FOCUS_RING}`}>
-                  组件展示
-                </Link>
-              </li>
-              <li>
-                <Link to="/privacy" className={`${textColor} ${hoverColor} ${FOCUS_RING}`}>
-                  隐私政策
-                </Link>
-              </li>
-              <li>
-                <Link to="/feedback" className={`${textColor} ${hoverColor} ${FOCUS_RING}`}>
-                  问题反馈
-                </Link>
-              </li>
-            </ul>
+            <h4 className="mb-4 text-xs font-black uppercase tracking-[0.16em] text-[var(--paper-text)]">浏览</h4>
+            <div className="space-y-2">
+              <Link to="/events" className={itemClassName}>展会</Link>
+              <Link to="/lives" className={itemClassName}>演出</Link>
+              <Link to="/circles" className={itemClassName}>社团</Link>
+              <Link to="/events/exp" className={itemClassName}>归档</Link>
+            </div>
           </div>
 
           <div>
-            <h4 className={`mb-4 text-xs font-bold uppercase tracking-wider ${headerColor}`}>关注我们</h4>
-            <div className="flex gap-4">
-              <a
-                href="https://twitter.com/ayafeed"
-                target="_blank"
-                rel="noreferrer"
-                className={`border-2 border-black p-2 text-black transition-colors duration-200 hover:bg-black hover:text-white ${FOCUS_RING}`}
-                aria-label="Twitter"
-              >
-                <Twitter aria-hidden="true" size={18} />
+            <h4 className="mb-4 text-xs font-black uppercase tracking-[0.16em] text-[var(--paper-text)]">参与</h4>
+            <div className="space-y-2">
+              <Link to="/feedback" className={itemClassName}>提交活动</Link>
+              <Link to="/circles" className={itemClassName}>社团入驻</Link>
+              <Link to="/feedback" className={itemClassName}>问题反馈</Link>
+            </div>
+          </div>
+
+          <div id="footer-trust">
+            <h4 className="mb-4 text-xs font-black uppercase tracking-[0.16em] text-[var(--paper-text)]">说明与信任</h4>
+            <div className="space-y-2">
+              <a href="/#footer-trust" className={itemClassName}>收录说明</a>
+              <a href="/#footer-sources" className={itemClassName}>数据来源</a>
+              <Link to="/privacy" className={itemClassName}>隐私政策</Link>
+              <a href="/#footer-about" className={itemClassName}>关于 AyaFeed</a>
+            </div>
+          </div>
+
+          <div id="footer-sources">
+            <h4 className="mb-4 text-xs font-black uppercase tracking-[0.16em] text-[var(--paper-text)]">联系</h4>
+            <div className="space-y-3 text-sm text-[var(--paper-muted)]">
+              <a href="mailto:contact@ayafeed.com" className={`inline-flex items-center gap-2 ${itemClassName}`}>
+                <Mail size={16} aria-hidden="true" />
+                contact@ayafeed.com
               </a>
-              <a
-                href="https://github.com/ayafeed"
-                target="_blank"
-                rel="noreferrer"
-                className={`border-2 border-black p-2 text-black transition-colors duration-200 hover:bg-black hover:text-white ${FOCUS_RING}`}
-                aria-label="GitHub"
-              >
-                <Github aria-hidden="true" size={18} />
+              <a href="https://twitter.com/ayafeed" target="_blank" rel="noreferrer" className={`inline-flex items-center gap-2 ${itemClassName}`}>
+                <Twitter size={16} aria-hidden="true" />
+                X / Twitter
               </a>
-              <a
-                href="mailto:contact@ayafeed.com"
-                className={`border-2 border-black p-2 text-black transition-colors duration-200 hover:bg-black hover:text-white ${FOCUS_RING}`}
-                aria-label="Email"
-              >
-                <Mail aria-hidden="true" size={18} />
+              <a href="https://github.com/ayafeed" target="_blank" rel="noreferrer" className={`inline-flex items-center gap-2 ${itemClassName}`}>
+                <Github size={16} aria-hidden="true" />
+                GitHub
               </a>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-between border-t border-dashed border-slate-200 pt-8 font-mono text-xs md:flex-row">
-          <div className={textColor}>&copy; {new Date().getFullYear()} AyaFeed Project. 幻想乡印刷</div>
-          <div className={`mt-4 flex gap-6 md:mt-0 ${textColor}`}>
-            <span>第13042期</span>
-            <span>文文。速报 | 文々。速報</span>
+        <div className="flex flex-col gap-3 pt-6 text-xs font-mono text-[var(--paper-text-muted)] md:flex-row md:items-center md:justify-between">
+          <div>© {new Date().getFullYear()} AyaFeed Project · theme-newspaper</div>
+          <div className="flex flex-wrap gap-4">
+            <span>首页焦点优先</span>
+            <span>公开来源整理</span>
+            <span>幻想乡活动情报总览</span>
           </div>
         </div>
       </div>

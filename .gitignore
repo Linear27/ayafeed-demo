@@ -1,4 +1,4 @@
-# Logs
+﻿# Logs
 logs
 *.log
 npm-debug.log*
@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 artifacts/
+.tmp/
 .tmp-*/
 .tmp-*.zip
 .tmp/aistudio/
@@ -32,3 +33,4 @@ aistudio-*.webp
 *.njsproj
 *.sln
 *.sw?
+
